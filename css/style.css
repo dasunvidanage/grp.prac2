@@ -36,36 +36,172 @@ a {
 /* Landing Page Hero */
 .hero {
     min-height: 100vh;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(-45deg, #4f46e5, #7c3aed, #4338ca, #6366f1);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     text-align: center;
     padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 80%);
+    pointer-events: none;
+}
+
+.hero-content {
+    animation: slideUpFade 1s ease-out forwards;
+    z-index: 2;
 }
 
 .hero-content h1 {
-    font-size: 3.5rem;
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
     font-weight: 800;
     margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(to bottom, #ffffff 30%, #e2e8f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .hero-content p {
-    font-size: 1.25rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 0.5s forwards;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
+
+.hero-actions {
+    opacity: 0;
+    animation: fadeIn 1s ease-out 0.8s forwards;
+}
+
+/* Animations */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* Floating Shapes */
+.shape {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.shape-1 { width: 150px; height: 150px; top: 10%; left: 10%; animation: float 8s ease-in-out infinite; }
+.shape-2 { width: 100px; height: 100px; top: 70%; left: 15%; animation: float 6s ease-in-out infinite reverse; }
+.shape-3 { width: 200px; height: 200px; top: 20%; right: 10%; animation: float 10s ease-in-out infinite 1s; }
+.shape-4 { width: 80px; height: 80px; top: 60%; right: 20%; animation: float 7s ease-in-out infinite 0.5s; }
 
 /* Glassmorphism */
 .glass-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 1.5rem;
-    padding: 3rem;
-    box-shadow: var(--shadow-lg);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2.5rem;
+    padding: 4rem 3rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.logo-container {
+    margin-bottom: 2rem;
+    animation: fadeIn 1s ease-out forwards;
+}
+
+.hero-logo {
+    width: 80px;
+    height: auto;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    animation: fadeIn 1s ease-out 1.5s forwards;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.mouse {
+    width: 26px;
+    height: 42px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    position: relative;
+}
+
+.wheel {
+    width: 4px;
+    height: 8px;
+    background: white;
+    border-radius: 2px;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: scrollWheel 2s infinite;
+}
+
+@keyframes scrollWheel {
+    0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(15px); }
 }
 
 /* Modern Mesh Gradient Background */

@@ -25,4 +25,19 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.transform = 'translateY(0)';
         }, 100);
     });
+
+    // Hero Tilt Effect
+    const heroCard = document.querySelector('.hero-content');
+    if (heroCard) {
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            heroCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        // Reset on mouse leave
+        document.addEventListener('mouseleave', () => {
+            heroCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
+        });
+    }
 });
