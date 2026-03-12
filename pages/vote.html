@@ -56,7 +56,13 @@
                     <p style="color: var(--text-muted);">Please select one candidate for the President of the UCSC Student Union.</p>
                 </div>
 
-                <div class="candidate-grid">
+                <!-- Candidate Search -->
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="candidateSearch" class="search-input" placeholder="Search by name or manifesto...">
+                </div>
+
+                <div class="candidate-grid" id="candidateGrid">
                     <!-- Candidate 1 -->
                     <div class="card candidate-card">
                         <div class="candidate-img">
@@ -93,6 +99,40 @@
 
     <script src="../js/script.js"></script>
     <script>
+        // Search Functionality
+        const searchInput = document.getElementById('candidateSearch');
+        const candidateCards = document.querySelectorAll('.candidate-card');
+        const candidateGrid = document.getElementById('candidateGrid');
+
+        // Create "No Results" element
+        const noResults = document.createElement('div');
+        noResults.id = 'noResults';
+        noResults.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted); display: none;';
+        noResults.innerHTML = `
+            <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+            <p style="font-size: 1.1rem;">No candidates found matching your search.</p>
+        `;
+        candidateGrid.appendChild(noResults);
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            let hasMatch = false;
+
+            candidateCards.forEach(card => {
+                const name = card.querySelector('.candidate-name').textContent.toLowerCase();
+                const manifesto = card.querySelector('.manifesto').textContent.toLowerCase();
+                
+                if (name.includes(query) || manifesto.includes(query)) {
+                    card.style.display = 'block';
+                    hasMatch = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            noResults.style.display = hasMatch ? 'none' : 'block';
+        });
+
         // Inline script for demonstration
         document.querySelectorAll('.vote-btn').forEach(button => {
             button.addEventListener('click', () => {

@@ -6,6 +6,8 @@
     <title>Results - UCSC Election Portal</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -53,53 +55,128 @@
             <div class="content-padding">
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Live Election Results</h2>
-                    <p style="color: var(--text-muted);">Real-time standings for the UCSC Student Union President election.</p>
+                    <p style="color: var(--text-muted);">Real-time standings for the UCSC Student Union election.</p>
                 </div>
 
-                <div class="card">
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>
-                        
-                        <!-- Candidate 1 -->
-                        <div class="result-item">
-                            <div class="result-info">
-                                <span>Amara Perera</span>
-                                <span>342 Votes (40.2%)</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 40.2%;"></div>
-                            </div>
+                <!-- Winners Overview Section -->
+                <div style="margin-bottom: 3rem;">
+                    <h3 style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Election Winners</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <!-- President Winner -->
+                        <div class="card winner-card" style="text-align: center; border: 2px solid var(--primary); background: linear-gradient(to bottom, #ffffff, #f5f3ff); position: relative; overflow: hidden;">
+                            <div class="crown-icon" style="color: #f59e0b; font-size: 1.5rem; margin-bottom: 0.5rem;"><i class="fas fa-crown"></i></div>
+                            <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">President</h4>
+                            <p style="font-weight: 700; font-size: 1.1rem; color: var(--primary);">Amara Perera</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">342 Votes</p>
                         </div>
-
-                        <!-- Candidate 2 -->
-                        <div class="result-item">
-                            <div class="result-info">
-                                <span>Kasun Silva</span>
-                                <span>285 Votes (33.5%)</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 33.5%; background: linear-gradient(to right, #64748b, #94a3b8);"></div>
-                            </div>
+                        <!-- Secretary Winner -->
+                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
+                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
+                            <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Secretary</h4>
+                            <p style="font-weight: 700; font-size: 1.1rem;">Dinith Perera</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">150 Votes</p>
                         </div>
-
-                        <!-- Candidate 3 -->
-                        <div class="result-item">
-                            <div class="result-info">
-                                <span>Nimmi Fernando</span>
-                                <span>223 Votes (26.3%)</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 26.3%; background: linear-gradient(to right, #10b981, #34d399);"></div>
-                            </div>
+                        <!-- Treasurer Winner -->
+                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
+                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
+                            <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Treasurer</h4>
+                            <p style="font-weight: 700; font-size: 1.1rem;">Kavinda Ratnayake</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">185 Votes</p>
                         </div>
-                    </div>
-
-                    <div style="padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">
-                            <i class="fas fa-info-circle"></i> Results are updated every 5 minutes. Total votes cast: 850
-                        </p>
+                        <!-- PR Winner -->
+                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
+                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
+                            <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Public Relations</h4>
+                            <p style="font-weight: 700; font-size: 1.1rem;">Malith Perera</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">210 Votes</p>
+                        </div>
+                        <!-- Year 1 Winner -->
+                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
+                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
+                            <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Year 1 Rep</h4>
+                            <p style="font-weight: 700; font-size: 1.1rem;">Candidate A</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">120 Votes</p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Main Result: Presidential -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.25rem;">Presidential Category</h3>
+                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.4rem 1rem; border-radius: 2rem; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2);">
+                            <i class="fas fa-crown"></i> Winner: Amara Perera
+                        </span>
+                    </div>
+                    
+                    <div style="height: 280px; width: 100%; margin-bottom: 2rem; background: #f8fafc; border-radius: 12px; padding: 1.5rem; position: relative;">
+                        <div id="votesChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div class="result-item" style="padding: 1rem; background: rgba(99, 102, 241, 0.05); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.1);">
+                            <div class="result-info">
+                                <span><strong>Amara Perera</strong></span>
+                                <span style="font-weight: 700; color: var(--primary);">342 Votes</span>
+                            </div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 40.2%;"></div></div>
+                        </div>
+                        <div class="result-item" style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <div class="result-info"><span>Kasun Silva</span><span>285 Votes</span></div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 33.5%; background: #64748b;"></div></div>
+                        </div>
+                        <div class="result-item" style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <div class="result-info"><span>Nimmi Fernando</span><span>223 Votes</span></div>
+                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 26.3%; background: #10b981;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Results Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                    <!-- Year 1 -->
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Year 1 Representative</h3>
+                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
+                            <div id="year1Chart" class="chart-animate" style="width: 100%; height: 100%;"></div>
+                        </div>
+                        <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Candidate A</strong></span><span>120 Votes</span></div>
+                    </div>
+
+                    <!-- Secretary -->
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Secretary</h3>
+                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
+                            <div id="secretaryChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
+                        </div>
+                        <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Dinith Perera</strong></span><span>150 Votes</span></div>
+                    </div>
+
+                    <!-- Treasurer -->
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Treasurer</h3>
+                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
+                            <div id="treasurerChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
+                        </div>
+                        <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Kavinda Ratnayake</strong></span><span>185 Votes</span></div>
+                    </div>
+
+                    <!-- Public Relations -->
+                    <div class="card">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Public Relations</h3>
+                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
+                            <div id="prChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
+                        </div>
+                        <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Malith Perera</strong></span><span>210 Votes</span></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Results are updated every 5 minutes. Total votes cast: 850
+                    </p>
+                </div>
+            </div>
             </div>
         </main>
     </div>
