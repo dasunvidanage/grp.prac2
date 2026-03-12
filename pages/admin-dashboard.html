@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box">
+                <img src="../assets/images/UCSC_logo.png" alt="UCSC Logo">
+            </div>
+            <span>UCSC Portal</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="admin-dashboard.html" class="nav-link active">
+                <i class="fas fa-user-shield"></i>
+                <span>Admin Dashboard</span>
+            </a>
+            <a href="vote.html" class="nav-link">
+                <i class="fas fa-vote-yea"></i>
+                <span>Cast Vote</span>
+            </a>
+            <a href="results.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                <span>Live Results</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" id="logout-btn" class="nav-link logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p>Manage and monitor the election process</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Admin User</span>
+                    <span class="user-role">System Administrator</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Registered</span>
+                    <h3 class="stat-value">5 Users</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Votes Cast</span>
+                    <h3 class="stat-value" id="total-votes">0</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Candidates</span>
+                    <h3 class="stat-value">3</h3>
+                </div>
+            </div>
+        </div>
+
+        <section class="dashboard-section" style="margin-top: 2rem;">
+            <div class="section-header">
+                <h2>Quick Overview</h2>
+            </div>
+            <div class="card">
+                <p style="color: var(--text-muted);">The election is currently <strong>Active</strong>. As an admin, you have full control over the system.</p>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button class="btn-sleek" onclick="window.location.href='results.html'">
+                        <i class="fas fa-eye"></i> View Live Results
+                    </button>
+                    <button class="btn-sleek" style="background: var(--secondary);" onclick="alert('Management tools coming soon!')">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/script.js"></script>
+    <script>
+        // Specific logic for admin dashboard stats
+        async function fetchAdminStats() {
+            try {
+                const res = await fetch('http://127.0.0.1:3000/api/results');
+                const results = await res.json();
+                const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
+                document.getElementById('total-votes').textContent = totalVotes;
+            } catch (err) {
+                console.error('Error fetching stats:', err);
+            }
+        }
+        fetchAdminStats();
+    </script>
+</body>
+</html>

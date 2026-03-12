@@ -6,104 +6,115 @@
     <title>Results - UCSC Election Portal</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>UCSC Election</h2>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box">
+                <img src="../assets/images/UCSC_logo.png" alt="UCSC Logo">
             </div>
-            <ul class="nav-links">
-                <li class="nav-item">
-                    <a href="dashboard.html" class="nav-link">
-                        <i class="fas fa-chart-line"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="vote.html" class="nav-link">
-                        <i class="fas fa-vote-yea"></i> Vote
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="results.html" class="nav-link active">
-                        <i class="fas fa-poll-h"></i> Results
-                    </a>
-                </li>
-                <li class="nav-item" style="margin-top: 2rem;">
-                    <a href="../index.html" class="nav-link">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
-                </li>
-            </ul>
-        </aside>
+            <span>UCSC Portal</span>
+        </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="navbar">
-                <div class="navbar-title">
-                    <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">UCSC Election Portal</h1>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="admin-dashboard.html" class="nav-link admin-only" style="display: none;">
+                <i class="fas fa-user-shield"></i>
+                <span>Admin Dashboard</span>
+            </a>
+            <a href="vote.html" class="nav-link">
+                <i class="fas fa-vote-yea"></i>
+                <span>Cast Vote</span>
+            </a>
+            <a href="results.html" class="nav-link active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Live Results</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" id="logout-btn" class="nav-link logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Live Election Results</h1>
+                <p>Real-time standings for the election</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span class="user-role">Student</span>
                 </div>
-                <div class="user-info" style="display: flex; align-items: center;">
-                    <span style="font-weight: 600; margin-right: 1rem; color: #64748b;">Welcome, 2022CS001</span>
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">JD</div>
-                </div>
-            </header>
-
-            <div class="content-padding">
-                <div style="margin-bottom: 2rem;">
-                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Live Election Results</h2>
-                    <p style="color: var(--text-muted);">Real-time standings for the UCSC Student Union President election.</p>
-                </div>
-
-                <div class="card">
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>
-                        
-                        <!-- Candidate 1 -->
-                        <div class="result-item">
-                            <div class="result-info">
-                                <span>Amara Perera</span>
-                                <span>342 Votes (40.2%)</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 40.2%;"></div>
-                            </div>
-                        </div>
-
-                        <!-- Candidate 2 -->
-                        <div class="result-item">
-                            <div class="result-info">
-                                <span>Kasun Silva</span>
-                                <span>285 Votes (33.5%)</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 33.5%; background: linear-gradient(to right, #64748b, #94a3b8);"></div>
-                            </div>
-                        </div>
-
-                        <!-- Candidate 3 -->
-                        <div class="result-item">
-                            <div class="result-info">
-                                <span>Nimmi Fernando</span>
-                                <span>223 Votes (26.3%)</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: 26.3%; background: linear-gradient(to right, #10b981, #34d399);"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">
-                            <i class="fas fa-info-circle"></i> Results are updated every 5 minutes. Total votes cast: 850
-                        </p>
-                    </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
                 </div>
             </div>
-        </main>
-    </div>
+        </header>
+
+        <div class="card">
+            <div id="results-container" style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>
+                <p>Loading results...</p>
+            </div>
+
+            <div style="padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
+                <p id="total-votes-text" style="color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Results are updated in real-time.
+                </p>
+            </div>
+        </div>
+    </main>
 
     <script src="../js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchResults);
+
+        async function fetchResults() {
+            const container = document.getElementById('results-container');
+            const totalText = document.getElementById('total-votes-text');
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/results');
+                const results = await response.json();
+
+                const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
+                totalText.innerHTML = `<i class="fas fa-info-circle"></i> Results are updated in real-time. Total votes cast: ${totalVotes}`;
+
+                container.innerHTML = '<h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>';
+                
+                results.forEach(res => {
+                    const percentage = totalVotes > 0 ? ((res.vote_count / totalVotes) * 100).toFixed(1) : 0;
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    item.innerHTML = `
+                        <div class="result-info">
+                            <span>${res.name}</span>
+                            <span>${res.vote_count} Votes (${percentage}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+
+            } catch (err) {
+                container.innerHTML = '<p>Error loading results.</p>';
+            }
+        }
+    </script>
 </body>
 </html>
