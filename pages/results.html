@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>UCSC Election</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="vote.html" class="nav-link">
+                        <i class="fas fa-vote-yea"></i> Vote
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="results.html" class="nav-link active">
+                        <i class="fas fa-poll-h"></i> Results
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 2rem;">
+                    <a href="../index.html" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="navbar">
+                <div class="navbar-title">
+                    <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">UCSC Election Portal</h1>
+                </div>
+                <div class="user-info" style="display: flex; align-items: center;">
+                    <span style="font-weight: 600; margin-right: 1rem; color: #64748b;">Welcome, 2022CS001</span>
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">JD</div>
+                </div>
+            </header>
+
+            <div class="content-padding">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Live Election Results</h2>
+                    <p style="color: var(--text-muted);">Real-time standings for the UCSC Student Union President election.</p>
+                </div>
+
+                <div class="card">
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>
+                        
+                        <!-- Candidate 1 -->
+                        <div class="result-item">
+                            <div class="result-info">
+                                <span>Amara Perera</span>
+                                <span>342 Votes (40.2%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 40.2%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Candidate 2 -->
+                        <div class="result-item">
+                            <div class="result-info">
+                                <span>Kasun Silva</span>
+                                <span>285 Votes (33.5%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 33.5%; background: linear-gradient(to right, #64748b, #94a3b8);"></div>
+                            </div>
+                        </div>
+
+                        <!-- Candidate 3 -->
+                        <div class="result-item">
+                            <div class="result-info">
+                                <span>Nimmi Fernando</span>
+                                <span>223 Votes (26.3%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 26.3%; background: linear-gradient(to right, #10b981, #34d399);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> Results are updated every 5 minutes. Total votes cast: 850
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/script.js"></script>
+</body>
+</html>

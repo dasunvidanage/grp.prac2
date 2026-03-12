@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>UCSC Election</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link active">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="vote.html" class="nav-link">
+                        <i class="fas fa-vote-yea"></i> Vote
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="results.html" class="nav-link">
+                        <i class="fas fa-poll-h"></i> Results
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 2rem;">
+                    <a href="../index.html" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="navbar">
+                <div class="navbar-title">
+                    <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">UCSC Election Portal</h1>
+                </div>
+                <div class="user-info" style="display: flex; align-items: center;">
+                    <span style="font-weight: 600; margin-right: 1rem; color: #64748b;">Welcome, 2022CS001</span>
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">JD</div>
+                </div>
+            </header>
+
+            <div class="content-padding">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Welcome to the Dashboard</h2>
+                    <p style="color: var(--text-muted);">Stay updated with the latest election progress and cast your vote securely.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="color: var(--text-muted); font-weight: 600;">Election Status</span>
+                            <div style="width: 40px; height: 40px; background-color: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-circle-check"></i>
+                            </div>
+                        </div>
+                        <h3 style="font-size: 1.5rem; color: var(--success);">Active</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Ends in 3 days, 4 hours</p>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="color: var(--text-muted); font-weight: 600;">Total Candidates</span>
+                            <div style="width: 40px; height: 40px; background-color: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <h3 style="font-size: 1.5rem;">12</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Across all categories</p>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="color: var(--text-muted); font-weight: 600;">Voter Participation</span>
+                            <div style="width: 40px; height: 40px; background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                        </div>
+                        <h3 style="font-size: 1.5rem;">68%</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">850 votes cast</p>
+                    </div>
+                </div>
+
+                <div class="card" style="display: flex; align-items: center; justify-content: space-between; padding: 2rem;">
+                    <div>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Ready to make your choice?</h3>
+                        <p style="color: var(--text-muted);">Your vote is anonymous and secure. Review the candidates and cast your vote.</p>
+                    </div>
+                    <a href="vote.html" class="btn-primary" style="padding: 1rem 2rem;">Quick Vote <i class="fas fa-bolt" style="margin-left: 0.5rem;"></i></a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>UCSC Election</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="vote.html" class="nav-link active">
+                        <i class="fas fa-vote-yea"></i> Vote
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="results.html" class="nav-link">
+                        <i class="fas fa-poll-h"></i> Results
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 2rem;">
+                    <a href="../index.html" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="navbar">
+                <div class="navbar-title">
+                    <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">UCSC Election Portal</h1>
+                </div>
+                <div class="user-info" style="display: flex; align-items: center;">
+                    <span style="font-weight: 600; margin-right: 1rem; color: #64748b;">Welcome, 2022CS001</span>
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">JD</div>
+                </div>
+            </header>
+
+            <div class="content-padding">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Cast Your Vote</h2>
+                    <p style="color: var(--text-muted);">Please select one candidate for the President of the UCSC Student Union.</p>
+                </div>
+
+                <div class="candidate-grid">
+                    <!-- Candidate 1 -->
+                    <div class="card candidate-card">
+                        <div class="candidate-img">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3 class="candidate-name">Amara Perera</h3>
+                        <p class="manifesto">"Empowering students through technology and transparency. My goal is to bridge the gap between administration and the student body."</p>
+                        <button class="btn-primary vote-btn" data-name="Amara Perera" style="width: 100%;">Vote for Amara</button>
+                    </div>
+
+                    <!-- Candidate 2 -->
+                    <div class="card candidate-card">
+                        <div class="candidate-img">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3 class="candidate-name">Kasun Silva</h3>
+                        <p class="manifesto">"Prioritizing mental health and career development. I will work towards more internships and better campus facilities for everyone."</p>
+                        <button class="btn-primary vote-btn" data-name="Kasun Silva" style="width: 100%;">Vote for Kasun</button>
+                    </div>
+
+                    <!-- Candidate 3 -->
+                    <div class="card candidate-card">
+                        <div class="candidate-img">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3 class="candidate-name">Nimmi Fernando</h3>
+                        <p class="manifesto">"Inclusivity and innovation. I believe in a diverse student union where every voice is heard and acted upon."</p>
+                        <button class="btn-primary vote-btn" data-name="Nimmi Fernando" style="width: 100%;">Vote for Nimmi</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script>
+        // Inline script for demonstration
+        document.querySelectorAll('.vote-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const name = button.getAttribute('data-name');
+                if(confirm(`Are you sure you want to vote for ${name}?`)) {
+                    alert('Vote recorded successfully! Redirecting to results...');
+                    window.location.href = 'results.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
