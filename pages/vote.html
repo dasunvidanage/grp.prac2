@@ -89,7 +89,7 @@
             }
 
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/candidates');
+                const response = await fetch('http://localhost:3000/api/candidates');
                 const candidates = await response.json();
 
                 container.innerHTML = '';
@@ -98,7 +98,7 @@
                     card.className = 'card candidate-card';
                     card.innerHTML = `
                         <div class="candidate-img">
-                            <i class="fas fa-user"></i>
+                            <img src="..${cand.photo}" alt="${cand.name}" onerror="this.innerHTML='<i class=\"fas fa-user\"></i>'">
                         </div>
                         <h3 class="candidate-name">${cand.name}</h3>
                         <p class="manifesto">${cand.manifesto}</p>
@@ -125,10 +125,13 @@
         async function submitVote(candidate_id) {
             const user = JSON.parse(localStorage.getItem('user'));
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/vote', {
+                const res = await fetch('http://localhost:3000/api/vote', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_id: user.student_id, candidate_id })
+                    body: JSON.stringify({ 
+                        studentId: user.student_id, 
+                        candidateId: parseInt(candidate_id) 
+                    })
                 });
                 const data = await res.json();
                 if (res.ok) {
@@ -137,7 +140,7 @@
                     alert('Vote cast successfully!');
                     window.location.href = 'results.html';
                 } else {
-                    alert(data.error);
+                    alert(data.error || 'Failed to cast vote');
                 }
             } catch (err) {
                 alert('Failed to submit vote.');

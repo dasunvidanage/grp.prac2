@@ -87,7 +87,7 @@
             const totalText = document.getElementById('total-votes-text');
 
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/results');
+                const response = await fetch('http://localhost:3000/api/results');
                 const results = await response.json();
 
                 const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
