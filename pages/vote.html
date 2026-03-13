@@ -167,7 +167,7 @@
             await startCountdown();
 
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/candidates');
+                const response = await fetch('http://127.0.0.1:3000/api/candidates', { credentials: 'include' });
                 const candidates = await response.json();
 
                 container.innerHTML = '';
@@ -194,7 +194,7 @@
 
         async function startCountdown() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/admin/settings');
+                const res = await fetch('http://127.0.0.1:3000/api/admin/settings', { credentials: 'include' });
                 const settings = await res.json();
                 
                 if (settings.voting_open !== '1') {
@@ -276,6 +276,7 @@
                 const res = await fetch('http://127.0.0.1:3000/api/vote', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({ student_id: user.student_id, candidate_id })
                 });
                 const data = await res.json();

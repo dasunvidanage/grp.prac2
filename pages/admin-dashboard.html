@@ -161,9 +161,10 @@
                 </button>
             </div>
             <div class="control-group">
-                <button id="reset-votes-btn" class="btn-modern" style="background: #ef4444; color: white;">
-                    <i class="fas fa-redo"></i> Reset
-                </button>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label style="font-weight: 600; color: #374151;">Duration (mins):</label>
+                    <input type="number" id="duration-input" class="flatpickr-input-custom" style="width: 80px;" placeholder="Mins" value="60">
+                </div>
             </div>
             <div class="control-group">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -171,6 +172,16 @@
                     <input type="text" id="deadline-picker" class="flatpickr-input-custom" placeholder="Select Deadline">
                     <button id="update-deadline-btn" class="btn-modern" style="background: #10b981; color: white;">Apply</button>
                 </div>
+            </div>
+            <div class="control-group">
+                <div id="countdown-timer" style="font-size: 1.2rem; font-weight: 700; color: #ef4444; min-width: 150px;">
+                    Time Left: --:--:--
+                </div>
+            </div>
+            <div class="control-group">
+                <button id="reset-votes-btn" class="btn-modern" style="background: #ef4444; color: white;">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
             </div>
             <div class="control-group" style="margin-left: auto;">
                 <button id="export-results-btn" class="btn-modern" style="background: #f3f4f6; color: #374151;">
@@ -296,6 +307,7 @@
     <script src="../js/script.js"></script>
     <script>
         let deadlinePicker;
+        let countdownInterval;
 
         async function initAdminDashboard() {
             // Initialize Flatpickr
@@ -304,22 +316,25 @@
                 dateFormat: "Y-m-d H:i",
                 time_24hr: true,
                 minDate: "today",
-                animate: true // Smooth animation
+                animate: true
             });
 
             await fetchStats();
             await fetchStudents();
             await fetchSettings();
             await fetchCandidatesAdmin();
+            
+            // Start local countdown update
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(updateCountdownUI, 1000);
         }
 
         async function fetchStats() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/results');
+                const res = await fetch('http://127.0.0.1:3000/api/results', { credentials: 'include' });
                 const results = await res.json();
                 const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
                 document.getElementById('stat-total-votes').textContent = totalVotes;
-
                 render3DChart(results);
             } catch (err) { console.error(err); }
         }
@@ -331,13 +346,7 @@
             Highcharts.chart('results-3d-container', {
                 chart: {
                     type: 'column',
-                    options3d: {
-                        enabled: true,
-                        alpha: 15,
-                        beta: 15,
-                        depth: 50,
-                        viewDistance: 25
-                    },
+                    options3d: { enabled: true, alpha: 15, beta: 15, depth: 50, viewDistance: 25 },
                     backgroundColor: 'transparent'
                 },
                 title: { text: null },
@@ -351,18 +360,14 @@
                         colors: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
                     }
                 },
-                series: [{
-                    name: 'Votes',
-                    data: data,
-                    showInLegend: false
-                }],
+                series: [{ name: 'Votes', data: data, showInLegend: false }],
                 credits: { enabled: false }
             });
         }
 
         async function fetchStudents() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/admin/students');
+                const res = await fetch('http://127.0.0.1:3000/api/admin/students', { credentials: 'include' });
                 const students = await res.json();
                 document.getElementById('stat-total-students').textContent = students.length;
                 const totalVotes = students.filter(s => s.has_voted).length;
@@ -383,37 +388,91 @@
             } catch (err) { console.error(err); }
         }
 
+        let currentSettings = {};
+
         async function fetchSettings() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/admin/settings');
-                const settings = await res.json();
+                const res = await fetch('http://127.0.0.1:3000/api/admin/settings', { credentials: 'include' });
+                currentSettings = await res.json();
                 
-                const votingOpen = settings.voting_open === '1';
+                const votingOpen = currentSettings.voting_open === '1';
                 const btn = document.getElementById('toggle-voting-btn');
                 btn.innerHTML = votingOpen ? '<i class="fas fa-stop-circle"></i> Stop Voting' : '<i class="fas fa-play-circle"></i> Start Voting';
                 btn.style.background = votingOpen ? '#f59e0b' : 'var(--primary)';
                 btn.onclick = () => toggleVoting(!votingOpen);
 
-                if (settings.voting_deadline) {
-                    deadlinePicker.setDate(new Date(settings.voting_deadline));
+                if (currentSettings.voting_deadline) {
+                    deadlinePicker.setDate(new Date(currentSettings.voting_deadline));
                 }
+                updateCountdownUI();
             } catch (err) { console.error(err); }
+        }
+
+        function updateCountdownUI() {
+            const timerEl = document.getElementById('countdown-timer');
+            if (!currentSettings.voting_deadline || currentSettings.voting_open !== '1') {
+                timerEl.textContent = 'Voting Closed';
+                return;
+            }
+
+            const deadline = new Date(currentSettings.voting_deadline).getTime();
+            const now = new Date().getTime();
+            const distance = deadline - now;
+
+            if (distance < 0) {
+                timerEl.textContent = 'Election Ended';
+                // Automatically stop voting if deadline passed
+                if (currentSettings.voting_open === '1') {
+                    // We could trigger a stop call here, but let's just show the status
+                }
+                return;
+            }
+
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            timerEl.textContent = `Time Left: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         async function toggleVoting(open) {
             try {
+                // If starting voting, automatically set deadline based on duration if picker is empty
+                if (open) {
+                    const durationMins = parseInt(document.getElementById('duration-input').value) || 60;
+                    const newDeadline = new Date(Date.now() + durationMins * 60000).toISOString();
+                    
+                    // Update deadline first
+                    await fetch('http://127.0.0.1:3000/api/admin/update-deadline', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ deadline: newDeadline })
+                    });
+                }
+
                 const res = await fetch('http://127.0.0.1:3000/api/admin/toggle-voting', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({ status: open ? '1' : '0' })
                 });
-                if (res.ok) { fetchSettings(); }
-            } catch (err) { alert('Action failed'); }
+                
+                if (res.ok) { 
+                    fetchSettings(); 
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Action failed');
+                }
+            } catch (err) { 
+                console.error(err);
+                alert('Action failed'); 
+            }
         }
 
         document.getElementById('reset-votes-btn').onclick = async () => {
             if (!confirm('Are you sure? This resets everything!')) return;
-            await fetch('http://127.0.0.1:3000/api/admin/reset-votes', { method: 'POST' });
+            await fetch('http://127.0.0.1:3000/api/admin/reset-votes', { method: 'POST', credentials: 'include' });
             initAdminDashboard();
         };
 
@@ -423,14 +482,18 @@
             const res = await fetch('http://127.0.0.1:3000/api/admin/update-deadline', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ deadline: new Date(deadline).toISOString() })
             });
-            if (res.ok) alert('Deadline updated');
+            if (res.ok) {
+                alert('Deadline updated');
+                fetchSettings();
+            }
         };
 
         async function fetchCandidatesAdmin() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/candidates');
+                const res = await fetch('http://127.0.0.1:3000/api/candidates', { credentials: 'include' });
                 const candidates = await res.json();
                 const tbody = document.querySelector('#candidates-admin-table tbody');
                 tbody.innerHTML = candidates.map(c => `
@@ -448,7 +511,7 @@
 
         async function deleteCandidate(id) {
             if (!confirm('Remove candidate?')) return;
-            await fetch(`http://127.0.0.1:3000/api/candidates/${id}`, { method: 'DELETE' });
+            await fetch(`http://127.0.0.1:3000/api/candidates/${id}`, { method: 'DELETE', credentials: 'include' });
             fetchCandidatesAdmin();
         }
 
@@ -463,6 +526,7 @@
             const res = await fetch('http://127.0.0.1:3000/api/candidates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
