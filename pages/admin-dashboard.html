@@ -46,7 +46,7 @@
             border-radius: 0.5rem;
             font-weight: 500;
             color: #374151;
-            width: 220px;
+            width: 200px;
         }
         #results-3d-container {
             height: 400px;
@@ -67,6 +67,17 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-closed { background: #fee2e2; color: #991b1b; }
 
         /* Modal Styles */
         .modal {
@@ -162,30 +173,29 @@
             </div>
             <div class="control-group">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label style="font-weight: 600; color: #374151;">Duration (mins):</label>
-                    <input type="number" id="duration-input" class="flatpickr-input-custom" style="width: 80px;" placeholder="Mins" value="60">
+                    <label style="font-weight: 600; color: #374151;">Period (mins):</label>
+                    <input type="number" id="duration-input" class="flatpickr-input-custom" style="width: 70px;" value="60" min="1">
                 </div>
             </div>
             <div class="control-group">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fas fa-calendar-alt" style="color: #6b7280;"></i>
-                    <input type="text" id="deadline-picker" class="flatpickr-input-custom" placeholder="Select Deadline">
-                    <button id="update-deadline-btn" class="btn-modern" style="background: #10b981; color: white;">Apply</button>
+                    <input type="text" id="deadline-picker" class="flatpickr-input-custom" placeholder="Set Manual Deadline">
+                    <button id="update-deadline-btn" class="btn-modern" style="background: #10b981; color: white;">Set</button>
                 </div>
             </div>
-            <div class="control-group">
-                <div id="countdown-timer" style="font-size: 1.2rem; font-weight: 700; color: #ef4444; min-width: 150px;">
-                    Time Left: --:--:--
+            <div class="control-group" style="border-right: none;">
+                <div id="countdown-display" style="text-align: right;">
+                    <div id="countdown-status" class="status-badge status-closed">Voting Closed</div>
+                    <div id="countdown-timer" style="font-size: 1.4rem; font-weight: 800; color: #1f2937; font-family: monospace; margin-top: 0.2rem;">00:00:00</div>
                 </div>
             </div>
-            <div class="control-group">
+            <div class="control-group" style="margin-left: auto;">
                 <button id="reset-votes-btn" class="btn-modern" style="background: #ef4444; color: white;">
                     <i class="fas fa-redo"></i> Reset
                 </button>
-            </div>
-            <div class="control-group" style="margin-left: auto;">
-                <button id="export-results-btn" class="btn-modern" style="background: #f3f4f6; color: #374151;">
-                    <i class="fas fa-file-export"></i> Export CSV
+                <button id="export-results-btn" class="btn-modern" style="background: #f3f4f6; color: #374151; margin-left: 0.5rem;">
+                    <i class="fas fa-file-export"></i> CSV
                 </button>
             </div>
         </div>
@@ -223,7 +233,7 @@
         <!-- 3D Result Chart Section -->
         <section class="dashboard-section" style="margin-top: 2rem;">
             <div class="section-header">
-                <h2>Final Election Results</h2>
+                <h2>Live Results Visualization</h2>
             </div>
             <div class="card">
                 <div id="results-3d-container"></div>
@@ -233,7 +243,7 @@
         <!-- Registered Students Table -->
         <section class="dashboard-section" style="margin-top: 2rem;">
             <div class="section-header">
-                <h2>Voter Verification Status</h2>
+                <h2>Real-time Voter Activity</h2>
             </div>
             <div class="card">
                 <table class="data-table" id="students-table" style="width: 100%; border-collapse: collapse;">
@@ -241,8 +251,8 @@
                         <tr style="text-align: left; border-bottom: 2px solid #eee;">
                             <th style="padding: 1rem;">Student ID</th>
                             <th style="padding: 1rem;">Name</th>
-                            <th style="padding: 1rem;">Voted</th>
-                            <th style="padding: 1rem;">Time</th>
+                            <th style="padding: 1rem;">Status</th>
+                            <th style="padding: 1rem;">Timestamp</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -253,15 +263,15 @@
         <!-- Candidate Management Section -->
         <section class="dashboard-section" style="margin-top: 2rem; margin-bottom: 4rem;">
             <div class="section-header">
-                <h2>Candidate Management</h2>
+                <h2>Candidate Roster</h2>
             </div>
             <div class="card">
                 <table class="data-table" id="candidates-admin-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align: left; border-bottom: 2px solid #eee;">
-                            <th style="padding: 1rem;">Photo</th>
-                            <th style="padding: 1rem;">Name</th>
-                            <th style="padding: 1rem;">Manifesto</th>
+                            <th style="padding: 1rem;">Profile</th>
+                            <th style="padding: 1rem;">Candidate Name</th>
+                            <th style="padding: 1rem;">Slogan / Manifesto</th>
                             <th style="padding: 1rem;">Actions</th>
                         </tr>
                     </thead>
@@ -269,7 +279,7 @@
                 </table>
                 <div style="margin-top: 2rem; display: flex; justify-content: center;">
                     <button class="btn-modern" style="background: var(--primary); color: white; padding: 0.8rem 2rem;" onclick="document.getElementById('addCandidateModal').style.display='block'">
-                        <i class="fas fa-plus"></i> Add New Candidate
+                        <i class="fas fa-plus"></i> Register New Candidate
                     </button>
                 </div>
             </div>
@@ -306,11 +316,12 @@
 
     <script src="../js/script.js"></script>
     <script>
+        const API_BASE = 'http://127.0.0.1:3000/api';
         let deadlinePicker;
         let countdownInterval;
+        let currentSettings = {};
 
         async function initAdminDashboard() {
-            // Initialize Flatpickr
             deadlinePicker = flatpickr("#deadline-picker", {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
@@ -319,24 +330,32 @@
                 animate: true
             });
 
-            await fetchStats();
-            await fetchStudents();
-            await fetchSettings();
-            await fetchCandidatesAdmin();
+            await refreshData();
             
-            // Start local countdown update
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(updateCountdownUI, 1000);
+            
+            // Auto refresh stats every 30 seconds
+            setInterval(fetchStats, 30000);
+        }
+
+        async function refreshData() {
+            await Promise.all([
+                fetchStats(),
+                fetchStudents(),
+                fetchSettings(),
+                fetchCandidatesAdmin()
+            ]);
         }
 
         async function fetchStats() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/results', { credentials: 'include' });
+                const res = await fetch(`${API_BASE}/results`, { credentials: 'include' });
                 const results = await res.json();
                 const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
                 document.getElementById('stat-total-votes').textContent = totalVotes;
                 render3DChart(results);
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error('Stats error:', err); }
         }
 
         function render3DChart(results) {
@@ -346,7 +365,7 @@
             Highcharts.chart('results-3d-container', {
                 chart: {
                     type: 'column',
-                    options3d: { enabled: true, alpha: 15, beta: 15, depth: 50, viewDistance: 25 },
+                    options3d: { enabled: true, alpha: 10, beta: 15, depth: 50, viewDistance: 25 },
                     backgroundColor: 'transparent'
                 },
                 title: { text: null },
@@ -367,7 +386,7 @@
 
         async function fetchStudents() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/admin/students', { credentials: 'include' });
+                const res = await fetch(`${API_BASE}/admin/students`, { credentials: 'include' });
                 const students = await res.json();
                 document.getElementById('stat-total-students').textContent = students.length;
                 const totalVotes = students.filter(s => s.has_voted).length;
@@ -375,43 +394,49 @@
                 document.getElementById('stat-turnout').textContent = turnout + '%';
 
                 const tbody = document.querySelector('#students-table tbody');
-                tbody.innerHTML = students.map(s => `
+                tbody.innerHTML = students.slice(0, 10).map(s => `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 1rem;">${s.student_id}</td>
+                        <td style="padding: 1rem; font-weight: 500;">${s.student_id}</td>
                         <td style="padding: 1rem;">${s.name}</td>
                         <td style="padding: 1rem;">
-                            ${s.has_voted ? '<span style="color: #10b981; font-weight:600;"><i class="fas fa-check-circle"></i> Yes</span>' : '<span style="color: #ef4444;"><i class="fas fa-times-circle"></i> No</span>'}
+                            ${s.has_voted ? '<span style="color: #10b981; font-weight:600;"><i class="fas fa-check-circle"></i> Voted</span>' : '<span style="color: #9ca3af;">Pending</span>'}
                         </td>
-                        <td style="padding: 1rem; color: #666;">${s.voted_at ? new Date(s.voted_at).toLocaleString() : '-'}</td>
+                        <td style="padding: 1rem; color: #6b7280;">${s.voted_at ? new Date(s.voted_at).toLocaleString() : '-'}</td>
                     </tr>
                 `).join('');
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error('Students error:', err); }
         }
-
-        let currentSettings = {};
 
         async function fetchSettings() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/admin/settings', { credentials: 'include' });
+                const res = await fetch(`${API_BASE}/admin/settings`, { credentials: 'include' });
                 currentSettings = await res.json();
                 
                 const votingOpen = currentSettings.voting_open === '1';
                 const btn = document.getElementById('toggle-voting-btn');
+                const statusBadge = document.getElementById('countdown-status');
+
                 btn.innerHTML = votingOpen ? '<i class="fas fa-stop-circle"></i> Stop Voting' : '<i class="fas fa-play-circle"></i> Start Voting';
                 btn.style.background = votingOpen ? '#f59e0b' : 'var(--primary)';
                 btn.onclick = () => toggleVoting(!votingOpen);
+
+                statusBadge.textContent = votingOpen ? 'Voting Active' : 'Voting Closed';
+                statusBadge.className = `status-badge ${votingOpen ? 'status-active' : 'status-closed'}`;
 
                 if (currentSettings.voting_deadline) {
                     deadlinePicker.setDate(new Date(currentSettings.voting_deadline));
                 }
                 updateCountdownUI();
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error('Settings error:', err); }
         }
 
         function updateCountdownUI() {
             const timerEl = document.getElementById('countdown-timer');
+            const statusBadge = document.getElementById('countdown-status');
+
             if (!currentSettings.voting_deadline || currentSettings.voting_open !== '1') {
-                timerEl.textContent = 'Voting Closed';
+                timerEl.textContent = '00:00:00';
+                timerEl.style.color = '#9ca3af';
                 return;
             }
 
@@ -419,31 +444,29 @@
             const now = new Date().getTime();
             const distance = deadline - now;
 
-            if (distance < 0) {
-                timerEl.textContent = 'Election Ended';
-                // Automatically stop voting if deadline passed
-                if (currentSettings.voting_open === '1') {
-                    // We could trigger a stop call here, but let's just show the status
-                }
+            if (distance <= 0) {
+                timerEl.textContent = '00:00:00';
+                timerEl.style.color = '#ef4444';
+                statusBadge.textContent = 'Time Expired';
+                statusBadge.className = 'status-badge status-closed';
                 return;
             }
 
+            timerEl.style.color = '#1f2937';
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            timerEl.textContent = `Time Left: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         async function toggleVoting(open) {
             try {
-                // If starting voting, automatically set deadline based on duration if picker is empty
                 if (open) {
                     const durationMins = parseInt(document.getElementById('duration-input').value) || 60;
                     const newDeadline = new Date(Date.now() + durationMins * 60000).toISOString();
                     
-                    // Update deadline first
-                    await fetch('http://127.0.0.1:3000/api/admin/update-deadline', {
+                    await fetch(`${API_BASE}/admin/update-deadline`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         credentials: 'include',
@@ -451,7 +474,7 @@
                     });
                 }
 
-                const res = await fetch('http://127.0.0.1:3000/api/admin/toggle-voting', {
+                const res = await fetch(`${API_BASE}/admin/toggle-voting`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -459,7 +482,8 @@
                 });
                 
                 if (res.ok) { 
-                    fetchSettings(); 
+                    await fetchSettings();
+                    alert(open ? 'Election started successfully!' : 'Election stopped.');
                 } else {
                     const data = await res.json();
                     alert(data.error || 'Action failed');
@@ -471,15 +495,18 @@
         }
 
         document.getElementById('reset-votes-btn').onclick = async () => {
-            if (!confirm('Are you sure? This resets everything!')) return;
-            await fetch('http://127.0.0.1:3000/api/admin/reset-votes', { method: 'POST', credentials: 'include' });
-            initAdminDashboard();
+            if (!confirm('CRITICAL: This will wipe all cast votes and reset voter status. Continue?')) return;
+            const res = await fetch(`${API_BASE}/admin/reset-votes`, { method: 'POST', credentials: 'include' });
+            if (res.ok) {
+                alert('System reset successful.');
+                initAdminDashboard();
+            }
         };
 
         document.getElementById('update-deadline-btn').onclick = async () => {
             const deadline = document.getElementById('deadline-picker').value;
             if (!deadline) return;
-            const res = await fetch('http://127.0.0.1:3000/api/admin/update-deadline', {
+            const res = await fetch(`${API_BASE}/admin/update-deadline`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -493,25 +520,25 @@
 
         async function fetchCandidatesAdmin() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/candidates', { credentials: 'include' });
+                const res = await fetch(`${API_BASE}/candidates`, { credentials: 'include' });
                 const candidates = await res.json();
                 const tbody = document.querySelector('#candidates-admin-table tbody');
                 tbody.innerHTML = candidates.map(c => `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 1rem;"><div style="width: 40px; height: 40px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div></td>
+                        <td style="padding: 1rem;"><div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6366f1;"><i class="fas fa-user"></i></div></td>
                         <td style="padding: 1rem; font-weight: 600;">${c.name}</td>
-                        <td style="padding: 1rem; color: #666;">${c.manifesto}</td>
+                        <td style="padding: 1rem; color: #4b5563; font-size: 0.9rem;">${c.manifesto}</td>
                         <td style="padding: 1rem;">
-                            <button onclick="deleteCandidate(${c.id})" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 1.1rem;"><i class="fas fa-trash-alt"></i></button>
+                            <button onclick="deleteCandidate(${c.id})" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.5rem;"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     </tr>
                 `).join('');
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error('Candidates error:', err); }
         }
 
         async function deleteCandidate(id) {
-            if (!confirm('Remove candidate?')) return;
-            await fetch(`http://127.0.0.1:3000/api/candidates/${id}`, { method: 'DELETE', credentials: 'include' });
+            if (!confirm('Remove this candidate from the election?')) return;
+            await fetch(`${API_BASE}/candidates/${id}`, { method: 'DELETE', credentials: 'include' });
             fetchCandidatesAdmin();
         }
 
@@ -523,7 +550,7 @@
                 manifesto_full: document.getElementById('cand-manifesto-full').value,
                 campaign_points: document.getElementById('cand-points').value
             };
-            const res = await fetch('http://127.0.0.1:3000/api/candidates', {
+            const res = await fetch(`${API_BASE}/candidates`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -536,7 +563,7 @@
         };
 
         document.getElementById('export-results-btn').onclick = () => {
-            const rows = [['Student ID', 'Name', 'Voted', 'Time']];
+            const rows = [['Student ID', 'Name', 'Status', 'Voted At']];
             document.querySelectorAll('#students-table tbody tr').forEach(tr => {
                 const cols = tr.querySelectorAll('td');
                 rows.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText]);
@@ -544,9 +571,10 @@
             const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", "election_data.csv");
+            link.setAttribute("download", `election_report_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         };
 
         initAdminDashboard();
