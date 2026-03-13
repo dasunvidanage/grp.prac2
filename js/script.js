@@ -27,11 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Dynamic Data Management ---
     let electionData = {
-        presidential: { labels: ['Amara Perera', 'Kasun Silva', 'Nimmi Fernando'], values: [342, 285, 223] },
-        year1: { labels: ['Cand A', 'Cand B'], values: [120, 95] },
-        secretary: { labels: ['Dinith', 'Sanduni', 'Ishara'], values: [150, 110, 73] },
-        treasurer: { labels: ['Kavinda', 'Ruwanthi'], values: [185, 123] },
-        pr: { labels: ['Malith', 'Shehani'], values: [210, 112] }
+        presidential: { labels: ['Candidate 1', 'Candidate 6', 'Candidate 7'], values: [342, 285, 223] },
+        year1: { labels: ['Candidate 5', 'Candidate 8'], values: [120, 95] },
+        secretary: { labels: ['Candidate 2', 'Candidate 9', 'Candidate 10'], values: [150, 110, 73] },
+        treasurer: { labels: ['Candidate 3', 'Candidate 11'], values: [185, 123] },
+        pr: { labels: ['Candidate 4', 'Candidate 12'], values: [210, 112] }
     };
 
     // Initialize Google Charts
