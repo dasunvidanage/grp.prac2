@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleek Login - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+    
+    <div class="sleek-card">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <div style="width: 80px; height: 80px; background: white; border-radius: 1.25rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1); overflow: hidden; padding: 0.5rem;">
+                <img src="../assets/images/UCSC_logo.png" alt="UCSC Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+            <h2 style="font-size: 1.75rem; font-weight: 800; color: #1e293b; letter-spacing: -0.025em; margin-bottom: 0.5rem;">UCSC Portal</h2>
+            <p style="color: #64748b; font-weight: 500;">Please enter your details to sign in</p>
+        </div>
+
+        <form id="login-form">
+            <div class="input-wrapper">
+                <i class="fas fa-id-card"></i>
+                <input type="text" class="sleek-input" placeholder="Student ID (e.g. 2026CS003)" required>
+            </div>
+            
+            <div class="input-wrapper">
+                <i class="fas fa-lock"></i>
+                <input type="password" class="sleek-input" placeholder="Password" required>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; font-size: 0.875rem;">
+                <label style="display: flex; align-items: center; color: #64748b; cursor: pointer;">
+                    <input type="checkbox" style="margin-right: 0.5rem; accent-color: var(--primary);"> Remember me
+                </label>
+                <a href="#" style="color: var(--primary); font-weight: 600;">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn-sleek">
+                Sign In <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <p style="color: #64748b; font-size: 0.875rem;">
+                Need help? <a href="#" style="color: var(--primary); font-weight: 600;">Contact Support</a>
+            </p>
+            <div style="margin-top: 1.5rem;">
+                <a href="../index.html" style="color: #94a3b8; font-size: 0.875rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; transition: var(--transition);" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#94a3b8'">
+                    <i class="fas fa-chevron-left"></i> Return to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+</body>
+</html>
