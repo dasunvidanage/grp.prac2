@@ -7,6 +7,58 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Simple Modal Style */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .close-modal {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        .countdown-banner {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .confirmation-card {
+            text-align: center;
+            padding: 3rem;
+        }
+        .vote-id-badge {
+            background: #f3f4f6;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin: 1rem 0;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body class="dashboard-body">
     
@@ -26,7 +78,7 @@
             </a>
             <a href="admin-dashboard.html" class="nav-link admin-only" style="display: none;">
                 <i class="fas fa-user-shield"></i>
-                <span>Admin Dashboard</span>
+                <span>Admin</span>
             </a>
             <a href="vote.html" class="nav-link active">
                 <i class="fas fa-vote-yea"></i>
@@ -64,29 +116,55 @@
             </div>
         </header>
 
+        <!-- Countdown Timer -->
+        <div id="countdown-timer" class="countdown-banner" style="display: none;">
+            Voting ends in: <span id="time-left">--:--:--</span>
+        </div>
+
         <div id="candidate-container" class="candidate-grid">
             <!-- Dynamic candidates will be loaded here -->
             <p>Loading candidates...</p>
         </div>
     </main>
 
+    <!-- Candidate Detail Modal -->
+    <div id="candidateModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div id="modal-photo" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2 id="modal-name">Candidate Name</h2>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Manifesto</h4>
+                <p id="modal-manifesto" style="color: #444; line-height: 1.6;">Full manifesto text...</p>
+            </div>
+            <div>
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Campaign Points</h4>
+                <ul id="modal-points" style="padding-left: 1.5rem; color: #444;">
+                    <!-- Points -->
+                </ul>
+            </div>
+            <button id="modal-vote-btn" class="btn-sleek" style="width: 100%; margin-top: 2rem;">Cast Vote for this Candidate</button>
+        </div>
+    </div>
+
     <script src="../js/script.js"></script>
     <script>
+        let currentCandidateId = null;
+
         document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('candidate-container');
             const user = JSON.parse(localStorage.getItem('user'));
 
             if (user && user.has_voted) {
-                container.innerHTML = `
-                    <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                        <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;"></i>
-                        <h3>You have already voted!</h3>
-                        <p style="color: var(--text-muted); margin-top: 0.5rem;">Thank you for participating in the election.</p>
-                        <button class="btn-sleek" style="margin-top: 1.5rem;" onclick="window.location.href='results.html'">View Results</button>
-                    </div>
-                `;
+                showConfirmation(localStorage.getItem('last_vote_id') || '#UNKNOWN');
                 return;
             }
+
+            await startCountdown();
 
             try {
                 const response = await fetch('http://127.0.0.1:3000/api/candidates');
@@ -96,31 +174,101 @@
                 candidates.forEach(cand => {
                     const card = document.createElement('div');
                     card.className = 'card candidate-card';
+                    card.style.cursor = 'pointer';
                     card.innerHTML = `
                         <div class="candidate-img">
                             <i class="fas fa-user"></i>
                         </div>
                         <h3 class="candidate-name">${cand.name}</h3>
                         <p class="manifesto">${cand.manifesto}</p>
-                        <button class="btn-sleek vote-btn" style="width: 100%; margin-top: 1rem;" data-id="${cand.id}">Vote for ${cand.name.split(' ')[0]}</button>
+                        <div style="margin-top: 1rem; color: var(--primary); font-size: 0.9rem;">Click to view full manifesto</div>
                     `;
+                    card.onclick = () => openModal(cand);
                     container.appendChild(card);
-                });
-
-                // Attach vote events
-                document.querySelectorAll('.vote-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const candidate_id = btn.getAttribute('data-id');
-                        if (confirm('Are you sure you want to cast your vote for this candidate? This action cannot be undone.')) {
-                            await submitVote(candidate_id);
-                        }
-                    });
                 });
 
             } catch (err) {
                 container.innerHTML = '<p>Error loading candidates.</p>';
             }
         });
+
+        async function startCountdown() {
+            try {
+                const res = await fetch('http://127.0.0.1:3000/api/admin/settings');
+                const settings = await res.json();
+                
+                if (settings.voting_open !== '1') {
+                    document.getElementById('candidate-container').innerHTML = `
+                        <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                            <i class="fas fa-lock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                            <h3>Voting is currently closed</h3>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">Please wait for the election to begin.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const deadline = new Date(settings.voting_deadline).getTime();
+                const timerElement = document.getElementById('countdown-timer');
+                const timeLeftElement = document.getElementById('time-left');
+                
+                timerElement.style.display = 'block';
+
+                const timerFunc = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = deadline - now;
+
+                    if (distance < 0) {
+                        clearInterval(timerFunc);
+                        timeLeftElement.innerHTML = "EXPIRED";
+                        location.reload();
+                        return;
+                    }
+
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    timeLeftElement.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+
+            } catch (err) { console.error('Timer error', err); }
+        }
+
+        function openModal(cand) {
+            currentCandidateId = cand.id;
+            document.getElementById('modal-name').innerText = cand.name;
+            document.getElementById('modal-manifesto').innerText = cand.manifesto_full || cand.manifesto;
+            
+            const pointsList = document.getElementById('modal-points');
+            pointsList.innerHTML = '';
+            if (cand.campaign_points) {
+                cand.campaign_points.split(',').forEach(p => {
+                    const li = document.createElement('li');
+                    li.innerText = p.trim();
+                    pointsList.appendChild(li);
+                });
+            } else {
+                pointsList.innerHTML = '<li>General campus improvements</li>';
+            }
+
+            document.getElementById('candidateModal').style.display = 'block';
+            document.getElementById('modal-vote-btn').onclick = () => {
+                if (confirm(`Confirm vote for ${cand.name}?`)) {
+                    submitVote(cand.id);
+                }
+            };
+        }
+
+        document.querySelector('.close-modal').onclick = () => {
+            document.getElementById('candidateModal').style.display = 'none';
+        };
+
+        window.onclick = (event) => {
+            if (event.target == document.getElementById('candidateModal')) {
+                document.getElementById('candidateModal').style.display = 'none';
+            }
+        };
 
         async function submitVote(candidate_id) {
             const user = JSON.parse(localStorage.getItem('user'));
@@ -134,14 +282,33 @@
                 if (res.ok) {
                     user.has_voted = 1;
                     localStorage.setItem('user', JSON.stringify(user));
-                    alert('Vote cast successfully!');
-                    window.location.href = 'results.html';
+                    localStorage.setItem('last_vote_id', data.vote_id);
+                    document.getElementById('candidateModal').style.display = 'none';
+                    showConfirmation(data.vote_id);
                 } else {
                     alert(data.error);
                 }
             } catch (err) {
                 alert('Failed to submit vote.');
             }
+        }
+
+        function showConfirmation(voteId) {
+            const container = document.getElementById('candidate-container');
+            document.getElementById('countdown-timer').style.display = 'none';
+            container.innerHTML = `
+                <div class="card confirmation-card" style="grid-column: 1/-1;">
+                    <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 1.5rem;"></i>
+                    <h2>Vote Recorded Successfully!</h2>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Your choice has been securely saved in the system.</p>
+                    <div class="vote-id-badge">Vote ID: ${voteId}</div>
+                    <p style="font-size: 0.85rem; color: #888;">Keep this ID for your records.</p>
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+                        <button class="btn-sleek" onclick="window.location.href='results.html'">View Live Results</button>
+                        <button class="btn-sleek" style="background: var(--secondary);" onclick="window.print()">Print Receipt</button>
+                    </div>
+                </div>
+            `;
         }
     </script>
 </body>

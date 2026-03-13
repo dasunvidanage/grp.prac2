@@ -51,11 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Navigation logic
     const currentPath = window.location.pathname;
+    const segments = currentPath.split('/');
+    const currentPage = segments[segments.length - 1];
     const navLinks = document.querySelectorAll('.nav-link');
 
     navLinks.forEach(link => {
         const linkPath = link.getAttribute('href');
-        if (currentPath.includes(linkPath)) {
+        const linkSegments = linkPath.split('/');
+        const linkPage = linkSegments[linkSegments.length - 1];
+
+        if (currentPage === linkPage) {
             link.classList.add('active');
         } else {
             link.classList.remove('active');

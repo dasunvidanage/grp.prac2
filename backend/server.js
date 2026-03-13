@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const candidateRoutes = require('./routes/candidates');
 const voteRoutes = require('./routes/vote');
 const resultRoutes = require('./routes/results');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = 3000;
@@ -33,6 +34,7 @@ app.use('/api', authRoutes); // Includes /api/login
 app.use('/api/candidates', candidateRoutes);
 app.use('/api/vote', voteRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Start server
 app.listen(PORT, () => {
