@@ -34,4 +34,4 @@ Thumbs.db
 
 # Editor folders
 .vscode/
-.idea/
+.idea/backend/database/*.db
