@@ -951,31 +951,43 @@ a {
 .erc-candidates-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .erc-candidate-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.erc-candidate-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px rgba(0,0,0,0.08);
+    border-color: var(--primary);
 }
 
 .erc-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--erc-radius-avatar);
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    font-size: 12px;
+    font-weight: 700;
+    font-size: 16px;
     flex-shrink: 0;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
 }
 
-.erc-avatar.blue { background: var(--erc-avatar-blue); color: var(--erc-text-blue); }
-.erc-avatar.purple { background: var(--erc-avatar-purple); color: var(--erc-text-purple); }
-.erc-avatar.teal { background: var(--erc-avatar-teal); color: var(--erc-text-teal); }
-.erc-avatar.amber { background: var(--erc-avatar-amber); color: var(--erc-text-amber); }
+.erc-avatar.blue { background: #e0efff; color: #1a73e8; }
+.erc-avatar.purple { background: #f3efff; color: #6d4aff; }
+.erc-avatar.teal { background: #e0fcf5; color: #00897b; }
+.erc-avatar.amber { background: #fff8e1; color: #ffa000; }
 
 .erc-candidate-info {
     flex-grow: 1;
@@ -985,44 +997,64 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .erc-candidate-name-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .erc-candidate-name {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
 }
 
 .erc-leading-badge {
-    background: #EAF3DE;
-    color: var(--erc-text-success);
+    background: #e8f5e9;
+    color: #2e7d32;
     font-size: 10px;
-    padding: 2px 7px;
-    border-radius: var(--erc-radius-pill);
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .erc-percentage-label {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 800;
 }
 
 .erc-progress-track {
-    height: 6px;
-    background: var(--erc-bg-bar-track);
-    border-radius: var(--erc-radius-bar);
+    height: 10px;
+    background: #f1f3f4;
+    border-radius: 99px;
     overflow: hidden;
 }
 
 .erc-progress-fill {
     height: 100%;
-    border-radius: var(--erc-radius-bar);
-    transition: width 1s ease;
+    border-radius: 99px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, currentColor, rgba(255,255,255,0.2));
+}
+
+.erc-vote-count-meta {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.erc-vote-count-meta::before {
+    content: "•";
+    color: #cbd5e1;
 }
 
 .erc-pie-column {
@@ -1059,6 +1091,51 @@ a {
 
 @media (max-width: 768px) {
     .erc-body-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Side-by-Side Results Layout */
+.erc-results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.erc-category-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.erc-category-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--erc-bg-stat-box);
+}
+
+.erc-category-title i {
+    color: var(--primary);
+}
+
+.erc-no-data {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 1.5rem;
+    text-align: center;
+    background: var(--erc-bg-stat-box);
+    border-radius: var(--erc-radius-element);
+}
+
+@media (max-width: 900px) {
+    .erc-results-grid {
         grid-template-columns: 1fr;
     }
 }

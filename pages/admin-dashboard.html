@@ -98,6 +98,98 @@
             color: #9ca3af;
         }
         .close-modal:hover { color: #374151; }
+
+        /* Modern Voter Activity Feed */
+        .voter-activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0.5rem;
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem;
+            background: white;
+            border-radius: 1.25rem;
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInActivity 0.4s ease-out forwards;
+        }
+        .activity-item:hover {
+            transform: scale(1.01);
+            border-color: var(--primary);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        .activity-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        .activity-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .activity-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .activity-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 2px 0 0 0;
+        }
+        .activity-right {
+            text-align: right;
+        }
+        .voted-status-tag {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 0.35rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #dcfce7;
+        }
+        .voted-pulse {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            animation: pulse-green 2s infinite;
+        }
+        .activity-time {
+            display: block;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        @keyframes slideInActivity {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="dashboard-body">
@@ -221,28 +313,25 @@
             </div>
         </div>
 
-        <!-- Registered Students Table -->
+        <!-- Real-time Voter Activity Feed -->
         <section class="dashboard-section" style="margin-top: 2rem;">
-            <div class="section-header">
-                <h2>Real-time Voter Activity</h2>
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b;">Live Voting Feed</h2>
+                <div style="font-size: 0.75rem; color: #64748b; background: #f8fafc; padding: 0.4rem 0.8rem; border-radius: 99px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="voted-pulse"></div> Tracking in real-time
+                </div>
             </div>
-            <div class="card">
-                <table class="data-table" id="students-table" style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="text-align: left; border-bottom: 2px solid #eee;">
-                            <th style="padding: 1rem;">Student ID</th>
-                            <th style="padding: 1rem;">Name</th>
-                            <th style="padding: 1rem;">Status</th>
-                            <th style="padding: 1rem;">Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div id="voter-activity-container" class="voter-activity-feed">
+                <!-- Activity items injected here -->
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; background: white; border-radius: 1.5rem; border: 1px dashed #e2e8f0;">
+                    <i class="fas fa-stream" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Waiting for voting activity...</p>
+                </div>
             </div>
         </section>
 
         <!-- Candidate Management Section -->
-        <section class="dashboard-section" style="margin-top: 2rem; margin-bottom: 4rem;">
+        <section class="dashboard-section" style="margin-top: 3rem; margin-bottom: 4rem;">
             <div class="section-header">
                 <h2>Candidate Roster</h2>
             </div>
@@ -317,30 +406,36 @@
         }
 
         async function initAdminDashboard() {
-            deadlinePicker = flatpickr("#deadline-picker", {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i",
-                time_24hr: true,
-                minDate: "today",
-                animate: true
-            });
+            if (!deadlinePicker) {
+                deadlinePicker = flatpickr("#deadline-picker", {
+                    enableTime: true,
+                    dateFormat: "Y-m-d H:i",
+                    time_24hr: true,
+                    minDate: "today",
+                    animate: true
+                });
+            }
 
             await refreshData();
             
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(updateCountdownUI, 1000);
             
-            // Auto refresh stats every 30 seconds
-            setInterval(refreshData, 30000);
+            if (window.refreshInterval) clearInterval(window.refreshInterval);
+            window.refreshInterval = setInterval(refreshData, 10000);
         }
 
         async function refreshData() {
-            await Promise.all([
-                fetchStats(),
-                fetchStudents(),
-                fetchSettings(),
-                fetchCandidatesAdmin()
-            ]);
+            try {
+                await Promise.all([
+                    fetchStats(),
+                    fetchStudents(),
+                    fetchSettings(),
+                    fetchCandidatesAdmin()
+                ]);
+            } catch (err) {
+                console.error('Refresh data error:', err);
+            }
         }
 
         async function fetchStats() {
@@ -353,26 +448,61 @@
             } catch (err) { console.error('Stats error:', err); }
         }
 
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return new Date(date).toLocaleDateString();
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
         async function fetchStudents() {
             try {
                 const res = await authFetch(`${API_BASE}/admin/students`);
                 if (!res.ok) throw new Error('Failed to fetch students');
                 const students = await res.json();
+                
                 document.getElementById('stat-total-students').textContent = students.length;
-                const totalVotes = students.filter(s => s.has_voted).length;
-                const turnout = students.length > 0 ? ((totalVotes / students.length) * 100).toFixed(1) : 0;
+                const votedStudents = students.filter(s => s.has_voted);
+                const totalVotesCount = votedStudents.length;
+                const turnout = students.length > 0 ? ((totalVotesCount / students.length) * 100).toFixed(1) : 0;
                 document.getElementById('stat-turnout').textContent = turnout + '%';
 
-                const tbody = document.querySelector('#students-table tbody');
-                tbody.innerHTML = students.slice(0, 10).map(s => `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 1rem; font-weight: 500;">${s.student_id}</td>
-                        <td style="padding: 1rem;">${s.name}</td>
-                        <td style="padding: 1rem;">
-                            ${s.has_voted ? '<span style="color: #10b981; font-weight:600;"><i class="fas fa-check-circle"></i> Voted</span>' : '<span style="color: #9ca3af;">Pending</span>'}
-                        </td>
-                        <td style="padding: 1rem; color: #6b7280;">${s.voted_at ? new Date(s.voted_at).toLocaleString() : '-'}</td>
-                    </tr>
+                const container = document.getElementById('voter-activity-container');
+                
+                if (votedStudents.length === 0) {
+                    container.innerHTML = `
+                        <div style="padding: 3rem; text-align: center; color: #94a3b8; background: white; border-radius: 1.5rem; border: 1px dashed #e2e8f0;">
+                            <i class="fas fa-stream" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Waiting for voting activity...</p>
+                        </div>`;
+                    return;
+                }
+
+                const sortedVoted = [...votedStudents].sort((a, b) => new Date(b.voted_at) - new Date(a.voted_at));
+
+                container.innerHTML = sortedVoted.slice(0, 8).map((s, index) => `
+                    <div class="activity-item" style="animation-delay: ${index * 0.05}s">
+                        <div class="activity-left">
+                            <div class="activity-avatar">
+                                ${getInitials(s.name)}
+                            </div>
+                            <div class="activity-info">
+                                <h4>${s.name}</h4>
+                                <p>Student ID: ${s.student_id}</p>
+                            </div>
+                        </div>
+                        <div class="activity-right">
+                            <span class="voted-status-tag">
+                                <div class="voted-pulse"></div> Voted
+                            </span>
+                            <span class="activity-time">${formatTimeAgo(s.voted_at)}</span>
+                        </div>
+                    </div>
                 `).join('');
             } catch (err) { console.error('Students error:', err); }
         }
@@ -394,7 +524,7 @@
                 statusBadge.textContent = votingOpen ? 'Voting Active' : 'Voting Closed';
                 statusBadge.className = `status-badge ${votingOpen ? 'status-active' : 'status-closed'}`;
 
-                if (currentSettings.voting_deadline) {
+                if (currentSettings.voting_deadline && deadlinePicker) {
                     deadlinePicker.setDate(new Date(currentSettings.voting_deadline));
                 }
                 updateCountdownUI();
@@ -460,10 +590,19 @@
 
         document.getElementById('reset-votes-btn').onclick = async () => {
             if (!confirm('CRITICAL: This will wipe all cast votes. Continue?')) return;
-            const res = await authFetch(`${API_BASE}/admin/reset-votes`, { method: 'POST' });
-            if (res.ok) {
-                initAdminDashboard();
-            }
+            try {
+                const res = await authFetch(`${API_BASE}/admin/reset-votes`, { method: 'POST' });
+                if (res.ok) {
+                    document.getElementById('stat-total-votes').textContent = '0';
+                    document.getElementById('stat-turnout').textContent = '0%';
+                    document.getElementById('voter-activity-container').innerHTML = `
+                        <div style="padding: 3rem; text-align: center; color: #94a3b8; background: white; border-radius: 1.5rem; border: 1px dashed #e2e8f0;">
+                            <i class="fas fa-stream" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Waiting for voting activity...</p>
+                        </div>`;
+                    await refreshData();
+                }
+            } catch (err) { console.error('Reset error:', err); }
         };
 
         document.getElementById('update-deadline-btn').onclick = async () => {

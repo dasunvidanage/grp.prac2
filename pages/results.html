@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
 </head>
 <body class="dashboard-body">
     
@@ -55,8 +53,8 @@
         <div class="election-results-card">
             <div class="erc-header">
                 <div class="erc-title-group">
-                    <h2 id="erc-election-title">Rotaract Club — Board Elections 2025</h2>
-                    <p id="erc-position-subtitle">President position · Voting in progress</p>
+                    <h2 id="erc-election-title">UCSC Student Union — Board Elections 2026</h2>
+                    <p id="erc-position-subtitle">Executive Committee · Voting in progress</p>
                 </div>
                 <div id="erc-status-badge" class="erc-status-badge">
                     <div class="erc-pulse-dot"></div>
@@ -80,21 +78,21 @@
                 </div>
             </div>
 
-            <div class="erc-body-grid">
-                <!-- Left Column: Candidates -->
-                <div class="erc-candidates-column">
-                    <span class="erc-section-label">Candidates</span>
-                    <div id="erc-candidates-list" class="erc-candidates-list">
+            <!-- Side-by-Side Results Grid -->
+            <div class="erc-results-grid">
+                <!-- CS Candidates Column -->
+                <div class="erc-category-column">
+                    <h3 class="erc-category-title"><i class="fas fa-laptop-code"></i> Computer Science (CS)</h3>
+                    <div id="cs-candidates-list" class="erc-candidates-list">
                         <!-- Candidates injected here -->
                     </div>
                 </div>
 
-                <!-- Right Column: Pie Chart -->
-                <div class="erc-pie-column">
-                    <span class="erc-section-label">Vote share</span>
-                    <div id="erc-pie-chart-container" style="height: 220px;"></div>
-                    <div id="erc-chart-legend" class="erc-chart-legend">
-                        <!-- Legend injected here -->
+                <!-- IS Candidates Column -->
+                <div class="erc-category-column">
+                    <h3 class="erc-category-title"><i class="fas fa-network-wired"></i> Information Systems (IS)</h3>
+                    <div id="is-candidates-list" class="erc-candidates-list">
+                        <!-- Candidates injected here -->
                     </div>
                 </div>
             </div>
@@ -115,7 +113,6 @@
                 const studentId = user.student_id || user.id || "";
                 const fetchOptions = { credentials: 'include' };
 
-                // Fetch public data first
                 const [settingsRes, resultsRes] = await Promise.all([
                     fetch(`${API_BASE}/admin/settings`, fetchOptions),
                     fetch(`${API_BASE}/results`, fetchOptions)
@@ -128,12 +125,10 @@
                 const settings = await settingsRes.json();
                 const results = await resultsRes.json();
 
-                // Store for the 1s interval timer
                 electionDeadline = settings.voting_deadline;
                 isVotingOpen = settings.voting_open === '1';
 
-                // Try fetching student count (only if admin)
-                let totalStudents = 100; // Default placeholder
+                let totalStudents = 100; 
                 if (user.role === 'admin') {
                     try {
                         const studentsRes = await fetch(`${API_BASE}/admin/students`, {
@@ -164,7 +159,6 @@
             document.getElementById('erc-total-votes').textContent = totalVotes;
             document.getElementById('erc-turnout').textContent = turnout + '%';
             
-            // Update Status Badge
             const statusBadge = document.getElementById('erc-status-badge');
             const isOpen = settings.voting_open === '1';
             const deadline = new Date(settings.voting_deadline).getTime();
@@ -185,12 +179,26 @@
                 statusBadge.style.color = '#A32D2D';
             }
 
-            // Render Candidates List
-            const listContainer = document.getElementById('erc-candidates-list');
-            const sorted = [...results].sort((a,b) => b.vote_count - a.vote_count);
+            const csResults = results.filter(r => r.category === 'CS').sort((a,b) => b.vote_count - a.vote_count);
+            const isResults = results.filter(r => r.category === 'IS').sort((a,b) => b.vote_count - a.vote_count);
+
+            renderCategoryResults('cs', csResults);
+            renderCategoryResults('is', isResults);
+
+            runCountdown();
+        }
+
+        function renderCategoryResults(prefix, catResults) {
+            const catTotalVotes = catResults.reduce((sum, r) => sum + r.vote_count, 0);
+            const listContainer = document.getElementById(`${prefix}-candidates-list`);
             
-            listContainer.innerHTML = sorted.map((c, i) => {
-                const pct = totalVotes > 0 ? ((c.vote_count / totalVotes) * 100).toFixed(0) : 0;
+            if (catResults.length === 0) {
+                listContainer.innerHTML = '<p class="erc-no-data">No candidates found for this category.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = catResults.map((c, i) => {
+                const pct = catTotalVotes > 0 ? ((c.vote_count / catTotalVotes) * 100).toFixed(0) : 0;
                 const isLeading = i === 0 && c.vote_count > 0;
                 const color = designColors[i % designColors.length];
                 const avatarClass = avatarClasses[i % avatarClasses.length];
@@ -209,65 +217,12 @@
                                 <span class="erc-percentage-label" style="color: ${color}">${pct}%</span>
                             </div>
                             <div class="erc-progress-track">
-                                <div class="erc-progress-fill" style="width: ${pct}%; background: ${color}"></div>
+                                <div class="erc-progress-fill" style="width: ${pct}%; background-color: ${color}"></div>
+                            </div>
+                            <div class="erc-vote-count-meta">
+                                <span>${c.vote_count} total votes</span>
                             </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Render Chart
-            renderChart(results);
-            runCountdown(); // Initial update
-        }
-
-        function renderChart(results) {
-            const chartData = results.map((r, i) => ({
-                name: r.name,
-                y: r.vote_count,
-                color: designColors[i % designColors.length]
-            }));
-
-            Highcharts.chart('erc-pie-chart-container', {
-                chart: { 
-                    type: 'pie', 
-                    options3d: { 
-                        enabled: true, 
-                        alpha: 45, 
-                        beta: 0 
-                    }, 
-                    backgroundColor: 'transparent',
-                    height: 220
-                },
-                title: { text: null },
-                plotOptions: {
-                    pie: { 
-                        depth: 35, 
-                        dataLabels: { enabled: false }, 
-                        showInLegend: false, 
-                        innerSize: '0%',
-                        borderWidth: 2,
-                        borderColor: '#FFFFFF'
-                    }
-                },
-                series: [{ 
-                    name: 'Votes', 
-                    data: chartData 
-                }],
-                credits: { enabled: false }
-            });
-
-            // Legend
-            const total = results.reduce((s,r)=>s+r.vote_count,0);
-            document.getElementById('erc-chart-legend').innerHTML = results.map((r,i) => {
-                const pct = total > 0 ? ((r.vote_count / total) * 100).toFixed(0) : 0;
-                return `
-                    <div class="erc-legend-item">
-                        <div class="erc-legend-left">
-                            <div class="erc-swatch" style="background: ${designColors[i % designColors.length]}"></div>
-                            <span>${r.name}</span>
-                        </div>
-                        <span>${pct}%</span>
                     </div>
                 `;
             }).join('');
@@ -296,8 +251,8 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchResults();
-            setInterval(fetchResults, 30000); // Poll data every 30s
-            setInterval(runCountdown, 1000);  // Update clock every 1s
+            setInterval(fetchResults, 30000);
+            setInterval(runCountdown, 1000);
         });
     </script>
 </body>
