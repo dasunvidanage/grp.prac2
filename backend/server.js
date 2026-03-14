@@ -26,11 +26,19 @@ app.use(session({
   secret: 'election-portal-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: { 
+    secure: false,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    httpOnly: false, // Allow client-side access
+    sameSite: 'lax' // Allow cross-site requests
+  }
 }));
 
 // Serve static assets (images, etc.)
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
+
+// Serve static files for pages, css, js
+app.use(express.static(path.join(__dirname, '..')));
 
 // API Routes
 app.use('/api', authRoutes); // Includes /api/login
