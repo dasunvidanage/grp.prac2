@@ -165,18 +165,27 @@
             await startCountdown();
 
             try {
-                const category = user.student_id.includes('CS') ? 'CS' : (user.student_id.includes('IS') ? 'IS' : '');
-                const response = await fetch(`http://127.0.0.1:3000/api/candidates?category=${category}`, { credentials: 'include' });
+                // Requirement: Load ALL candidates from the same source (the API)
+                // Removed the ?category= filter to fetch everyone
+                const response = await fetch(`http://127.0.0.1:3000/api/candidates`, { credentials: 'include' });
                 const candidates = await response.json();
 
                 container.innerHTML = '';
                 if (candidates.length === 0) {
-                    container.innerHTML = `<p>No candidates found for ${category} category.</p>`;
+                    container.innerHTML = `<p>No candidates found.</p>`;
                 }
                 candidates.forEach(cand => {
+                    const isSameCategory = (user.student_id.includes('CS') && cand.category === 'CS') || 
+                                         (user.student_id.includes('IS') && cand.category === 'IS');
+                    
                     const card = document.createElement('div');
                     card.className = 'card candidate-card';
                     card.style.cursor = 'pointer';
+                    // Visual cue for students regarding their department restriction
+                    if (!isSameCategory) {
+                        card.style.opacity = '0.7';
+                    }
+
                     card.innerHTML = `
                         <div class="candidate-img">
                             <i class="fas fa-user"></i>
@@ -184,6 +193,7 @@
                         <h3 class="candidate-name">${cand.name}</h3>
                         <p class="manifesto">${cand.manifesto}</p>
                         <div style="margin-top: 1rem; color: var(--primary); font-size: 0.8rem; background: #e0e7ff; padding: 0.2rem 0.5rem; border-radius: 1rem; display: inline-block;">${cand.category} Candidate</div>
+                        ${!isSameCategory ? '<p style="color: #ef4444; font-size: 0.8rem; margin-top: 0.5rem;">(Restricted to your department)</p>' : ''}
                         <div style="margin-top: 0.5rem; color: var(--primary); font-size: 0.9rem;">Click to view details</div>
                     `;
                     card.onclick = () => openModal(cand);

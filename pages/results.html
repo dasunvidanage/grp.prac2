@@ -106,24 +106,47 @@
         const API_BASE = 'http://127.0.0.1:3000/api';
         const designColors = ['#378ADD', '#7F77DD', '#1D9E75', '#EF9F27'];
         const avatarClasses = ['blue', 'purple', 'teal', 'amber'];
+        let electionDeadline = null;
+        let isVotingOpen = false;
 
         async function fetchResults() {
             try {
-                const [settingsRes, resultsRes, studentsRes] = await Promise.all([
-                    fetch(`${API_BASE}/admin/settings`, { credentials: 'include' }),
-                    fetch(`${API_BASE}/results`, { credentials: 'include' }),
-                    fetch(`${API_BASE}/admin/students`, { credentials: 'include' })
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const studentId = user.student_id || user.id || "";
+                
+                const fetchOptions = { credentials: 'include' };
+                
+                const [settingsRes, resultsRes] = await Promise.all([
+                    fetch(`${API_BASE}/admin/settings`, fetchOptions),
+                    fetch(`${API_BASE}/results`, fetchOptions)
                 ]);
 
-                if (!settingsRes.ok || !resultsRes.ok || !studentsRes.ok) {
-                    throw new Error('Failed to fetch data');
+                if (!settingsRes.ok || !resultsRes.ok) {
+                    throw new Error('Failed to fetch basic data');
                 }
 
                 const settings = await settingsRes.json();
                 const results = await resultsRes.json();
-                const students = await studentsRes.json();
 
-                renderERC(settings, results, students.length);
+                // Store for the 1s interval timer
+                electionDeadline = settings.voting_deadline;
+                isVotingOpen = settings.voting_open === '1';
+
+                let totalStudents = 100;
+                if (user.role === 'admin') {
+                    try {
+                        const studentsRes = await fetch(`${API_BASE}/admin/students`, {
+                            ...fetchOptions,
+                            headers: { 'x-admin-id': studentId }
+                        });
+                        if (studentsRes.ok) {
+                            const students = await studentsRes.json();
+                            totalStudents = students.length;
+                        }
+                    } catch (e) { console.warn('Turnout calc fallback used'); }
+                }
+
+                renderERC(settings, results, totalStudents);
             } catch (err) { 
                 console.error('Error fetching results:', err); 
             }
@@ -194,7 +217,7 @@
 
             // Render Chart
             renderChart(results);
-            updateTimer(settings.voting_deadline, isOpen);
+            runCountdown(); // Initial update
         }
 
         function renderChart(results) {
@@ -249,13 +272,13 @@
             }).join('');
         }
 
-        function updateTimer(deadlineStr, isOpen) {
+        function runCountdown() {
             const timerEl = document.getElementById('erc-time-left');
-            if (!isOpen) {
+            if (!isVotingOpen || !electionDeadline) {
                 timerEl.textContent = 'CLOSED';
                 return;
             }
-            const deadline = new Date(deadlineStr).getTime();
+            const deadline = new Date(electionDeadline).getTime();
             const now = new Date().getTime();
             const dist = deadline - now;
             if (dist < 0) {
@@ -263,21 +286,17 @@
                 return;
             }
             
-            const days = Math.floor(dist / (1000 * 60 * 60 * 24));
             const hours = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((dist % (1000 * 60)) / 1000);
             
-            if (days > 0) {
-                timerEl.textContent = `${days}d ${hours}h`;
-            } else {
-                const seconds = Math.floor((dist % (1000 * 60)) / 1000);
-                timerEl.textContent = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-            }
+            timerEl.textContent = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchResults();
-            setInterval(fetchResults, 30000); // Polling every 30s as per design spec
+            setInterval(fetchResults, 30000); // Poll data every 30s
+            setInterval(runCountdown, 1000);  // Update clock every 1s
         });
     </script>
 </body>

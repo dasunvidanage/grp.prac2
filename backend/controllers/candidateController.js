@@ -7,7 +7,7 @@ exports.getAllCandidates = (req, res) => {
   let query = 'SELECT * FROM candidates';
   let params = [];
   
-  if (category) {
+  if (category && category.trim() !== '') {
     query += ' WHERE category = ?';
     params.push(category);
   }
