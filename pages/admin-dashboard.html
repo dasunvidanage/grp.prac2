@@ -359,30 +359,36 @@
 
     <!-- Modals (Add Candidate) -->
     <div id="addCandidateModal" class="modal">
-        <div class="modal-content" style="position: relative;">
+        <div class="modal-content" style="position: relative; max-width: 450px;">
             <span class="close-modal" style="position: absolute; right: 1.5rem; top: 1rem; font-size: 2rem; color: #9ca3af; cursor: pointer;" onclick="document.getElementById('addCandidateModal').style.display='none'">&times;</span>
-            <h2 style="margin-bottom: 1.5rem;">Add New Candidate</h2>
+            <h2 style="margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -0.025em;">New Candidate</h2>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 2rem;">Register a new participant for the election.</p>
+            
             <form id="add-candidate-form">
-                <div style="margin-bottom: 1rem;">
-                    <label>Name</label>
-                    <input type="text" id="cand-name" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required>
+                <!-- Profile Pic Upload -->
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem;">
+                    <div id="image-preview-container" style="width: 100px; height: 100px; background: #f1f5f9; border-radius: 2rem; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 2px dashed #cbd5e1; cursor: pointer; position: relative; overflow: hidden; transition: all 0.2s;" onclick="document.getElementById('cand-photo-input').click()">
+                        <i class="fas fa-camera" style="font-size: 1.5rem;"></i>
+                        <img id="cand-photo-preview" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none;">
+                    </div>
+                    <label style="margin-top: 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--primary); cursor: pointer;" onclick="document.getElementById('cand-photo-input').click()">Upload Photo</label>
+                    <input type="file" id="cand-photo-input" accept="image/*" style="display: none;" onchange="previewCandidateImage(this)">
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label>Category</label>
-                    <select id="cand-category" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Full Name</label>
+                    <input type="text" id="cand-name" class="btn-sleek" style="width: 100%; background: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem 1rem;" placeholder="e.g. John Doe" required>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Election Category</label>
+                    <select id="cand-category" class="btn-sleek" style="width: 100%; background: #f8fafc; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem 1rem;" required>
                         <option value="CS">Computer Science (CS)</option>
                         <option value="IS">Information Systems (IS)</option>
                     </select>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label>Manifesto</label>
-                    <input type="text" id="cand-manifesto" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label>Language Proficiency</label>
-                    <input type="text" id="cand-lang" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required placeholder="e.g. Sinhala, Tamil, English">
-                </div>
-                <button type="submit" class="btn-modern" style="width: 100%; background: var(--primary); color: white; justify-content: center;">Create Candidate</button>
+
+                <button type="submit" class="btn-modern" style="width: 100%; background: var(--primary); color: white; justify-content: center; padding: 1rem; border-radius: 1rem; font-weight: 700; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);">Register Candidate</button>
             </form>
         </div>
     </div>
@@ -393,6 +399,21 @@
         let deadlinePicker;
         let countdownInterval;
         let currentSettings = {};
+        let selectedCandidatePhoto = "";
+
+        // Helper for image preview
+        function previewCandidateImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('cand-photo-preview').src = e.target.result;
+                    document.getElementById('cand-photo-preview').style.display = 'block';
+                    document.getElementById('image-preview-container').style.borderStyle = 'solid';
+                    selectedCandidatePhoto = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
         // Helper for authorized fetches
         async function authFetch(url, options = {}) {
@@ -625,11 +646,11 @@
                 const tbody = document.querySelector('#candidates-admin-table tbody');
                 tbody.innerHTML = candidates.map(c => `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 1rem;"><div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6366f1;"><i class="fas fa-user"></i></div></td>
+                        <td style="padding: 1rem;"><div style="width: 44px; height: 44px; background: #f3f4f6; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #6366f1; overflow: hidden; border: 1px solid #e2e8f0;">${c.photo ? `<img src="${c.photo}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-user"></i>`}</div></td>
                         <td style="padding: 1rem; font-weight: 600;">${c.name} <span style="font-size: 0.8rem; background: #e0e7ff; color: #4338ca; padding: 0.2rem 0.5rem; border-radius: 1rem; margin-left: 0.5rem;">${c.category}</span></td>
-                        <td style="padding: 1rem; color: #4b5563; font-size: 0.9rem;">${c.manifesto}</td>
+                        <td style="padding: 1rem; color: #4b5563; font-size: 0.9rem;">Candidate profile recorded</td>
                         <td style="padding: 1rem;">
-                            <button onclick="deleteCandidate(${c.id})" style="color: #ef4444; background: none; border: none; cursor: pointer;"><i class="fas fa-trash-alt"></i></button>
+                            <button onclick="deleteCandidate(${c.id})" style="color: #ef4444; background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 0.5rem; transition: background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='none'"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     </tr>
                 `).join('');
@@ -649,8 +670,9 @@
             const payload = {
                 name: document.getElementById('cand-name').value,
                 category: document.getElementById('cand-category').value,
-                manifesto: document.getElementById('cand-manifesto').value,
-                language_proficiency: document.getElementById('cand-lang').value
+                manifesto: "Participant in UCSC Board Elections 2026", 
+                language_proficiency: "English",
+                photo: selectedCandidatePhoto
             };
             try {
                 const res = await authFetch(`${API_BASE}/candidates`, {
@@ -660,6 +682,9 @@
                 if (res.ok) {
                     document.getElementById('addCandidateModal').style.display = 'none';
                     document.getElementById('add-candidate-form').reset();
+                    document.getElementById('cand-photo-preview').style.display = 'none';
+                    document.getElementById('image-preview-container').style.borderStyle = 'dashed';
+                    selectedCandidatePhoto = "";
                     await refreshData();
                 }
             } catch (err) { console.error(err); }

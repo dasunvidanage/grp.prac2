@@ -205,8 +205,8 @@
                 
                 return `
                     <div class="erc-candidate-item">
-                        <div class="erc-avatar ${avatarClass}">
-                            ${getInitials(c.name)}
+                        <div class="erc-avatar ${avatarClass}" style="overflow: hidden; border: 1px solid rgba(0,0,0,0.05);">
+                            ${c.photo ? `<img src="${c.photo}" style="width: 100%; height: 100%; object-fit: cover;">` : getInitials(c.name)}
                         </div>
                         <div class="erc-candidate-info">
                             <div class="erc-candidate-header">

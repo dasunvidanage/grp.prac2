@@ -6,10 +6,10 @@ const Vote = {
   },
   getResults: (callback) => {
     const query = `
-      SELECT candidates.name, candidates.category, COUNT(votes.id) AS vote_count
+      SELECT candidates.name, candidates.category, candidates.photo, COUNT(votes.id) AS vote_count
       FROM candidates
       LEFT JOIN votes ON candidates.id = votes.candidate_id
-      GROUP BY candidates.id
+      GROUP BY candidates.id, candidates.name, candidates.category, candidates.photo
     `;
     db.all(query, [], callback);
   }
