@@ -21,7 +21,7 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       manifesto TEXT NOT NULL,
-      language_proficiency TEXT,
+      language_proficiency TEXT NOT NULL,
       category TEXT NOT NULL,
       photo TEXT
     )`,

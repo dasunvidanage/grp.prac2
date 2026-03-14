@@ -20,7 +20,9 @@ exports.getAllCandidates = (req, res) => {
 
 exports.addCandidate = (req, res) => {
   const { name, manifesto, language_proficiency, category, photo } = req.body;
-  if (!name || !manifesto || !category) return res.status(400).json({ error: 'Name, manifesto and category are required.' });
+  if (!name || !manifesto || !category || !language_proficiency) {
+    return res.status(400).json({ error: 'Name, manifesto, subject stream and language proficiency are required.' });
+  }
 
   const db = require('../database');
   db.run('INSERT INTO candidates (name, manifesto, language_proficiency, category, photo) VALUES (?, ?, ?, ?, ?)', 

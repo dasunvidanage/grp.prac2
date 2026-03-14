@@ -58,6 +58,19 @@
             margin: 1rem 0;
             display: inline-block;
         }
+        
+        /* Ensure Candidate Cards are centered */
+        .candidate-card {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+            justify-content: center !important;
+        }
+        
+        .candidate-card * {
+            text-align: center !important;
+        }
     </style>
 </head>
 <body class="dashboard-body">
@@ -129,23 +142,28 @@
 
     <!-- Candidate Detail Modal -->
     <div id="candidateModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="text-align: center;">
             <span class="close-modal">&times;</span>
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <div id="modal-photo" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;">
+            <div style="margin-bottom: 1.5rem;">
+                <div id="modal-photo" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem; display: flex; justify-content: center;">
                     <i class="fas fa-user-circle"></i>
                 </div>
-                <h2 id="modal-name">Candidate Name</h2>
+                <h2 id="modal-name" style="font-weight: 700;">Candidate Name</h2>
             </div>
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Manifesto</h4>
-                <p id="modal-manifesto" style="color: #444; line-height: 1.6;">Full manifesto text...</p>
+            
+            <!-- Manifesto Section -->
+            <div style="margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: center;">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-weight: 600;">Manifesto</h4>
+                <p id="modal-manifesto" style="color: #1a1a18; line-height: 1.6; max-width: 90%;">Full manifesto text...</p>
             </div>
-            <div>
-                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Language Proficiency</h4>
-                <p id="modal-lang" style="color: #444; line-height: 1.6;">Languages...</p>
+            
+            <!-- Language Proficiency Section -->
+            <div style="margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center;">
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-weight: 600;">Language Proficiency</h4>
+                <p id="modal-lang" style="color: #1a1a18; line-height: 1.6; max-width: 90%;">Languages...</p>
             </div>
-            <button id="modal-vote-btn" class="btn-sleek" style="width: 100%; margin-top: 2rem;">Cast Vote for this Candidate</button>
+            
+            <button id="modal-vote-btn" class="btn-sleek" style="width: 100%; font-weight: 700;">Cast Vote</button>
         </div>
     </div>
 
