@@ -13,10 +13,64 @@
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --transition: all 0.3s ease;
+
+    /* Dark Mode Theme */
+    --dark-bg: #000000;
+    --dark-card: #111111;
+    --dark-border: #222222;
+    --dark-text: #ffffff;
+    --dark-muted: #999999;
+}
+
+/* Dark Dashboard Specifics */
+.dark-dashboard {
+    background-color: var(--dark-bg) !important;
+    color: var(--dark-text) !important;
+}
+
+.dark-dashboard .main-content {
+    background-color: var(--dark-bg);
+}
+
+.dark-dashboard .card {
+    background-color: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    color: var(--dark-text);
+}
+
+.dark-dashboard .content-header h1, 
+.dark-dashboard .content-header p,
+.dark-dashboard .stat-mini-value {
+    color: var(--dark-text);
+}
+
+.dark-dashboard .stat-mini-label,
+.dark-dashboard .text-muted {
+    color: var(--dark-muted);
+}
+
+.dark-dashboard .candidate-result-row {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark-dashboard .progress-bar-bg {
+    background-color: #222222;
+}
+
+.two-column-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .two-column-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 * {
-    margin: 0;
+...
     padding: 0;
     box-sizing: border-box;
 }
