@@ -5,10 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle Login Form
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
-        console.log('Login form found, attaching listener');
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            console.log('Login form submitted');
             
             const studentIdInput = loginForm.querySelector('input[type="text"]');
             const passwordInput = loginForm.querySelector('input[type="password"]');
@@ -16,10 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const student_id = studentIdInput.value;
             const password = passwordInput.value;
 
-            console.log('Attempting login for:', student_id);
-
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/login', {
+                const response = await fetch('http://localhost:3000/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -27,11 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const data = await response.json();
-                console.log('Response received:', data);
 
                 if (response.ok) {
-                    console.log('Login successful, saving user');
-                    // Save user info to localStorage
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
                     // Redirect based on role
@@ -44,8 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(data.error || 'Login failed');
                 }
             } catch (err) {
-                console.error('Login error:', err);
-                alert('Connection error. Is the backend running at http://127.0.0.1:3000?');
+                alert('Connection error. Is the backend running at http://localhost:3000?');
             }
         });
     }
@@ -140,27 +132,67 @@ function updateUI(user) {
 
 async function loadDashboardStats() {
     try {
-        const response = await fetch('http://127.0.0.1:3000/api/candidates', {
+        // Fetch candidates count
+        const candRes = await fetch('http://localhost:3000/api/candidates', {
             credentials: 'include'
         });
-        if (response.ok) {
-            const candidates = await response.json();
+        if (candRes.ok) {
+            const candidates = await candRes.json();
             const candidateCount = candidates.length;
-            // Find the stat card for Total Candidates
             const statCards = document.querySelectorAll('.stat-card');
             statCards.forEach(card => {
                 const label = card.querySelector('.stat-label');
                 if (label && label.textContent === 'Total Candidates') {
                     const value = card.querySelector('.stat-value');
+                    if (value) value.textContent = candidateCount;
+                }
+            });
+        }
+
+        // Fetch election status
+        const settingsRes = await fetch('http://localhost:3000/api/admin/settings', {
+            credentials: 'include'
+        });
+        if (settingsRes.ok) {
+            const settings = await settingsRes.json();
+            const votingOpen = settings.voting_open === '1';
+            let statusText = 'Closed';
+            let statusColor = '#ef4444'; // Red
+
+            if (votingOpen) {
+                if (settings.voting_deadline) {
+                    const deadline = new Date(settings.voting_deadline).getTime();
+                    if (deadline > Date.now()) {
+                        statusText = 'Active';
+                        statusColor = '#10b981'; // Green
+                    } else {
+                        statusText = 'Expired';
+                        statusColor = '#f59e0b'; // Amber
+                    }
+                } else {
+                    statusText = 'Active';
+                    statusColor = '#10b981';
+                }
+            }
+
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach(card => {
+                const label = card.querySelector('.stat-label');
+                if (label && label.textContent === 'Election Status') {
+                    const value = card.querySelector('.stat-value');
                     if (value) {
-                        value.textContent = candidateCount;
+                        value.textContent = statusText;
+                        value.style.color = statusColor;
+                    }
+                    const icon = card.querySelector('.stat-icon');
+                    if (icon) {
+                        icon.style.color = statusColor;
+                        icon.style.background = `${statusColor}1a`; // 10% opacity
                     }
                 }
             });
-        } else {
-            console.error('Failed to fetch candidates');
         }
     } catch (err) {
-        console.error('Error fetching candidates:', err);
+        console.error('Error fetching dashboard stats:', err);
     }
 }

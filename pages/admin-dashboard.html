@@ -9,10 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Highcharts for 3D Bar Chart -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    
+    <script src="../js/vendor/highcharts.js"></script>
+    <script src="../js/vendor/highcharts-3d.js"></script>
+    <script src="../js/vendor/exporting.js"></script>
+
     <!-- Flatpickr for Modern Date/Time Picker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -206,7 +206,7 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-label">Total Students</span>
+                    <span class="stat-label">Total Registered Users</span>
                     <h3 class="stat-value" id="stat-total-students">0</h3>
                 </div>
             </div>
@@ -243,14 +243,15 @@
         <!-- Registered Students Table -->
         <section class="dashboard-section" style="margin-top: 2rem;">
             <div class="section-header">
-                <h2>Real-time Voter Activity</h2>
+                <h2>Real-time User Activity</h2>
             </div>
             <div class="card">
                 <table class="data-table" id="students-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align: left; border-bottom: 2px solid #eee;">
-                            <th style="padding: 1rem;">Student ID</th>
+                            <th style="padding: 1rem;">User ID</th>
                             <th style="padding: 1rem;">Name</th>
+                            <th style="padding: 1rem;">Role</th>
                             <th style="padding: 1rem;">Status</th>
                             <th style="padding: 1rem;">Timestamp</th>
                         </tr>
@@ -316,7 +317,7 @@
 
     <script src="../js/script.js"></script>
     <script>
-        const API_BASE = 'http://127.0.0.1:3000/api';
+        const API_BASE = 'http://localhost:3000/api';
         let deadlinePicker;
         let countdownInterval;
         let currentSettings = {};
@@ -396,21 +397,24 @@
                     showAuthError();
                     return;
                 }
-                const students = await res.json();
-                document.getElementById('stat-total-students').textContent = students.length;
+                const users = await res.json();
+                document.getElementById('stat-total-students').textContent = users.length;
+                
+                const students = users.filter(u => u.role === 'student');
                 const totalVotes = students.filter(s => s.has_voted).length;
                 const turnout = students.length > 0 ? ((totalVotes / students.length) * 100).toFixed(1) : 0;
                 document.getElementById('stat-turnout').textContent = turnout + '%';
 
                 const tbody = document.querySelector('#students-table tbody');
-                tbody.innerHTML = students.slice(0, 10).map(s => `
+                tbody.innerHTML = users.slice(0, 15).map(u => `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 1rem; font-weight: 500;">${s.student_id}</td>
-                        <td style="padding: 1rem;">${s.name}</td>
+                        <td style="padding: 1rem; font-weight: 500;">${u.student_id}</td>
+                        <td style="padding: 1rem;">${u.name}</td>
+                        <td style="padding: 1rem;"><span class="status-badge" style="background: ${u.role === 'admin' ? '#e0e7ff' : '#f3f4f6'}; color: ${u.role === 'admin' ? '#4338ca' : '#6b7280'}; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">${u.role}</span></td>
                         <td style="padding: 1rem;">
-                            ${s.has_voted ? '<span style="color: #10b981; font-weight:600;"><i class="fas fa-check-circle"></i> Voted</span>' : '<span style="color: #9ca3af;">Pending</span>'}
+                            ${u.has_voted ? '<span style="color: #10b981; font-weight:600;"><i class="fas fa-check-circle"></i> Voted</span>' : '<span style="color: #9ca3af;">Pending</span>'}
                         </td>
-                        <td style="padding: 1rem; color: #6b7280;">${s.voted_at ? new Date(s.voted_at).toLocaleString() : '-'}</td>
+                        <td style="padding: 1rem; color: #6b7280;">${u.voted_at ? new Date(u.voted_at).toLocaleString() : '-'}</td>
                     </tr>
                 `).join('');
             } catch (err) { console.error('Students error:', err); }
@@ -560,6 +564,7 @@
         }
 
         function showAuthError() {
+            console.log("Result:");
             // Show an overlay with authentication error
             const overlay = document.createElement('div');
             overlay.style.cssText = `

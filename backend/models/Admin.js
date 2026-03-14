@@ -1,8 +1,8 @@
 const db = require('../database');
 
 const Admin = {
-  getAllStudents: (callback) => {
-    db.all('SELECT student_id, name, has_voted, voted_at FROM students WHERE role = "student"', [], callback);
+  getAllUsers: (callback) => {
+    db.all('SELECT student_id, name, role, has_voted, voted_at FROM students', [], callback);
   },
   getAuditLogs: (callback) => {
     db.all('SELECT * FROM audit_log ORDER BY timestamp DESC', [], callback);

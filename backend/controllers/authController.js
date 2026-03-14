@@ -9,25 +9,41 @@ exports.login = (req, res) => {
   }
 
   Student.findByStudentId(student_id, (err, student) => {
-    if (err) return res.status(500).json({ error: 'Internal server error.' });
-    if (!student) return res.status(401).json({ error: 'Invalid credentials.' });
+    if (err) {
+      console.error('[DEBUG] Database error:', err);
+      return res.status(500).json({ error: 'Internal server error.' });
+    }
+    
+    if (!student) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
+
 
     const isMatch = bcrypt.compareSync(password, student.password_hash);
-    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials.' });
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
 
     // Store in session (if using) or just return user info
     req.session.studentId = student.student_id;
     req.session.role = student.role;
 
-    res.json({ 
-      message: 'Login successful', 
-      user: { 
-        id: student.id, 
-        student_id: student.student_id, 
-        name: student.name, 
-        role: student.role,
-        has_voted: student.has_voted 
-      } 
+    // Force the session to save before the redirect/response
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Session could not be saved.' });
+      }
+      res.json({ 
+        message: 'Login successful', 
+        user: { 
+          id: student.id, 
+          student_id: student.student_id, 
+          name: student.name, 
+          role: student.role,
+          has_voted: student.has_voted 
+        }  
+      });
     });
   });
 };

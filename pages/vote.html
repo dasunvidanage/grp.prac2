@@ -171,10 +171,11 @@
                 return;
             }
 
-            await startCountdown();
+            const isVotingAllowed = await startCountdown();
+            if (!isVotingAllowed) return;
 
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/candidates', { credentials: 'include' });
+                const response = await fetch('http://localhost:3000/api/candidates', { credentials: 'include' });
                 if (response.status === 403) {
                     // Session expired, redirect to login
                     window.location.href = 'login.html';
@@ -206,11 +207,10 @@
 
         async function startCountdown() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/admin/settings', { credentials: 'include' });
+                const res = await fetch('http://localhost:3000/api/admin/settings', { credentials: 'include' });
                 if (res.status === 403) {
-                    // Session expired, redirect to login
                     window.location.href = 'login.html';
-                    return;
+                    return false;
                 }
                 const settings = await res.json();
                 
@@ -222,23 +222,36 @@
                             <p style="color: var(--text-muted); margin-top: 0.5rem;">Please wait for the election to begin.</p>
                         </div>
                     `;
-                    return;
+                    return false;
                 }
 
                 const deadline = new Date(settings.voting_deadline).getTime();
+                const now = new Date().getTime();
+                
+                if (deadline <= now) {
+                    document.getElementById('candidate-container').innerHTML = `
+                        <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                            <i class="fas fa-clock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                            <h3>Voting Time Has Expired</h3>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">The election period has ended. You can view the results now.</p>
+                            <button class="btn-sleek" onclick="window.location.href='results.html'" style="margin-top: 1rem;">View Results</button>
+                        </div>
+                    `;
+                    return false;
+                }
+
                 const timerElement = document.getElementById('countdown-timer');
                 const timeLeftElement = document.getElementById('time-left');
                 
                 timerElement.style.display = 'block';
 
                 const timerFunc = setInterval(() => {
-                    const now = new Date().getTime();
-                    const distance = deadline - now;
+                    const currentTime = new Date().getTime();
+                    const distance = deadline - currentTime;
 
                     if (distance < 0) {
                         clearInterval(timerFunc);
                         timeLeftElement.innerHTML = "EXPIRED";
-                        // Show expired message instead of reloading
                         document.getElementById('candidate-container').innerHTML = `
                             <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
                                 <i class="fas fa-clock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
@@ -257,7 +270,12 @@
                     timeLeftElement.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }, 1000);
 
-            } catch (err) { console.error('Timer error', err); }
+                return true;
+
+            } catch (err) { 
+                console.error('Timer error', err);
+                return false;
+            }
         }
 
         function openModal(cand) {
@@ -298,7 +316,7 @@
         async function submitVote(candidate_id) {
             const user = JSON.parse(localStorage.getItem('user'));
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/vote', {
+                const res = await fetch('http://localhost:3000/api/vote', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',

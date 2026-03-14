@@ -1,9 +1,9 @@
 const Admin = require('../models/Admin');
 
 exports.getStudents = (req, res) => {
-  Admin.getAllStudents((err, students) => {
-    if (err) return res.status(500).json({ error: 'Failed to fetch students.' });
-    res.json(students);
+  Admin.getAllUsers((err, users) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch users.' });
+    res.json(users);
   });
 };
 
