@@ -113,9 +113,9 @@
             try {
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
                 const studentId = user.student_id || user.id || "";
-                
                 const fetchOptions = { credentials: 'include' };
-                
+
+                // Fetch public data first
                 const [settingsRes, resultsRes] = await Promise.all([
                     fetch(`${API_BASE}/admin/settings`, fetchOptions),
                     fetch(`${API_BASE}/results`, fetchOptions)
@@ -132,7 +132,8 @@
                 electionDeadline = settings.voting_deadline;
                 isVotingOpen = settings.voting_open === '1';
 
-                let totalStudents = 100;
+                // Try fetching student count (only if admin)
+                let totalStudents = 100; // Default placeholder
                 if (user.role === 'admin') {
                     try {
                         const studentsRes = await fetch(`${API_BASE}/admin/students`, {
