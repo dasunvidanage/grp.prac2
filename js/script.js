@@ -77,6 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'login.html';
         });
     }
+
+    // Dashboard specific logic
+    if (window.location.pathname.includes('dashboard.html')) {
+        loadDashboardStats();
+    }
 });
 
 function checkAuth() {
@@ -130,5 +135,32 @@ function updateUI(user) {
     const userNameDisplay = document.querySelector('#user-name');
     if (userNameDisplay && user) {
         userNameDisplay.textContent = user.name;
+    }
+}
+
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('http://127.0.0.1:3000/api/candidates', {
+            credentials: 'include'
+        });
+        if (response.ok) {
+            const candidates = await response.json();
+            const candidateCount = candidates.length;
+            // Find the stat card for Total Candidates
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach(card => {
+                const label = card.querySelector('.stat-label');
+                if (label && label.textContent === 'Total Candidates') {
+                    const value = card.querySelector('.stat-value');
+                    if (value) {
+                        value.textContent = candidateCount;
+                    }
+                }
+            });
+        } else {
+            console.error('Failed to fetch candidates');
+        }
+    } catch (err) {
+        console.error('Error fetching candidates:', err);
     }
 }

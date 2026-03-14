@@ -156,8 +156,15 @@
         let currentCandidateId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const container = document.getElementById('candidate-container');
             const user = JSON.parse(localStorage.getItem('user'));
+            
+            // Check if user is authenticated
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const container = document.getElementById('candidate-container');
 
             if (user && user.has_voted) {
                 showConfirmation(localStorage.getItem('last_vote_id') || '#UNKNOWN');
@@ -168,6 +175,11 @@
 
             try {
                 const response = await fetch('http://127.0.0.1:3000/api/candidates', { credentials: 'include' });
+                if (response.status === 403) {
+                    // Session expired, redirect to login
+                    window.location.href = 'login.html';
+                    return;
+                }
                 const candidates = await response.json();
 
                 container.innerHTML = '';
@@ -188,13 +200,18 @@
                 });
 
             } catch (err) {
-                container.innerHTML = '<p>Error loading candidates.</p>';
+                container.innerHTML = '<p>Error loading candidates. Please try refreshing the page.</p>';
             }
         });
 
         async function startCountdown() {
             try {
                 const res = await fetch('http://127.0.0.1:3000/api/admin/settings', { credentials: 'include' });
+                if (res.status === 403) {
+                    // Session expired, redirect to login
+                    window.location.href = 'login.html';
+                    return;
+                }
                 const settings = await res.json();
                 
                 if (settings.voting_open !== '1') {
@@ -221,7 +238,15 @@
                     if (distance < 0) {
                         clearInterval(timerFunc);
                         timeLeftElement.innerHTML = "EXPIRED";
-                        location.reload();
+                        // Show expired message instead of reloading
+                        document.getElementById('candidate-container').innerHTML = `
+                            <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                                <i class="fas fa-clock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                                <h3>Voting Time Has Expired</h3>
+                                <p style="color: var(--text-muted); margin-top: 0.5rem;">The election period has ended. You can view the results now.</p>
+                                <button class="btn-sleek" onclick="window.location.href='results.html'" style="margin-top: 1rem;">View Results</button>
+                            </div>
+                        `;
                         return;
                     }
 
@@ -279,6 +304,11 @@
                     credentials: 'include',
                     body: JSON.stringify({ student_id: user.student_id, candidate_id })
                 });
+                if (res.status === 403) {
+                    // Session expired, redirect to login
+                    window.location.href = 'login.html';
+                    return;
+                }
                 const data = await res.json();
                 if (res.ok) {
                     user.has_voted = 1;
@@ -290,7 +320,7 @@
                     alert(data.error);
                 }
             } catch (err) {
-                alert('Failed to submit vote.');
+                alert('Failed to submit vote. Please try again.');
             }
         }
 
