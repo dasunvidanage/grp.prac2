@@ -142,10 +142,8 @@
                 <p id="modal-manifesto" style="color: #444; line-height: 1.6;">Full manifesto text...</p>
             </div>
             <div>
-                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Campaign Points</h4>
-                <ul id="modal-points" style="padding-left: 1.5rem; color: #444;">
-                    <!-- Points -->
-                </ul>
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Language Proficiency</h4>
+                <p id="modal-lang" style="color: #444; line-height: 1.6;">Languages...</p>
             </div>
             <button id="modal-vote-btn" class="btn-sleek" style="width: 100%; margin-top: 2rem;">Cast Vote for this Candidate</button>
         </div>
@@ -167,10 +165,14 @@
             await startCountdown();
 
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/candidates', { credentials: 'include' });
+                const category = user.student_id.includes('CS') ? 'CS' : (user.student_id.includes('IS') ? 'IS' : '');
+                const response = await fetch(`http://127.0.0.1:3000/api/candidates?category=${category}`, { credentials: 'include' });
                 const candidates = await response.json();
 
                 container.innerHTML = '';
+                if (candidates.length === 0) {
+                    container.innerHTML = `<p>No candidates found for ${category} category.</p>`;
+                }
                 candidates.forEach(cand => {
                     const card = document.createElement('div');
                     card.className = 'card candidate-card';
@@ -181,7 +183,8 @@
                         </div>
                         <h3 class="candidate-name">${cand.name}</h3>
                         <p class="manifesto">${cand.manifesto}</p>
-                        <div style="margin-top: 1rem; color: var(--primary); font-size: 0.9rem;">Click to view full manifesto</div>
+                        <div style="margin-top: 1rem; color: var(--primary); font-size: 0.8rem; background: #e0e7ff; padding: 0.2rem 0.5rem; border-radius: 1rem; display: inline-block;">${cand.category} Candidate</div>
+                        <div style="margin-top: 0.5rem; color: var(--primary); font-size: 0.9rem;">Click to view details</div>
                     `;
                     card.onclick = () => openModal(cand);
                     container.appendChild(card);
@@ -238,19 +241,8 @@
         function openModal(cand) {
             currentCandidateId = cand.id;
             document.getElementById('modal-name').innerText = cand.name;
-            document.getElementById('modal-manifesto').innerText = cand.manifesto_full || cand.manifesto;
-            
-            const pointsList = document.getElementById('modal-points');
-            pointsList.innerHTML = '';
-            if (cand.campaign_points) {
-                cand.campaign_points.split(',').forEach(p => {
-                    const li = document.createElement('li');
-                    li.innerText = p.trim();
-                    pointsList.appendChild(li);
-                });
-            } else {
-                pointsList.innerHTML = '<li>General campus improvements</li>';
-            }
+            document.getElementById('modal-manifesto').innerText = cand.manifesto;
+            document.getElementById('modal-lang').innerText = cand.language_proficiency || 'Not specified';
 
             document.getElementById('candidateModal').style.display = 'block';
             document.getElementById('modal-vote-btn').onclick = () => {

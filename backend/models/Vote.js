@@ -6,7 +6,7 @@ const Vote = {
   },
   getResults: (callback) => {
     const query = `
-      SELECT candidates.name, COUNT(votes.id) AS vote_count
+      SELECT candidates.name, candidates.category, COUNT(votes.id) AS vote_count
       FROM candidates
       LEFT JOIN votes ON candidates.id = votes.candidate_id
       GROUP BY candidates.id

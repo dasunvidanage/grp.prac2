@@ -289,25 +289,28 @@
 
     <!-- Modals (Add Candidate) -->
     <div id="addCandidateModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
-            <h2>Add New Candidate</h2>
-            <form id="add-candidate-form" style="margin-top: 1.5rem;">
+        <div class="modal-content" style="position: relative;">
+            <span class="close-modal" style="position: absolute; right: 1.5rem; top: 1rem; font-size: 2rem; color: #9ca3af; cursor: pointer;" onclick="document.getElementById('addCandidateModal').style.display='none'">&times;</span>
+            <h2 style="margin-bottom: 1.5rem;">Add New Candidate</h2>
+            <form id="add-candidate-form">
                 <div style="margin-bottom: 1rem;">
                     <label>Name</label>
                     <input type="text" id="cand-name" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required>
                 </div>
                 <div style="margin-bottom: 1rem;">
-                    <label>Short Manifesto</label>
+                    <label>Category</label>
+                    <select id="cand-category" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required>
+                        <option value="CS">Computer Science (CS)</option>
+                        <option value="IS">Information Systems (IS)</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label>Manifesto</label>
                     <input type="text" id="cand-manifesto" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required>
                 </div>
                 <div style="margin-bottom: 1rem;">
-                    <label>Full Manifesto</label>
-                    <textarea id="cand-manifesto-full" class="btn-sleek" style="width: 100%; height: 100px; background: #f9f9f9; color: black; border: 1px solid #ddd;" required></textarea>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label>Campaign Points (comma separated)</label>
-                    <input type="text" id="cand-points" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;">
+                    <label>Language Proficiency</label>
+                    <input type="text" id="cand-lang" class="btn-sleek" style="width: 100%; background: #f9f9f9; color: black; border: 1px solid #ddd;" required placeholder="e.g. Sinhala, Tamil, English">
                 </div>
                 <button type="submit" class="btn-modern" style="width: 100%; background: var(--primary); color: white; justify-content: center;">Create Candidate</button>
             </form>
@@ -320,6 +323,21 @@
         let deadlinePicker;
         let countdownInterval;
         let currentSettings = {};
+
+        // Helper for authorized fetches
+        async function authFetch(url, options = {}) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            console.log('authFetch ID:', user.student_id);
+            if (!user.student_id) {
+                console.error('No student_id in localStorage for authFetch');
+            }
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+                'x-admin-id': user.student_id
+            };
+            return fetch(url, { ...options, headers, credentials: 'include' });
+        }
 
         async function initAdminDashboard() {
             deadlinePicker = flatpickr("#deadline-picker", {
@@ -350,7 +368,8 @@
 
         async function fetchStats() {
             try {
-                const res = await fetch(`${API_BASE}/results`, { credentials: 'include' });
+                const res = await authFetch(`${API_BASE}/results`);
+                if (!res.ok) throw new Error('Failed to fetch results');
                 const results = await res.json();
                 const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
                 document.getElementById('stat-total-votes').textContent = totalVotes;
@@ -359,34 +378,60 @@
         }
 
         function render3DChart(results) {
-            const categories = results.map(r => r.name);
-            const data = results.map(r => r.vote_count);
+            if (!Array.isArray(results) || results.length === 0) return;
+            
+            // Format data for Pie Chart
+            const chartData = results.map(r => ({
+                name: `${r.name} (${r.category})`,
+                y: r.vote_count
+            }));
 
             Highcharts.chart('results-3d-container', {
                 chart: {
-                    type: 'column',
-                    options3d: { enabled: true, alpha: 10, beta: 15, depth: 50, viewDistance: 25 },
+                    type: 'pie',
+                    options3d: {
+                        enabled: true,
+                        alpha: 45,
+                        beta: 0
+                    },
                     backgroundColor: 'transparent'
                 },
                 title: { text: null },
-                xAxis: { categories: categories },
-                yAxis: { title: { text: 'Votes' }, min: 0 },
-                tooltip: { headerFormat: '<b>{point.key}</b><br>', pointFormat: 'Votes: {point.y}' },
-                plotOptions: {
-                    column: {
-                        depth: 40,
-                        colorByPoint: true,
-                        colors: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                accessibility: {
+                    point: {
+                        valueSuffix: '%'
                     }
                 },
-                series: [{ name: 'Votes', data: data, showInLegend: false }],
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        depth: 35,
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.name}: {point.percentage:.1f}%',
+                            style: {
+                                fontWeight: 'bold',
+                                color: '#374151'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Vote Percentage',
+                    data: chartData
+                }],
                 credits: { enabled: false }
             });
         }
 
         async function fetchStudents() {
             try {
-                const res = await fetch(`${API_BASE}/admin/students`, { credentials: 'include' });
+                const res = await authFetch(`${API_BASE}/admin/students`);
+                if (!res.ok) throw new Error('Failed to fetch students');
                 const students = await res.json();
                 document.getElementById('stat-total-students').textContent = students.length;
                 const totalVotes = students.filter(s => s.has_voted).length;
@@ -409,7 +454,8 @@
 
         async function fetchSettings() {
             try {
-                const res = await fetch(`${API_BASE}/admin/settings`, { credentials: 'include' });
+                const res = await authFetch(`${API_BASE}/admin/settings`);
+                if (!res.ok) throw new Error('Failed to fetch settings');
                 currentSettings = await res.json();
                 
                 const votingOpen = currentSettings.voting_open === '1';
@@ -466,18 +512,14 @@
                     const durationMins = parseInt(document.getElementById('duration-input').value) || 60;
                     const newDeadline = new Date(Date.now() + durationMins * 60000).toISOString();
                     
-                    await fetch(`${API_BASE}/admin/update-deadline`, {
+                    await authFetch(`${API_BASE}/admin/update-deadline`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
                         body: JSON.stringify({ deadline: newDeadline })
                     });
                 }
 
-                const res = await fetch(`${API_BASE}/admin/toggle-voting`, {
+                const res = await authFetch(`${API_BASE}/admin/toggle-voting`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
                     body: JSON.stringify({ status: open ? '1' : '0' })
                 });
                 
@@ -496,7 +538,7 @@
 
         document.getElementById('reset-votes-btn').onclick = async () => {
             if (!confirm('CRITICAL: This will wipe all cast votes and reset voter status. Continue?')) return;
-            const res = await fetch(`${API_BASE}/admin/reset-votes`, { method: 'POST', credentials: 'include' });
+            const res = await authFetch(`${API_BASE}/admin/reset-votes`, { method: 'POST' });
             if (res.ok) {
                 alert('System reset successful.');
                 initAdminDashboard();
@@ -506,10 +548,8 @@
         document.getElementById('update-deadline-btn').onclick = async () => {
             const deadline = document.getElementById('deadline-picker').value;
             if (!deadline) return;
-            const res = await fetch(`${API_BASE}/admin/update-deadline`, {
+            const res = await authFetch(`${API_BASE}/admin/update-deadline`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ deadline: new Date(deadline).toISOString() })
             });
             if (res.ok) {
@@ -520,13 +560,14 @@
 
         async function fetchCandidatesAdmin() {
             try {
-                const res = await fetch(`${API_BASE}/candidates`, { credentials: 'include' });
+                const res = await authFetch(`${API_BASE}/candidates`);
+                if (!res.ok) throw new Error('Failed to fetch candidates');
                 const candidates = await res.json();
                 const tbody = document.querySelector('#candidates-admin-table tbody');
                 tbody.innerHTML = candidates.map(c => `
                     <tr style="border-bottom: 1px solid #eee;">
                         <td style="padding: 1rem;"><div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6366f1;"><i class="fas fa-user"></i></div></td>
-                        <td style="padding: 1rem; font-weight: 600;">${c.name}</td>
+                        <td style="padding: 1rem; font-weight: 600;">${c.name} <span style="font-size: 0.8rem; background: #e0e7ff; color: #4338ca; padding: 0.2rem 0.5rem; border-radius: 1rem; margin-left: 0.5rem;">${c.category}</span></td>
                         <td style="padding: 1rem; color: #4b5563; font-size: 0.9rem;">${c.manifesto}</td>
                         <td style="padding: 1rem;">
                             <button onclick="deleteCandidate(${c.id})" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.5rem;"><i class="fas fa-trash-alt"></i></button>
@@ -538,27 +579,41 @@
 
         async function deleteCandidate(id) {
             if (!confirm('Remove this candidate from the election?')) return;
-            await fetch(`${API_BASE}/candidates/${id}`, { method: 'DELETE', credentials: 'include' });
-            fetchCandidatesAdmin();
+            const res = await authFetch(`${API_BASE}/candidates/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchCandidatesAdmin();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Delete failed');
+            }
         }
 
         document.getElementById('add-candidate-form').onsubmit = async (e) => {
             e.preventDefault();
+            console.log('Adding candidate...');
             const payload = {
                 name: document.getElementById('cand-name').value,
+                category: document.getElementById('cand-category').value,
                 manifesto: document.getElementById('cand-manifesto').value,
-                manifesto_full: document.getElementById('cand-manifesto-full').value,
-                campaign_points: document.getElementById('cand-points').value
+                language_proficiency: document.getElementById('cand-lang').value
             };
-            const res = await fetch(`${API_BASE}/candidates`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                document.getElementById('addCandidateModal').style.display = 'none';
-                initAdminDashboard();
+            try {
+                const res = await authFetch(`${API_BASE}/candidates`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                console.log('Add candidate response:', data);
+                if (res.ok) {
+                    document.getElementById('addCandidateModal').style.display = 'none';
+                    document.getElementById('add-candidate-form').reset();
+                    await initAdminDashboard();
+                } else {
+                    alert(data.error || 'Failed to add candidate');
+                }
+            } catch (err) {
+                console.error('Error adding candidate:', err);
+                alert('Connection error');
             }
         };
 
@@ -566,7 +621,9 @@
             const rows = [['Student ID', 'Name', 'Status', 'Voted At']];
             document.querySelectorAll('#students-table tbody tr').forEach(tr => {
                 const cols = tr.querySelectorAll('td');
-                rows.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText]);
+                if (cols.length >= 4) {
+                    rows.push([cols[0].innerText, cols[1].innerText, cols[2].innerText, cols[3].innerText]);
+                }
             });
             const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
             const link = document.createElement("a");

@@ -2,22 +2,32 @@ const Candidate = require('../models/Candidate');
 const Admin = require('../models/Admin');
 
 exports.getAllCandidates = (req, res) => {
-  Candidate.getAll((err, candidates) => {
+  const { category } = req.query;
+  const db = require('../database');
+  let query = 'SELECT * FROM candidates';
+  let params = [];
+  
+  if (category) {
+    query += ' WHERE category = ?';
+    params.push(category);
+  }
+
+  db.all(query, params, (err, candidates) => {
     if (err) return res.status(500).json({ error: 'Failed to fetch candidates.' });
     res.json(candidates);
   });
 };
 
 exports.addCandidate = (req, res) => {
-  const { name, manifesto, manifesto_full, campaign_points, photo } = req.body;
-  if (!name || !manifesto) return res.status(400).json({ error: 'Name and manifesto are required.' });
+  const { name, manifesto, language_proficiency, category, photo } = req.body;
+  if (!name || !manifesto || !category) return res.status(400).json({ error: 'Name, manifesto and category are required.' });
 
   const db = require('../database');
-  db.run('INSERT INTO candidates (name, manifesto, manifesto_full, campaign_points, photo) VALUES (?, ?, ?, ?, ?)', 
-    [name, manifesto, manifesto_full, campaign_points, photo || '../assets/images/default.jpg'], 
+  db.run('INSERT INTO candidates (name, manifesto, language_proficiency, category, photo) VALUES (?, ?, ?, ?, ?)', 
+    [name, manifesto, language_proficiency, category, photo || '../assets/images/default.jpg'], 
     function(err) {
       if (err) return res.status(500).json({ error: 'Failed to add candidate.' });
-      Admin.logAction(req.session.studentId || 'admin', `Added candidate: ${name}`);
+      Admin.logAction(req.session.studentId || 'admin', `Added candidate: ${name} (${category})`);
       res.json({ message: 'Candidate added successfully.', id: this.lastID });
     }
   );

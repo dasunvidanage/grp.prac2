@@ -35,21 +35,38 @@ exports.submitVote = (req, res) => {
         return res.status(400).json({ error: 'You have already voted.' });
       }
 
-      // Process vote
-      Vote.create(student_id, candidate_id, function(err) {
-        if (err) return res.status(500).json({ error: 'Failed to record vote.' });
+      // Check candidate category
+      db.get('SELECT category FROM candidates WHERE id = ?', [candidate_id], (err, candidate) => {
+        if (err) return res.status(500).json({ error: 'Internal server error.' });
+        if (!candidate) return res.status(404).json({ error: 'Candidate not found.' });
 
-        const voteId = this.lastID; // SQLite lastID
+        const isCSStudent = student_id.includes('CS');
+        const isISStudent = student_id.includes('IS');
+        const candidateCategory = candidate.category;
 
-        // Update student's has_voted status and voted_at
-        const now = new Date().toISOString();
-        db.run('UPDATE students SET has_voted = 1, voted_at = ? WHERE student_id = ?', [now, student_id], (err) => {
-          if (err) return res.status(500).json({ error: 'Failed to update student status.' });
-          
-          // Log action
-          Admin.logAction(student_id, `Cast a vote (Vote ID: #${voteId})`);
-          
-          res.json({ message: 'Vote submitted successfully.', vote_id: `#${voteId}` });
+        if (isCSStudent && candidateCategory !== 'CS') {
+          return res.status(403).json({ error: 'CS students can only vote for CS candidates.' });
+        }
+        if (isISStudent && candidateCategory !== 'IS') {
+          return res.status(403).json({ error: 'IS students can only vote for IS candidates.' });
+        }
+
+        // Process vote
+        Vote.create(student_id, candidate_id, function(err) {
+          if (err) return res.status(500).json({ error: 'Failed to record vote.' });
+
+          const voteId = this.lastID; // SQLite lastID
+
+          // Update student's has_voted status and voted_at
+          const now = new Date().toISOString();
+          db.run('UPDATE students SET has_voted = 1, voted_at = ? WHERE student_id = ?', [now, student_id], (err) => {
+            if (err) return res.status(500).json({ error: 'Failed to update student status.' });
+            
+            // Log action
+            Admin.logAction(student_id, `Cast a vote (Vote ID: #${voteId})`);
+            
+            res.json({ message: 'Vote submitted successfully.', vote_id: `#${voteId}` });
+          });
         });
       });
     });

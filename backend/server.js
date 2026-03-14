@@ -16,7 +16,8 @@ const PORT = 3000;
 // Middleware
 app.use(cors({
   origin: (origin, callback) => callback(null, true),
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Id', 'X-Student-Id']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

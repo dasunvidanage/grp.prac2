@@ -93,22 +93,37 @@
                 const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
                 totalText.innerHTML = `<i class="fas fa-info-circle"></i> Results are updated in real-time. Total votes cast: ${totalVotes}`;
 
-                container.innerHTML = '<h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>';
+                container.innerHTML = '';
                 
-                results.forEach(res => {
-                    const percentage = totalVotes > 0 ? ((res.vote_count / totalVotes) * 100).toFixed(1) : 0;
-                    const item = document.createElement('div');
-                    item.className = 'result-item';
-                    item.innerHTML = `
-                        <div class="result-info">
-                            <span>${res.name}</span>
-                            <span>${res.vote_count} Votes (${percentage}%)</span>
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
-                        </div>
-                    `;
-                    container.appendChild(item);
+                const categories = ['CS', 'IS'];
+                categories.forEach(cat => {
+                    const catResults = results.filter(r => r.category === cat);
+                    const catTotal = catResults.reduce((sum, r) => sum + r.vote_count, 0);
+                    
+                    const section = document.createElement('div');
+                    section.style.marginBottom = '2.5rem';
+                    section.innerHTML = `<h3 style="font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;">${cat === 'CS' ? 'Computer Science' : 'Information Systems'} Category (${catTotal} votes)</h3>`;
+                    
+                    if (catResults.length === 0) {
+                        section.innerHTML += '<p style="color: #6b7280;">No candidates in this category.</p>';
+                    }
+
+                    catResults.sort((a, b) => b.vote_count - a.vote_count).forEach(res => {
+                        const percentage = catTotal > 0 ? ((res.vote_count / catTotal) * 100).toFixed(1) : 0;
+                        const item = document.createElement('div');
+                        item.className = 'result-item';
+                        item.innerHTML = `
+                            <div class="result-info">
+                                <span style="font-weight: 600;">${res.name}</span>
+                                <span>${res.vote_count} Votes (${percentage}%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: ${percentage}%; background: ${cat === 'CS' ? 'var(--primary)' : 'var(--secondary)'}"></div>
+                            </div>
+                        `;
+                        section.appendChild(item);
+                    });
+                    container.appendChild(section);
                 });
 
             } catch (err) {

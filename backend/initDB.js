@@ -2,6 +2,8 @@ const db = require('./database');
 const bcrypt = require('bcryptjs');
 
 db.serialize(() => {
+  console.log('Starting database initialization...');
+
   // Drop and recreate Students table
   db.run(`DROP TABLE IF EXISTS students`);
   db.run(`CREATE TABLE students (
@@ -20,8 +22,8 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     manifesto TEXT NOT NULL,
-    manifesto_full TEXT,
-    campaign_points TEXT,
+    language_proficiency TEXT,
+    category TEXT NOT NULL, -- 'CS' or 'IS'
     photo TEXT
   )`);
 
@@ -58,11 +60,15 @@ db.serialize(() => {
   const salt = bcrypt.genSaltSync(10);
   
   const users = [
-    { id: '2026CS001', name: 'Admin One', pass: '20050528', role: 'admin' },
-    { id: '2026CS002', name: 'Admin Two', pass: '20040531', role: 'admin' },
-    { id: '2026CS003', name: 'Student One', pass: '123abc', role: 'student' },
-    { id: '2026CS004', name: 'Student Two', pass: '456efg', role: 'student' },
-    { id: '2026CS005', name: 'Student Three', pass: '789hij', role: 'student' }
+    // CS Admins
+    { id: '2026CS001', name: 'CS Admin One', pass: '20050528', role: 'admin' },
+    { id: '2026CS002', name: 'CS Admin Two', pass: '20040531', role: 'admin' },
+    // IS Admins
+    { id: '2026IS001', name: 'IS Admin One', pass: '20050528', role: 'admin' },
+    { id: '2026IS002', name: 'IS Admin Two', pass: '20040531', role: 'admin' },
+    // Sample Students
+    { id: '2026CS003', name: 'Student CS One', pass: '123abc', role: 'student' },
+    { id: '2026IS003', name: 'Student IS One', pass: '123abc', role: 'student' }
   ];
 
   const userStmt = db.prepare(`INSERT INTO students (student_id, name, password_hash, role) VALUES (?, ?, ?, ?)`);
@@ -73,18 +79,7 @@ db.serialize(() => {
   });
   userStmt.finalize();
 
-  // Insert candidates with more details
-  const candidates = [
-    ['Jane Smith', 'Vote for better education!', 'Full manifesto for Jane Smith: Improving library facilities, enhancing student support, and more.', 'Library access, Student support, Online resources', '../assets/images/jane.jpg'],
-    ['Mark Taylor', 'Leading the future of campus technology.', 'Full manifesto for Mark Taylor: Upgrading Wi-Fi, new tech labs, and tech-driven solutions.', 'Faster Wi-Fi, Tech Labs, Smart ID cards', '../assets/images/mark.jpg'],
-    ['Sara Connor', 'Inclusivity and diversity for all.', 'Full manifesto for Sara Connor: Ensuring all voices are heard and creating a more inclusive environment.', 'Diversity events, Inclusive spaces, Student representation', '../assets/images/sara.jpg']
-  ];
-
-  const candStmt = db.prepare(`INSERT INTO candidates (name, manifesto, manifesto_full, campaign_points, photo) VALUES (?, ?, ?, ?, ?)`);
-  candidates.forEach(cand => {
-    candStmt.run(cand);
-  });
-  candStmt.finalize();
+  console.log('Candidate table ready (empty).');
 
   // Initial settings
   const settings = [
@@ -97,7 +92,7 @@ db.serialize(() => {
     setStmt.run(set);
   });
   setStmt.finalize(() => {
-    console.log('Database initialized successfully.');
+    console.log('Database initialized successfully with CS and IS admin credentials.');
     process.exit(0);
   });
 });
