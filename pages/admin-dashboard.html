@@ -192,7 +192,7 @@
             </div>
             <div class="control-group" style="margin-left: auto;">
                 <button id="reset-votes-btn" class="btn-modern" style="background: #ef4444; color: white;">
-                    <i class="fas fa-redo"></i> Reset
+                    <i class="fas fa-redo"></i> Reset System
                 </button>
                 <button id="export-results-btn" class="btn-modern" style="background: #f3f4f6; color: #374151; margin-left: 0.5rem;">
                     <i class="fas fa-file-export"></i> CSV
@@ -334,6 +334,7 @@
             
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(updateCountdownUI, 1000);
+            updateCountdownUI(); // Update immediately
             
             // Auto refresh stats every 30 seconds
             setInterval(fetchStats, 30000);
@@ -507,10 +508,10 @@
         }
 
         document.getElementById('reset-votes-btn').onclick = async () => {
-            if (!confirm('CRITICAL: This will wipe all cast votes and reset voter status. Continue?')) return;
+            if (!confirm('CRITICAL: This will wipe all cast votes, reset voter status, and restart the voting timer for 1 hour. Continue?')) return;
             const res = await fetch(`${API_BASE}/admin/reset-votes`, { method: 'POST', credentials: 'include' });
             if (res.ok) {
-                alert('System reset successful.');
+                alert('System reset successful. Voting timer restarted for 1 hour.');
                 initAdminDashboard();
             }
         };
