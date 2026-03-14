@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
+
+const JWT_SECRET = 'election-portal-jwt-secret-key';
 
 exports.login = (req, res) => {
   const { student_id, password } = req.body;
@@ -15,12 +18,21 @@ exports.login = (req, res) => {
     const isMatch = bcrypt.compareSync(password, student.password_hash);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials.' });
 
-    // Store in session (if using) or just return user info
-    req.session.studentId = student.student_id;
-    req.session.role = student.role;
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        student_id: student.student_id, 
+        role: student.role,
+        name: student.name,
+        id: student.id
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
     res.json({ 
       message: 'Login successful', 
+      token: token,
       user: { 
         id: student.id, 
         student_id: student.student_id, 

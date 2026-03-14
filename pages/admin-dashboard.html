@@ -321,6 +321,31 @@
         let countdownInterval;
         let currentSettings = {};
 
+        // Helper function for authenticated API calls
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showAuthError();
+                throw new Error('No authentication token');
+            }
+
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            const response = await fetch(`${API_BASE}${endpoint}`, { ...defaultOptions, ...options });
+            
+            if (response.status === 401 || response.status === 403) {
+                showAuthError();
+                throw new Error('Authentication failed');
+            }
+
+            return response;
+        }
+
         async function initAdminDashboard() {
             deadlinePicker = flatpickr("#deadline-picker", {
                 enableTime: true,
@@ -351,11 +376,7 @@
 
         async function fetchStats() {
             try {
-                const res = await fetch(`${API_BASE}/results`, { credentials: 'include' });
-                if (res.status === 403) {
-                    showAuthError();
-                    return;
-                }
+                const res = await apiCall('/results');
                 const results = await res.json();
                 const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
                 document.getElementById('stat-total-votes').textContent = totalVotes;
@@ -391,11 +412,7 @@
 
         async function fetchStudents() {
             try {
-                const res = await fetch(`${API_BASE}/admin/students`, { credentials: 'include' });
-                if (res.status === 403) {
-                    showAuthError();
-                    return;
-                }
+                const res = await apiCall('/admin/students');
                 const students = await res.json();
                 document.getElementById('stat-total-students').textContent = students.length;
                 const totalVotes = students.filter(s => s.has_voted).length;
@@ -418,12 +435,8 @@
 
         async function fetchSettings() {
             try {
-                const res = await fetch(`${API_BASE}/admin/settings`, { credentials: 'include' });
-                if (res.status === 403) {
-                    showAuthError();
-                    return;
-                }
-                currentSettings = await res.json();
+                const response = await apiCall('/admin/settings');
+                currentSettings = await response.json();
                 
                 const votingOpen = currentSettings.voting_open === '1';
                 const btn = document.getElementById('toggle-voting-btn');
@@ -474,43 +487,47 @@
         }
 
         async function toggleVoting(open) {
+            console.log('toggleVoting called with open:', open);
             try {
                 if (open) {
+                    console.log('Starting voting, updating deadline...');
                     const durationMins = parseInt(document.getElementById('duration-input').value) || 60;
                     const newDeadline = new Date(Date.now() + durationMins * 60000).toISOString();
+                    console.log('New deadline:', newDeadline);
                     
-                    await fetch(`${API_BASE}/admin/update-deadline`, {
+                    await apiCall('/admin/update-deadline', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
                         body: JSON.stringify({ deadline: newDeadline })
                     });
+                    console.log('Deadline updated successfully');
                 }
 
-                const res = await fetch(`${API_BASE}/admin/toggle-voting`, {
+                console.log('Toggling voting status...');
+                const response = await apiCall('/admin/toggle-voting', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
                     body: JSON.stringify({ status: open ? '1' : '0' })
                 });
+                console.log('Toggle response:', response.status, response.ok);
                 
-                if (res.ok) { 
+                if (response.ok) { 
+                    console.log('Response OK, fetching settings...');
                     await fetchSettings();
                     alert(open ? 'Election started successfully!' : 'Election stopped.');
                 } else {
-                    const data = await res.json();
+                    const data = await response.json();
+                    console.log('Response not OK, data:', data);
                     alert(data.error || 'Action failed');
                 }
             } catch (err) { 
-                console.error(err);
-                alert('Action failed'); 
+                console.error('toggleVoting error:', err);
+                alert('Action failed: ' + err.message); 
             }
         }
 
         document.getElementById('reset-votes-btn').onclick = async () => {
             if (!confirm('CRITICAL: This will wipe all cast votes, reset voter status, and restart the voting timer for 1 hour. Continue?')) return;
-            const res = await fetch(`${API_BASE}/admin/reset-votes`, { method: 'POST', credentials: 'include' });
-            if (res.ok) {
+            const response = await apiCall('/admin/reset-votes', { method: 'POST' });
+            if (response.ok) {
                 alert('System reset successful. Voting timer restarted for 1 hour.');
                 initAdminDashboard();
             }
@@ -519,13 +536,11 @@
         document.getElementById('update-deadline-btn').onclick = async () => {
             const deadline = document.getElementById('deadline-picker').value;
             if (!deadline) return;
-            const res = await fetch(`${API_BASE}/admin/update-deadline`, {
+            const response = await apiCall('/admin/update-deadline', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ deadline: new Date(deadline).toISOString() })
             });
-            if (res.ok) {
+            if (response.ok) {
                 alert('Deadline updated');
                 fetchSettings();
             }
@@ -533,12 +548,7 @@
 
         async function fetchCandidatesAdmin() {
             try {
-                const res = await fetch(`${API_BASE}/candidates`, { credentials: 'include' });
-                if (res.status === 403) {
-                    showAuthError();
-                    return;
-                }
-                const candidates = await res.json();
+                const candidates = await apiCall('/candidates').then(res => res.json());
                 const tbody = document.querySelector('#candidates-admin-table tbody');
                 tbody.innerHTML = candidates.map(c => `
                     <tr style="border-bottom: 1px solid #eee;">
@@ -555,7 +565,7 @@
 
         async function deleteCandidate(id) {
             if (!confirm('Remove this candidate from the election?')) return;
-            await fetch(`${API_BASE}/candidates/${id}`, { method: 'DELETE', credentials: 'include' });
+            await apiCall(`/candidates/${id}`, { method: 'DELETE' });
             fetchCandidatesAdmin();
         }
 
@@ -607,19 +617,12 @@
             }
 
             try {
-                const res = await fetch(`${API_BASE}/candidates`, {
+                const response = await apiCall('/candidates', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
 
-                if (res.status === 403) {
-                    showAuthError();
-                    return;
-                }
-
-                if (res.ok) {
+                if (response.ok) {
                     // Clear form
                     document.getElementById('cand-name').value = '';
                     document.getElementById('cand-manifesto').value = '';
@@ -631,7 +634,7 @@
                     initAdminDashboard();
                     alert('Candidate added successfully!');
                 } else {
-                    const data = await res.json();
+                    const data = await response.json();
                     alert(data.error || 'Failed to add candidate. Please try again.');
                 }
             } catch (err) {

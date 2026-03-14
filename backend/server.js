@@ -29,8 +29,8 @@ app.use(session({
   cookie: { 
     secure: false,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    httpOnly: false, // Allow client-side access
-    sameSite: 'lax' // Allow cross-site requests
+    httpOnly: true, // Secure: prevent client-side access
+    sameSite: 'none' // Allow cross-site requests
   }
 }));
 

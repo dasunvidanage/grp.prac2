@@ -31,8 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     console.log('Login successful, saving user');
-                    // Save user info to localStorage
+                    // Save user info and token to localStorage
                     localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('token', data.token);
                     
                     // Redirect based on role
                     if (data.user.role === 'admin') {
@@ -74,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             localStorage.removeItem('user');
+            localStorage.removeItem('token');
             window.location.href = 'login.html';
         });
     }
@@ -135,6 +137,12 @@ function updateUI(user) {
     const userNameDisplay = document.querySelector('#user-name');
     if (userNameDisplay && user) {
         userNameDisplay.textContent = user.name;
+    }
+
+    // Display user role if element exists
+    const userRoleDisplay = document.querySelector('.user-role');
+    if (userRoleDisplay && user) {
+        userRoleDisplay.textContent = user.role === 'admin' ? 'System Administrator' : 'Student';
     }
 }
 
