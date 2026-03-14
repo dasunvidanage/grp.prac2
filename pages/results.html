@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Highcharts for 3D Pie Chart -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
 </head>
 <body class="dashboard-body">
     
@@ -50,8 +54,8 @@
     <main class="main-content">
         <header class="content-header">
             <div>
-                <h1>Live Election Results</h1>
-                <p>Real-time standings for the election</p>
+                <h1>Election Results</h1>
+                <p>Real-time standings for the current election</p>
             </div>
             <div class="user-profile">
                 <div class="user-info">
@@ -64,71 +68,183 @@
             </div>
         </header>
 
-        <div class="card">
-            <div id="results-container" style="margin-bottom: 2rem;">
-                <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>
-                <p>Loading results...</p>
+        <div id="results-card-container">
+            <div class="card" style="text-align: center; padding: 4rem;">
+                <p>Loading election data...</p>
             </div>
+        </div>
 
-            <div style="padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
-                <p id="total-votes-text" style="color: var(--text-muted); font-size: 0.9rem;">
-                    <i class="fas fa-info-circle"></i> Results are updated in real-time.
-                </p>
-            </div>
+        <div class="card" style="margin-top: 2rem;">
+            <div id="results-pie-container" style="height: 400px; width: 100%;"></div>
         </div>
     </main>
 
     <script src="../js/script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', fetchResults);
+        const API_BASE = 'http://127.0.0.1:3000/api';
+        let refreshInterval;
+        const colorRamp = ['avatar-blue', 'avatar-purple', 'avatar-teal', 'avatar-amber', 'avatar-coral', 'avatar-pink'];
+        const hexRamp = ['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b', '#fb7185', '#ec4899'];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchResults();
+            refreshInterval = setInterval(fetchResults, 30000); // Poll every 30s
+        });
 
         async function fetchResults() {
-            const container = document.getElementById('results-container');
-            const totalText = document.getElementById('total-votes-text');
-
             try {
-                const response = await fetch('http://127.0.0.1:3000/api/results', { credentials: 'include' });
-                const results = await response.json();
+                // Fetch settings, results, and student count in parallel
+                const [settingsRes, resultsRes, studentsRes] = await Promise.all([
+                    fetch(`${API_BASE}/admin/settings`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/results`, { credentials: 'include' }),
+                    fetch(`${API_BASE}/admin/students`, { credentials: 'include' }) // Note: Admin required for this usually, but we need student count
+                ]);
 
-                const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
-                totalText.innerHTML = `<i class="fas fa-info-circle"></i> Results are updated in real-time. Total votes cast: ${totalVotes}`;
+                const settings = await settingsRes.json();
+                const results = await resultsRes.json();
+                const students = await studentsRes.json();
 
-                container.innerHTML = '';
-                
-                const categories = ['CS', 'IS'];
-                categories.forEach(cat => {
-                    const catResults = results.filter(r => r.category === cat);
-                    const catTotal = catResults.reduce((sum, r) => sum + r.vote_count, 0);
-                    
-                    const section = document.createElement('div');
-                    section.style.marginBottom = '2.5rem';
-                    section.innerHTML = `<h3 style="font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;">${cat === 'CS' ? 'Computer Science' : 'Information Systems'} Category (${catTotal} votes)</h3>`;
-                    
-                    if (catResults.length === 0) {
-                        section.innerHTML += '<p style="color: #6b7280;">No candidates in this category.</p>';
-                    }
-
-                    catResults.sort((a, b) => b.vote_count - a.vote_count).forEach(res => {
-                        const percentage = catTotal > 0 ? ((res.vote_count / catTotal) * 100).toFixed(1) : 0;
-                        const item = document.createElement('div');
-                        item.className = 'result-item';
-                        item.innerHTML = `
-                            <div class="result-info">
-                                <span style="font-weight: 600;">${res.name}</span>
-                                <span>${res.vote_count} Votes (${percentage}%)</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: ${percentage}%; background: ${cat === 'CS' ? 'var(--primary)' : 'var(--secondary)'}"></div>
-                            </div>
-                        `;
-                        section.appendChild(item);
-                    });
-                    container.appendChild(section);
-                });
-
+                renderResultsCard(settings, results, students.length);
             } catch (err) {
-                container.innerHTML = '<p>Error loading results.</p>';
+                console.error('Error fetching results:', err);
+                document.getElementById('results-card-container').innerHTML = '<div class="card"><p>Error loading results. Please try again later.</p></div>';
             }
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        function renderResultsCard(settings, results, totalStudents) {
+            const container = document.getElementById('results-card-container');
+            
+            const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
+            const turnout = totalStudents > 0 ? ((totalVotes / totalStudents) * 100).toFixed(1) : 0;
+            
+            // Determine State
+            const isLive = settings.voting_open === '1';
+            const deadline = new Date(settings.voting_deadline);
+            const isExpired = new Date() > deadline;
+            
+            let state = 'live';
+            if (!isLive && !isExpired) state = 'live'; // Manually closed early but still "live" view
+            if (isExpired) state = 'final';
+            if (!isLive && isExpired) state = 'final';
+
+            const stateConfig = {
+                live: { label: 'Live', class: 'badge-red', pulse: true, results_label: 'Live results — may change' },
+                closed: { label: 'Voting closed', class: 'badge-amber', pulse: false, results_label: 'Voting closed · Results under review' },
+                final: { label: 'Final results', class: 'badge-green', pulse: false, results_label: 'Official final results' }
+            };
+
+            const config = stateConfig[state];
+            const maxVotes = Math.max(...results.map(r => r.vote_count), 1);
+
+            let timeLeft = '00:00:00';
+            if (state === 'live') {
+                const distance = deadline - new Date();
+                if (distance > 0) {
+                    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((distance % (1000 * 60)) / 1000);
+                    timeLeft = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                } else {
+                    timeLeft = 'Closed';
+                }
+            } else {
+                timeLeft = 'Closed';
+            }
+
+            let html = `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">UCSC Presidential Election 2026</h2>
+                            <p style="color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">${config.results_label}</p>
+                        </div>
+                        <div class="status-badge-live ${config.class}">
+                            ${config.pulse ? '<div class="pulse-dot"></div>' : ''}
+                            ${config.label}
+                        </div>
+                    </div>
+
+                    <div class="results-stats-row">
+                        <div class="stat-mini">
+                            <span class="stat-mini-label">Total Votes</span>
+                            <span class="stat-mini-value">${totalVotes}</span>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="stat-mini-label">Turnout</span>
+                            <span class="stat-mini-value">${turnout}%</span>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="stat-mini-label">Time Left</span>
+                            <span class="stat-mini-value">${timeLeft}</span>
+                        </div>
+                    </div>
+
+                    <div id="candidates-results-list">
+                        ${results.sort((a,b) => b.vote_count - a.vote_count).map((c, i) => {
+                            const pct = totalVotes > 0 ? ((c.vote_count / totalVotes) * 100).toFixed(1) : 0;
+                            const isLeading = i === 0 && c.vote_count > 0;
+                            const colorClass = colorRamp[i % colorRamp.length];
+                            const hexColor = hexRamp[i % hexRamp.length];
+                            
+                            return `
+                                <div class="candidate-result-row ${isLeading && state === 'final' ? 'winner' : ''}">
+                                    <div class="candidate-avatar-mini ${colorClass}">${getInitials(c.name)}</div>
+                                    <div class="result-progress-container">
+                                        <div class="result-info">
+                                            <span>${c.name} ${isLeading ? '<i class="fas fa-crown" style="color: #f59e0b; margin-left: 0.5rem;"></i>' : ''}</span>
+                                            <span>${pct}% (${c.vote_count})</span>
+                                        </div>
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" style="width: ${pct}%; background: ${hexColor}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            renderPieChart(results);
+        }
+
+        function renderPieChart(results) {
+            const chartData = results.map((r, i) => ({
+                name: r.name,
+                y: r.vote_count,
+                color: hexRamp[i % hexRamp.length]
+            }));
+
+            Highcharts.chart('results-pie-container', {
+                chart: {
+                    type: 'pie',
+                    options3d: { enabled: true, alpha: 45, beta: 0 },
+                    backgroundColor: 'transparent'
+                },
+                title: { text: 'Proportional Vote Share', style: { fontWeight: '800', fontSize: '1rem' } },
+                tooltip: { pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>' },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        depth: 35,
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.name}: {point.percentage:.1f}%'
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Votes',
+                    data: chartData
+                }],
+                credits: { enabled: false }
+            });
         }
     </script>
 </body>

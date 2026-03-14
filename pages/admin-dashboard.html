@@ -495,6 +495,12 @@
                 timerEl.style.color = '#ef4444';
                 statusBadge.textContent = 'Time Expired';
                 statusBadge.className = 'status-badge status-closed';
+                
+                // Automatically stop voting when deadline reached
+                if (currentSettings.voting_open === '1') {
+                    console.log('Deadline reached. Automatically stopping voting...');
+                    toggleVoting(false);
+                }
                 return;
             }
 
@@ -507,6 +513,7 @@
         }
 
         async function toggleVoting(open) {
+            console.log('Toggling voting to:', open ? 'Active' : 'Closed');
             try {
                 if (open) {
                     const durationMins = parseInt(document.getElementById('duration-input').value) || 60;
@@ -525,7 +532,7 @@
                 
                 if (res.ok) { 
                     await fetchSettings();
-                    alert(open ? 'Election started successfully!' : 'Election stopped.');
+                    alert(open ? 'Voting is now ENABLED. Student IDs can submit votes.' : 'Voting is now DISABLED. All vote counts are frozen.');
                 } else {
                     const data = await res.json();
                     alert(data.error || 'Action failed');

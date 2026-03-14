@@ -31,11 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     console.log('Login successful, saving user');
-                    // Save user info to localStorage
+                    // Set global flags in localStorage for persistence
+                    data.user.isLoggedIn = true;
+                    data.user.isAdmin = (data.user.role === 'admin');
+                    
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
                     // Redirect based on role
-                    if (data.user.role === 'admin') {
+                    if (data.user.isAdmin) {
+                        console.log('Admin detected, redirecting to dashboard...');
                         window.location.href = 'admin-dashboard.html';
                     } else {
                         window.location.href = 'dashboard.html';
