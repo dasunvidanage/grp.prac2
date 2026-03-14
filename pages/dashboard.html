@@ -66,12 +66,12 @@
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                <div class="stat-icon" id="status-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Election Status</span>
-                    <h3 class="stat-value">Active</h3>
+                    <h3 class="stat-value" id="status-text">Active</h3>
                 </div>
             </div>
             <div class="stat-card">
@@ -80,7 +80,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Total Candidates</span>
-                    <h3 class="stat-value">3</h3>
+                    <h3 class="stat-value" id="candidate-count">0</h3>
                 </div>
             </div>
         </div>
@@ -147,5 +147,50 @@
     </main>
 
     <script src="../js/script.js"></script>
+    <script>
+        async function updateDashboard() {
+            try {
+                const [settingsRes, candidatesRes] = await Promise.all([
+                    fetch('http://127.0.0.1:3000/api/admin/settings', { credentials: 'include' }),
+                    fetch('http://127.0.0.1:3000/api/candidates', { credentials: 'include' })
+                ]);
+
+                if (settingsRes.ok) {
+                    const settings = await settingsRes.json();
+                    const statusText = document.getElementById('status-text');
+                    const statusIcon = document.getElementById('status-icon');
+
+                    const isOpen = settings.voting_open === '1';
+                    const deadline = new Date(settings.voting_deadline).getTime();
+                    const now = new Date().getTime();
+                    const isEnded = deadline - now <= 0;
+
+                    if (!isOpen || isEnded) {
+                        statusText.textContent = 'Ended';
+                        statusText.style.color = 'var(--danger)';
+                        statusIcon.style.background = 'rgba(239, 68, 68, 0.1)';
+                        statusIcon.style.color = 'var(--danger)';
+                        statusIcon.innerHTML = '<i class="fas fa-clock"></i>';
+                    } else {
+                        statusText.textContent = 'Active';
+                        statusText.style.color = 'var(--success)';
+                        statusIcon.style.background = 'rgba(16, 185, 129, 0.1)';
+                        statusIcon.style.color = 'var(--success)';
+                        statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    }
+                }
+
+                if (candidatesRes.ok) {
+                    const candidates = await candidatesRes.json();
+                    document.getElementById('candidate-count').textContent = candidates.length;
+                }
+            } catch (err) {
+                console.error('Failed to fetch dashboard data:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', updateDashboard);
+        setInterval(updateDashboard, 10000); // Update every 10 seconds
+    </script>
 </body>
 </html>

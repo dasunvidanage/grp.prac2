@@ -206,56 +206,43 @@ a {
 }
 
 .logo-container {
+    background: white;
+    padding: 1rem;
+    border-radius: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
     animation: fadeIn 1s ease-out forwards;
 }
 
 .hero-logo {
     width: 80px;
     height: auto;
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
 }
 
-.scroll-indicator {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
+.btn-primary {
+    display: inline-flex;
     align-items: center;
-    gap: 1rem;
-    opacity: 0;
-    animation: fadeIn 1s ease-out 1.5s forwards;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-.mouse {
-    width: 26px;
-    height: 42px;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    position: relative;
-}
-
-.wheel {
-    width: 4px;
-    height: 8px;
+    gap: 0.75rem;
+    padding: 1.125rem 2.25rem;
     background: white;
-    border-radius: 2px;
-    position: absolute;
-    top: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: scrollWheel 2s infinite;
+    color: var(--primary);
+    border-radius: 999px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    transition: var(--transition);
+    border: 2px solid transparent;
 }
 
-@keyframes scrollWheel {
-    0% { opacity: 1; transform: translateX(-50%) translateY(0); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(15px); }
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    background: var(--primary);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Modern Mesh Gradient Background */

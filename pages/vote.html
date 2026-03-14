@@ -234,7 +234,14 @@
                     if (distance < 0) {
                         clearInterval(timerFunc);
                         timeLeftElement.innerHTML = "EXPIRED";
-                        location.reload();
+                        document.getElementById('candidate-container').innerHTML = `
+                            <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                                <i class="fas fa-clock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                                <h3>Voting has ended</h3>
+                                <p style="color: var(--text-muted); margin-top: 0.5rem;">The election period is over. You can view the final results in the Results section.</p>
+                                <a href="results.html" class="btn-sleek" style="display: inline-block; margin-top: 1.5rem;">View Results</a>
+                            </div>
+                        `;
                         return;
                     }
 
