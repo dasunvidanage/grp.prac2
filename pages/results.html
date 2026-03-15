@@ -3,168 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Results - UCSC Election Portal</title>
+    <title>Results Dashboard - UCSC Election Portal</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-<body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>UCSC Election</h2>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box">
+                <img src="../assets/images/UCSC_logo.png" alt="UCSC Logo">
             </div>
-            <ul class="nav-links">
-                <li class="nav-item">
-                    <a href="dashboard.html" class="nav-link">
-                        <i class="fas fa-chart-line"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="vote.html" class="nav-link">
-                        <i class="fas fa-vote-yea"></i> Vote
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="results.html" class="nav-link active">
-                        <i class="fas fa-poll-h"></i> Results
-                    </a>
-                </li>
-                <li class="nav-item" style="margin-top: 2rem;">
-                    <a href="../index.html" class="nav-link">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
-                </li>
-            </ul>
-        </aside>
+            <span>UCSC Portal</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="vote.html" class="nav-link">
+                <i class="fas fa-vote-yea"></i>
+                <span>Cast Vote</span>
+            </a>
+            <a href="results.html" class="nav-link active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Results</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#" id="logout-btn" class="nav-link logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="navbar">
-                <div class="navbar-title">
-                    <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">UCSC Election Portal</h1>
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>ELECTION RESULTS</h1>
+                <p>Real-time voting analytics & distribution</p>
+            </div>
+        </header>
+
+        <!-- Live Election Results Card -->
+        <div class="election-results-card">
+            <div class="erc-header">
+                <div class="erc-title-group">
+                    <h2 id="erc-election-title">UCSC Student Union — Board Elections 2026</h2>
+                    <p id="erc-position-subtitle">Executive Committee · Voting in progress</p>
                 </div>
-                <div class="user-info" style="display: flex; align-items: center;">
-                    <span style="font-weight: 600; margin-right: 1rem; color: #64748b;">Welcome, 2022CS001</span>
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">JD</div>
+                <div id="erc-status-badge" class="erc-status-badge">
+                    <div class="erc-pulse-dot"></div>
+                    <span>Live</span>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="erc-stats-row">
+                <div class="erc-stat-box">
+                    <span class="erc-stat-label">Total votes</span>
+                    <span id="erc-total-votes" class="erc-stat-value">0</span>
+                </div>
+                <div class="erc-stat-box">
+                    <span class="erc-stat-label">Turnout</span>
+                    <span id="erc-turnout" class="erc-stat-value">0%</span>
+                </div>
+                <div class="erc-stat-box">
+                    <span class="erc-stat-label">Time left</span>
+                    <span id="erc-time-left" class="erc-stat-value">--:--:--</span>
                 </div>
             </header>
 
             <div class="content-padding">
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Live Election Results</h2>
-                    <p style="color: var(--text-muted);">Real-time standings for the UCSC Student Union election.</p>
+                    <p style="color: var(--text-muted);">Real-time standings for the UCSC Student Union President election.</p>
                 </div>
 
-                <!-- Winners Overview Section -->
-                <div style="margin-bottom: 3rem;">
-                    <h3 style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Election Winners</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                        <!-- Candidate 1 Winner -->
-                        <div class="card winner-card" style="text-align: center; border: 2px solid var(--primary); background: linear-gradient(to bottom, #ffffff, #f5f3ff); position: relative; overflow: hidden;">
-                            <div class="crown-icon" style="color: #f59e0b; font-size: 1.5rem; margin-bottom: 0.5rem;"><i class="fas fa-crown"></i></div>
-                            <p style="font-weight: 700; font-size: 1.1rem; color: var(--primary);">Candidate 1</p>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">342 Votes</p>
-                        </div>
-                        <!-- Candidate 2 Winner -->
-                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
-                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
-                            <p style="font-weight: 700; font-size: 1.1rem;">Candidate 2</p>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">150 Votes</p>
-                        </div>
-                        <!-- Candidate 3 Winner -->
-                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
-                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
-                            <p style="font-weight: 700; font-size: 1.1rem;">Candidate 3</p>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">185 Votes</p>
-                        </div>
-                        <!-- Candidate 4 Winner -->
-                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
-                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
-                            <p style="font-weight: 700; font-size: 1.1rem;">Candidate 4</p>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">210 Votes</p>
-                        </div>
-                        <!-- Candidate 5 Winner -->
-                        <div class="card winner-card" style="text-align: center; border: 1px solid #e2e8f0; position: relative;">
-                            <div class="crown-icon" style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 0.5rem;"><i class="fas fa-award"></i></div>
-                            <p style="font-weight: 700; font-size: 1.1rem;">Candidate 5</p>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">120 Votes</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Result -->
-                <div class="card" style="margin-bottom: 2rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.4rem 1rem; border-radius: 2rem; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2);">
-                            <i class="fas fa-crown"></i> Winner: Candidate 1
-                        </span>
-                    </div>
-                    
-                    <div style="height: 280px; width: 100%; margin-bottom: 2rem; background: #f8fafc; border-radius: 12px; padding: 1.5rem; position: relative;">
-                        <div id="votesChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                        <div class="result-item" style="padding: 1rem; background: rgba(99, 102, 241, 0.05); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.1);">
+                <div class="card">
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Presidential Category</h3>
+                        
+                        <!-- Candidate 1 -->
+                        <div class="result-item">
                             <div class="result-info">
-                                <span><strong>Candidate 1</strong></span>
-                                <span style="font-weight: 700; color: var(--primary);">342 Votes</span>
+                                <span>Amara Perera</span>
+                                <span>342 Votes (40.2%)</span>
                             </div>
-                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 40.2%;"></div></div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 40.2%;"></div>
+                            </div>
                         </div>
-                        <div class="result-item" style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
-                            <div class="result-info"><span>Candidate 6</span><span>285 Votes</span></div>
-                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 33.5%; background: #64748b;"></div></div>
-                        </div>
-                        <div class="result-item" style="padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
-                            <div class="result-info"><span>Candidate 7</span><span>223 Votes</span></div>
-                            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 26.3%; background: #10b981;"></div></div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Secondary Results Grid -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
-                    <!-- Result 1 -->
-                    <div class="card">
-                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
-                            <div id="year1Chart" class="chart-animate" style="width: 100%; height: 100%;"></div>
+                        <!-- Candidate 2 -->
+                        <div class="result-item">
+                            <div class="result-info">
+                                <span>Kasun Silva</span>
+                                <span>285 Votes (33.5%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 33.5%; background: linear-gradient(to right, #64748b, #94a3b8);"></div>
+                            </div>
                         </div>
-                        <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Candidate 5</strong></span><span>120 Votes</span></div>
-                    </div>
 
-                    <!-- Result 2 -->
-                    <div class="card">
-                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
-                            <div id="secretaryChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
-                        </div>
-                        <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Candidate 2</strong></span><span>150 Votes</span></div>
-                    </div>
-
-                    <!-- Result 3 -->
-                    <div class="card">
-                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
-                            <div id="treasurerChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
+                        <!-- Candidate 3 -->
+                        <div class="result-item">
+                            <div class="result-info">
+                                <span>Nimmi Fernando</span>
+                                <span>223 Votes (26.3%)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 26.3%; background: linear-gradient(to right, #10b981, #34d399);"></div>
+                            </div>
                         </div>
                         <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Candidate 3</strong></span><span>185 Votes</span></div>
                     </div>
 
-                    <!-- Result 4 -->
-                    <div class="card">
-                        <div style="height: 200px; width: 100%; margin-bottom: 1.5rem; background: #f8fafc; border-radius: 8px; padding: 1rem;">
-                            <div id="prChart" class="chart-animate" style="width: 100%; height: 100%;"></div>
-                        </div>
-                        <div class="result-info" style="font-size: 0.9rem;"><span><strong>Winner: Candidate 4</strong></span><span>210 Votes</span></div>
+                    <div style="padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> Results are updated every 5 minutes. Total votes cast: 850
+                        </p>
                     </div>
-                </div>
-
-                <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; text-align: center;">
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">
-                        <i class="fas fa-info-circle"></i> Results are updated every 5 minutes. Total votes cast: 850
-                    </p>
                 </div>
             </div>
         </main>

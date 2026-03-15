@@ -1,0 +1,18 @@
+# Ignore huge dependency folders
+node_modules/
+bower_components/
+
+# Ignore Git history (very large and confusing for AI)
+.git/
+
+# Ignore macOS system files
+.DS_Store
+Thumbs.db
+
+# Ignore your environment variables/secrets
+.env
+*.key
+
+# Ignore build/dist folders
+dist/
+build/
