@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         .election-controls-row {
             display: flex;
@@ -278,7 +282,7 @@
                     <i class="fas fa-redo"></i> Reset
                 </button>
                 <button id="export-results-btn" class="btn-modern" style="background: #f3f4f6; color: #374151; margin-left: 0.5rem;">
-                    <i class="fas fa-file-export"></i> CSV
+                    <i class="fas fa-file-export"></i> Export Results
                 </button>
             </div>
         </div>
@@ -647,6 +651,104 @@
                 fetchSettings();
             }
         };
+
+        async function exportResultsToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = jsPDF();
+            
+            try {
+                // Fetch latest data
+                const [resultsRes, settingsRes, studentsRes] = await Promise.all([
+                    authFetch(`${API_BASE}/results`),
+                    authFetch(`${API_BASE}/admin/settings`),
+                    authFetch(`${API_BASE}/admin/students`)
+                ]);
+                
+                const results = await resultsRes.json();
+                const settings = await settingsRes.json();
+                const students = await studentsRes.json();
+                
+                const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
+                const turnout = students.length > 0 ? ((totalVotes / students.length) * 100).toFixed(1) : 0;
+                
+                // Header
+                doc.setFontSize(22);
+                doc.setTextColor(99, 102, 241); // Primary color
+                doc.text('ELECTION RESULTS REPORT', 105, 20, { align: 'center' });
+                
+                doc.setFontSize(14);
+                doc.setTextColor(31, 41, 55);
+                doc.text('UCSC Student Union — Board Elections 2026', 105, 30, { align: 'center' });
+                
+                doc.setFontSize(10);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 38, { align: 'center' });
+                
+                // Stats Table
+                doc.autoTable({
+                    startY: 50,
+                    head: [['Category', 'Statistic']],
+                    body: [
+                        ['Total Eligible Voters', students.length],
+                        ['Total Votes Cast', totalVotes],
+                        ['Voter Turnout', `${turnout}%`],
+                        ['Election Status', settings.voting_open === '1' ? 'ACTIVE' : 'CLOSED'],
+                        ['Final Deadline', new Date(settings.voting_deadline).toLocaleString()]
+                    ],
+                    theme: 'striped',
+                    headStyles: { fillColor: [99, 102, 241] }
+                });
+
+                // Results Detail
+                doc.setFontSize(16);
+                doc.setTextColor(31, 41, 55);
+                doc.text('Candidate Rankings', 14, doc.lastAutoTable.finalY + 15);
+
+                const categories = ['CS', 'IS'];
+                let currentY = doc.lastAutoTable.finalY + 20;
+
+                categories.forEach(cat => {
+                    const catResults = results.filter(r => r.category === cat).sort((a, b) => b.vote_count - a.vote_count);
+                    
+                    doc.setFontSize(12);
+                    doc.text(`${cat === 'CS' ? 'Computer Science' : 'Information Systems'} Stream`, 14, currentY);
+                    
+                    const tableData = catResults.map((c, i) => [
+                        i + 1,
+                        c.name,
+                        c.vote_count,
+                        totalVotes > 0 ? `${((c.vote_count / totalVotes) * 100).toFixed(1)}%` : '0%'
+                    ]);
+
+                    doc.autoTable({
+                        startY: currentY + 5,
+                        head: [['Rank', 'Candidate Name', 'Votes', 'Percentage']],
+                        body: tableData,
+                        theme: 'grid',
+                        headStyles: { fillColor: cat === 'CS' ? [55, 138, 221] : [127, 119, 221] }
+                    });
+                    
+                    currentY = doc.lastAutoTable.finalY + 15;
+                });
+
+                // Footer
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(156, 163, 175);
+                    doc.text('UCSC Official Election Record - Confirmed by Board of Elections', 105, 285, { align: 'center' });
+                    doc.text(`Page ${i} of ${pageCount}`, 190, 285, { align: 'right' });
+                }
+
+                doc.save(`Election_Results_2026_${new Date().getTime()}.pdf`);
+            } catch (err) {
+                console.error('Export failed:', err);
+                alert('Failed to generate PDF. Please check console for details.');
+            }
+        }
+
+        document.getElementById('export-results-btn').onclick = exportResultsToPDF;
 
         async function fetchCandidatesAdmin() {
             try {

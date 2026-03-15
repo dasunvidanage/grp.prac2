@@ -1,7 +1,6 @@
 # 🗳️ UCSC Localized Voting Terminal (LVT)
 
-**Strategic Vision:** An infrastructure-independent digital voting system designed to modernize the UCSC Student Union elections through high-integrity local logic.
-
+**Strategic Vision:** An infrastructure-independent digital voting system designed to modernize the UCSC Student Union elections through high-integrity local logic and interactive data visualization.
 
 ## 🚩 The Problem Landscape
 
@@ -15,94 +14,63 @@ Despite being a computing faculty, current election processes at UCSC suffer fro
 
 Our application replaces manual overhead and "leaky" digital forms with a **standalone terminal** that requires zero internet connectivity.
 
-* **Identity-First Verification:** By using a pre-verified registry of Student IDs and unique tokens (NIC/Index), we eliminate unauthorized voting and link-leaks.
+* **Identity-First Verification:** By using a pre-verified registry of Student IDs and unique passwords, we eliminate unauthorized voting and link-leaks.
 * **One-Vote Constraint:** Our database logic prevents "double-voting" at the source, ensuring 100% accurate results.
 * **Infrastructure Independence:** By running 100% local logic, the system remains fully functional during network outages—a necessity for a mission-critical voting environment.
-
 
 ## 🛠️ Technical Architecture
 
 We have opted for a high-performance stack that respects the "Local Logic" mandate:
 
-* **Next.js (App Router):** Provides a professional, fast-loading UI that handles complex state transitions without page reloads.
-* **better-sqlite3:** A strategic choice over standard `sqlite3`. Its **Synchronous API** and **Atomic Transactions** ensure that votes are either fully recorded or rolled back if a crash occurs—zero data corruption.
-* **Tailwind CSS (Auditorium-Ready):** Hard-coded **High-Contrast Dark Mode** specifically optimized for large-scale auditorium projectors.
-* **Environment:** 100% Local. No external APIs. No Cloud. No AI.
-* **Architecture:** Serverless local logic – No external APIs or cloud dependencies.
-
+* **Frontend:** Clean **HTML5, CSS3 (Vanilla), and JavaScript (ES6+)**. This ensures maximum compatibility and performance without the overhead of heavy frameworks.
+* **Backend:** **Node.js with Express**. A lightweight and scalable server architecture to handle API requests and authentication.
+* **Database:** **SQLite (sqlite3)**. A self-contained, serverless database engine that ensures data integrity and simplifies local deployment.
+* **Data Visualization:** **Highcharts 3D**. Provides interactive, high-contrast 3D donut charts for real-time results analysis.
+* **Reporting:** **jsPDF & jsPDF-AutoTable**. Enables professional PDF report generation for official election record-keeping.
+* **Environment:** 100% Local. No external APIs required for core functionality.
 
 ## ⚙️ Core Logic Flow
 
 ### 1. The Voter "Check-In"
-
-* **Verification:** Students enter their ID (e.g., `2022/CS/001`) and NIC.
-* **Registry Check:** The system queries the local `users` table. If the ID is missing or `has_voted` is already true, the session is terminated immediately.
+* **Verification:** Students login using their **UCSC Student ID** and a secure password.
+* **Registry Check:** The system queries the local `students` table. If the ID is missing or `has_voted` is already true, access to the voting booth is denied.
 
 ### 2. Secure Voting & Anonymity
-
-* **Database Transaction:** Every vote is wrapped in a `better-sqlite3` transaction block.
-* **Privacy:** After verification, the vote is recorded in a decoupled table to maintain ballot secrecy while updating the voter's status to "Voted."
-
+* **Database Integrity:** Votes are recorded securely while updating the voter's status to "Voted" in an atomic operation.
+* **Real-Time Synchronization:** Results are updated instantly across all connected terminals using periodic polling.
 
 ## 🔒 Key Logic & Functionalities
 
-1. **Identity Verification:** Students "login" using their **UCSC Student ID** and a **Unique Token** (NIC/Index Number).
-2. **One-Vote Enforcement:** The system checks the local registry to ensure the ID is valid and has not already cast a vote (`has_voted` flag).
-3. **Nomination Management:** A secure Admin panel to approve candidates and manifestos.
-4. **Real-Time Analytics:** An automated dashboard that tallies results instantly—no manual CSV processing required.
+1. **Identity Verification:** Students authenticate using verified credentials.
+2. **One-Vote Enforcement:** Strict database-level checks prevent duplicate votes.
+3. **Interactive Results:** **3D Donut Charts** for Computer Science (CS) and Information Systems (IS) candidates, allowing for visual vote share analysis.
+4. **Professional Export:** Admin capability to generate detailed **PDF reports** containing ranking, vote counts, and turnout statistics.
+5. **Real-Time Activity Feed:** Live tracking of voter turnout and recent activity in the Admin Panel.
 
 
-## 🎭 Presentation & Demo Strategy
+The current README has a few structural weaknesses that could lead to "environment drift" or failed builds. If you want this to be a professional-grade document, you need to eliminate ambiguity and enforce a strict sequence.
 
-A presentation in a large hall requires high-level coordination. We will avoid "amateur" mistakes by following those:
+Here is the revised version. I have standardized the formatting, added a critical environment check, and cleaned up the credential block for better readability.
 
-
-### 1. Presentation Roles: The "No Dead Air" Rule
-
-To keep the audience engaged, we operate in two distinct roles:
-
-* **The Driver:** Navigates the UI and executes the demo. Movements must be deliberate and slow enough for the audience to follow.
-* **The Speaker:** Provides the technical narrative. **Mandate:** If the Driver is typing or a page is loading, the Speaker must be explaining the "Engineering Why" (e.g., explaining the SQL transaction logic or the `better-sqlite3` execution).
-
-### 2. High-Impact Demo Script (The "Happy & Sad" Paths)
-
-We will demonstrate the system's robustness through three specific phases:
-
-1. **Phase 1: The Happy Path:** Cast a successful vote using a valid UCSC Student ID format to show the seamless user experience.
-2. **Phase 2: The Security Test (The "Sad" Path):** Attempt to vote again with the same ID. This proves our "Local Logic" handles identity integrity and prevents double-voting.
-3. **Phase 3: The Big Reveal:** Switch to the Admin Dashboard. Use high-contrast **Bar charts** to show real-time analytics, proving the manual counting era is over.
-
-### 3. Visual & Technical Standards
-
-* **Auditorium Visibility:** The app is hardcoded in **High-Contrast Dark Mode**. Text and charts must be bold and oversized to ensure legibility for the back row.
-* **Real-Time Analytics:** The Admin panel must reflect data changes instantly to demonstrate the efficiency of our local database triggers without refreshing the page.
-
-
-### 4. Final Pre-Demo Checklist (The "No-Fail" Protocol)
-
-* ✅ **The "Seed" Data:** The database must be pre-populated with **20+ test votes**. A chart with only 1 or 2 votes looks like a prototype; 20+ votes look like a production-ready system.
-* ✅ **Infrastructure Proof:** **Wi-Fi must be turned OFF** before the presentation starts. This is our physical proof that the "Local Logic" mandate has been met 100%.
-* ✅ **Display Calibration:** Zoom the browser to 125% or 150% so the UI elements are "Auditorium-Scale."
-
-
+---
 
 ## Getting Started
 
-To get this project running locally, follow these steps exactly. High-level execution requires attention to detail; skipping a dependency check or running commands in the wrong directory will result in immediate build failures.
+To establish a functional local environment, execute the following steps in sequence. **Failure to follow the directory transitions (`cd`) precisely will result in broken dependency links.**
 
-#### **A. Clone the Repository**
+### 1. Repository Acquisition
 
-Download the project files to your local machine:
+Clone the source and enter the root directory:
 
 ```bash
-git clone <repo-url>
-cd <repository-name>
+git clone https://github.com/dasunvidanage/grp.prac2.git
+cd grp.prac2
 
 ```
 
-#### **B. Initialize the Backend**
+### 2. Backend Configuration & Dependencies
 
-The server logic and API reside in the `backend` directory. You must install the necessary dependencies for the frontend to communicate with the system.
+The core logic resides in the `backend` directory. You must install the environment before attempting to initialize the data layer.
 
 ```bash
 cd backend
@@ -110,20 +78,34 @@ npm install
 
 ```
 
-#### **C. Database Initialization & Launch**
+### 3. Database Initialization
 
-Prepare the database and start the service:
+Before launching the server, you must seed the local database. Ensure you have Node.js installed and verified ($node -v$).
 
 ```bash
-# Initialize the database schema and sample data
+# Populate schema and sample datasets
 node initDB.js
 
-# Start the Node.js server
+```
+
+### 4. Service Launch
+
+Start the Node.js runtime. The server must remain active to handle frontend requests.
+
+```bash
 npm start
 
 ```
 
 
-#### **D. Accessing the Application**
 
-Once the server is running, the portal is accessible via your web browser
+### Test Credentials
+
+Use the following identities to verify role-based access control (RBAC) within the application:
+
+| Role | User ID | Password | Department |
+| --- | --- | --- | --- |
+| **Admin** | `ADM001` | `admin123` | System Oversight |
+| **Admin** | `ADM002` | `admin123` | System Oversight |
+| **Student** | `2026CS001` | `student123` | Computer Science |
+| **Student** | `2026IS151` | `student123` | Information Systems |

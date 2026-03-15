@@ -52,3 +52,16 @@ exports.login = (req, res) => {
     }
   });
 };
+
+exports.getStatus = (req, res) => {
+  const { student_id } = req.params;
+  Student.findByStudentId(student_id, (err, student) => {
+    if (err) return res.status(500).json({ error: 'Internal server error.' });
+    if (!student) return res.status(404).json({ error: 'Student not found.' });
+
+    res.json({
+      has_voted: student.has_voted,
+      voted_at: student.voted_at
+    });
+  });
+};

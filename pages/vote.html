@@ -175,12 +175,36 @@
             const container = document.getElementById('candidate-container');
             const user = JSON.parse(localStorage.getItem('user'));
 
-            if (user && user.has_voted) {
-                showConfirmation(localStorage.getItem('last_vote_id') || '#UNKNOWN');
+            if (!user) {
+                window.location.href = 'login.html';
                 return;
             }
 
-            await startCountdown();
+            // Fetch latest status from server to handle admin resets
+            try {
+                const statusRes = await fetch(`http://127.0.0.1:3000/api/status/${user.student_id}`, { credentials: 'include' });
+                if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    user.has_voted = statusData.has_voted;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    // If server says hasn't voted, clear any old vote ID from localStorage
+                    if (!user.has_voted) {
+                        localStorage.removeItem('last_vote_id');
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch status:', err);
+            }
+
+            if (user.has_voted) {
+                showConfirmation(localStorage.getItem('last_vote_id') || '#VERIFIED');
+                return;
+            }
+
+            const isVotingOpen = await startCountdown();
+
+            if (!isVotingOpen) return;
 
             try {
                 // Requirement: Load ALL candidates from the same source (the API)
@@ -236,10 +260,24 @@
                             <p style="color: var(--text-muted); margin-top: 0.5rem;">Please wait for the election to begin.</p>
                         </div>
                     `;
-                    return;
+                    return false;
                 }
 
                 const deadline = new Date(settings.voting_deadline).getTime();
+                const now = new Date().getTime();
+                
+                if (deadline - now < 0) {
+                    document.getElementById('candidate-container').innerHTML = `
+                        <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                            <i class="fas fa-clock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                            <h3>Voting has ended</h3>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">The election period is over. You can view the final results in the Results section.</p>
+                            <a href="results.html" class="btn-sleek" style="display: inline-block; margin-top: 1.5rem;">View Results</a>
+                        </div>
+                    `;
+                    return false;
+                }
+
                 const timerElement = document.getElementById('countdown-timer');
                 const timeLeftElement = document.getElementById('time-left');
                 
@@ -270,7 +308,12 @@
                     timeLeftElement.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }, 1000);
 
-            } catch (err) { console.error('Timer error', err); }
+                return true;
+
+            } catch (err) { 
+                console.error('Timer error', err);
+                return false;
+            }
         }
 
         function openModal(cand) {

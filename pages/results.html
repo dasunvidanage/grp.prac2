@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../js/highcharts.js"></script>
+    <script src="../js/highcharts-3d.js"></script>
 </head>
 <body class="dashboard-body">
     
@@ -83,6 +85,7 @@
                 <!-- CS Candidates Column -->
                 <div class="erc-category-column">
                     <h3 class="erc-category-title"><i class="fas fa-laptop-code"></i> Computer Science (CS)</h3>
+                    <div id="cs-chart-container" style="height: 320px; width: 100%; margin-bottom: 20px;"></div>
                     <div id="cs-candidates-list" class="erc-candidates-list">
                         <!-- Candidates injected here -->
                     </div>
@@ -91,6 +94,7 @@
                 <!-- IS Candidates Column -->
                 <div class="erc-category-column">
                     <h3 class="erc-category-title"><i class="fas fa-network-wired"></i> Information Systems (IS)</h3>
+                    <div id="is-chart-container" style="height: 320px; width: 100%; margin-bottom: 20px;"></div>
                     <div id="is-candidates-list" class="erc-candidates-list">
                         <!-- Candidates injected here -->
                     </div>
@@ -185,7 +189,63 @@
             renderCategoryResults('cs', csResults);
             renderCategoryResults('is', isResults);
 
+            renderCategoryChart('cs', csResults);
+            renderCategoryChart('is', isResults);
+
             runCountdown();
+        }
+
+        function renderCategoryChart(prefix, catResults) {
+            const container = document.getElementById(`${prefix}-chart-container`);
+            if (catResults.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+
+            const data = catResults.map((c, i) => ({
+                name: c.name,
+                y: c.vote_count,
+                color: designColors[i % designColors.length]
+            }));
+
+            Highcharts.chart(`${prefix}-chart-container`, {
+                chart: {
+                    type: 'pie',
+                    options3d: {
+                        enabled: true,
+                        alpha: 45,
+                        beta: 0
+                    },
+                    backgroundColor: 'transparent'
+                },
+                title: { text: '' },
+                accessibility: { point: { valueSuffix: '%' } },
+                tooltip: { pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>' },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        depth: 35,
+                        innerSize: 100,
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.name}',
+                            style: {
+                                fontSize: '11px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: '600'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Vote Share',
+                    data: data
+                }],
+                credits: { enabled: false }
+            });
         }
 
         function renderCategoryResults(prefix, catResults) {
