@@ -26,7 +26,7 @@ exports.addCandidate = (req, res) => {
 
   const db = require('../database');
   db.run('INSERT INTO candidates (name, manifesto, language_proficiency, category, photo) VALUES (?, ?, ?, ?, ?)', 
-    [name, manifesto, language_proficiency, category, photo || '../assets/images/default.jpg'], 
+    [name, manifesto, language_proficiency, category, photo || '../assets/images/candidate_pfp.png'], 
     function(err) {
       if (err) return res.status(500).json({ error: 'Failed to add candidate.' });
       Admin.logAction(req.session.studentId || 'admin', `Added candidate: ${name} (${category})`);
