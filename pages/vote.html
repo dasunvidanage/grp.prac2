@@ -206,7 +206,7 @@
 
                     card.innerHTML = `
                         <div class="candidate-img">
-                            <i class="fas fa-user"></i>
+                            ${cand.photo ? `<img src="${cand.photo}" style="width: 100%; height: 100%; object-fit: cover;">` : '<i class="fas fa-user"></i>'}
                         </div>
                         <h3 class="candidate-name">${cand.name}</h3>
                         <p class="manifesto">${cand.manifesto}</p>
@@ -278,6 +278,9 @@
             document.getElementById('modal-name').innerText = cand.name;
             document.getElementById('modal-manifesto').innerText = cand.manifesto;
             document.getElementById('modal-lang').innerText = cand.language_proficiency || 'Not specified';
+
+            const modalPhoto = document.getElementById('modal-photo');
+            modalPhoto.innerHTML = cand.photo ? `<img src="${cand.photo}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">` : '<i class="fas fa-user-circle"></i>';
 
             document.getElementById('candidateModal').style.display = 'block';
             document.getElementById('modal-vote-btn').onclick = () => {
