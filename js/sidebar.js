@@ -32,9 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Define navigation items
     // icon: FontAwesome class, label: text, href: link, adminOnly: boolean, studentOnly: boolean
     const navItems = [
-        { icon: 'fas fa-th-large', label: 'Home', href: isAdmin ? 'admin-home.html' : 'dashboard.html', adminOnly: false, studentOnly: false },
+        { icon: 'fas fa-th-large', label: 'Home', href: isAdmin ? 'admin-home.html' : 'home.html', adminOnly: false, studentOnly: false },
         { icon: 'fas fa-tasks', label: 'Elections', href: 'admin-elections-list.html', adminOnly: true, studentOnly: false },
-        { icon: 'fas fa-users-cog', label: 'Manage Students', href: 'admin-students.html', adminOnly: true, studentOnly: false }
+        { icon: 'fas fa-users-cog', label: 'Manage Students', href: 'admin-students.html', adminOnly: true, studentOnly: false },
+        { icon: 'fas fa-user-plus', label: 'Nominations', href: 'nominate.html', adminOnly: false, studentOnly: true },
+        { icon: 'fas fa-users', label: 'Candidates', href: 'candidates.html', adminOnly: false, studentOnly: true },
+        { icon: 'fas fa-vote-yea', label: 'Vote Now', href: 'vote.html', adminOnly: false, studentOnly: true },
+        { icon: 'fas fa-chart-bar', label: 'Results', href: 'results.html', adminOnly: false, studentOnly: false }
     ];
 
     // Generate Sidebar HTML

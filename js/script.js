@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log('Admin detected, redirecting to home...');
                         window.location.href = 'admin-home.html';
                     } else {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = 'admin-home.html';
                     }
                 } else {
                     alert(data.error || 'Login failed');
@@ -127,7 +127,7 @@ function checkAuth() {
     }
 
     // Protect other private pages
-    const privatePages = ['dashboard.html'];
+    const privatePages = ['home.html'];
     const isPrivate = privatePages.some(page => path.includes(page));
 
     if (isPrivate && !user) {

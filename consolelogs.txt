@@ -1,2 +1,0 @@
-Fetching pending nominations for user: 2026CS003
-Pending nominations received: []

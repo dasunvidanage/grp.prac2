@@ -41,6 +41,7 @@ async function init() {
       start_time DATETIME,
       end_time DATETIME,
       has_nominations BOOLEAN DEFAULT 0,
+      nomination_type TEXT DEFAULT '3-person',
       nomination_start DATETIME,
       nomination_end DATETIME,
       positions TEXT,

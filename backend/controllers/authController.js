@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
+const Election = require('../models/Election');
 
 exports.register = (req, res) => {
   const { student_id, name, email, password, id_photo } = req.body;
@@ -68,7 +69,8 @@ exports.login = (req, res) => {
           student_id: student.student_id, 
           name: student.name, 
           role: student.role,
-          has_voted: student.has_voted 
+          has_voted: student.has_voted,
+          status: student.status
         } 
       });
     } catch (bcryptErr) {
@@ -86,7 +88,24 @@ exports.getStatus = (req, res) => {
 
     res.json({
       has_voted: student.has_voted,
-      voted_at: student.voted_at
+      voted_at: student.voted_at,
+      status: student.status
     });
+  });
+};
+
+exports.getPublicElections = (req, res) => {
+  Election.getAll((err, elections) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch elections.' });
+    res.json(elections);
+  });
+};
+
+exports.getElectionById = (req, res) => {
+  const { id } = req.params;
+  Election.findById(id, (err, election) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch election.' });
+    if (!election) return res.status(404).json({ error: 'Election not found.' });
+    res.json(election);
   });
 };

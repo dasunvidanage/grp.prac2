@@ -24,15 +24,17 @@ exports.createNomination = (req, res) => {
         return res.status(403).json({ error: 'This election does not accept nominations.' });
     }
 
-    if (!candidate_id || !proposer_id || !seconder_id || !manifesto || !language_proficiency || !category || !position) {
+    const isSelf = election.nomination_type === 'self';
+
+    if (!candidate_id || (!isSelf && (!proposer_id || !seconder_id)) || !manifesto || !language_proficiency || !category || !position) {
       return res.status(400).json({ error: 'Please provide all required fields.' });
     }
 
     const normCandId = candidate_id.toUpperCase();
-    const normPropId = proposer_id.toUpperCase();
-    const normSecId = seconder_id.toUpperCase();
+    const normPropId = isSelf ? normCandId : proposer_id.toUpperCase();
+    const normSecId = isSelf ? normCandId : seconder_id.toUpperCase();
 
-    if (normCandId === normPropId || normCandId === normSecId || normPropId === normSecId) {
+    if (!isSelf && (normCandId === normPropId || normCandId === normSecId || normPropId === normSecId)) {
       return res.status(400).json({ error: 'Candidate, Proposer, and Seconder must be different students.' });
     }
 
@@ -71,8 +73,15 @@ exports.createNomination = (req, res) => {
       
       // Auto-approve for the creator
       if (studentId === normCandId) Nomination.updateConsent(nominationId, 'candidate', 'approved', () => {});
-      if (studentId === normPropId) Nomination.updateConsent(nominationId, 'proposer', 'approved', () => {});
-      if (studentId === normSecId) Nomination.updateConsent(nominationId, 'seconder', 'approved', () => {});
+      
+      if (isSelf) {
+        // Auto-approve proposer and seconder for self-nomination
+        Nomination.updateConsent(nominationId, 'proposer', 'approved', () => {});
+        Nomination.updateConsent(nominationId, 'seconder', 'approved', () => {});
+      } else {
+        if (studentId === normPropId) Nomination.updateConsent(nominationId, 'proposer', 'approved', () => {});
+        if (studentId === normSecId) Nomination.updateConsent(nominationId, 'seconder', 'approved', () => {});
+      }
 
       res.json({ message: 'Nomination created successfully.', nominationId });
     });
