@@ -160,6 +160,17 @@
                     </select>
                 </div>
 
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="input-wrapper">
+                        <label>CS Vote Limit</label>
+                        <input type="number" id="cs-vote-limit" class="sleek-input" value="1" min="1" required>
+                    </div>
+                    <div class="input-wrapper">
+                        <label>IS Vote Limit</label>
+                        <input type="number" id="is-vote-limit" class="sleek-input" value="1" min="1" required>
+                    </div>
+                </div>
+
                 <div id="nomination-dates" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem;">
                     <div class="input-wrapper">
                         <label>Nomination Start</label>
@@ -254,7 +265,9 @@
                 end_time: document.getElementById('end-time').value,
                 nomination_type: document.getElementById('nomination-type').value,
                 nomination_start: document.getElementById('nom-start').value,
-                nomination_end: document.getElementById('nom-end').value
+                nomination_end: document.getElementById('nom-end').value,
+                cs_vote_limit: document.getElementById('cs-vote-limit').value,
+                is_vote_limit: document.getElementById('is-vote-limit').value
             };
 
             try {

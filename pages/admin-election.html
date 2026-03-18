@@ -580,15 +580,36 @@
             const endTime = document.getElementById('end-time-picker').value;
             if (!startTime || !endTime) return alert('Please select both start and end times.');
             
-            // This needs a specific endpoint for updating election times
-            alert('Updating times is currently done by updating status or would require a new endpoint.');
+            try {
+                const res = await authFetch(`${API_BASE}/admin/elections/${electionId}/voting-range`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ start_time: startTime, end_time: endTime })
+                });
+                if (res.ok) {
+                    alert('Voting duration updated successfully.');
+                    await fetchElectionDetails();
+                } else {
+                    const err = await res.json();
+                    alert('Failed to update duration: ' + (err.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred while updating the voting duration.');
+            }
         }
 
         async function resetVotes() {
             if (!confirm('CRITICAL: This will wipe all cast votes for THIS election. This action cannot be undone. Continue?')) return;
             try {
-                // Needs per-election reset endpoint
-                alert('Wiping votes for a specific election not yet implemented on backend.');
+                const res = await authFetch(`${API_BASE}/admin/elections/${electionId}/reset-votes`, {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    alert('All votes for this election have been reset.');
+                    location.reload();
+                } else {
+                    alert('Failed to reset votes.');
+                }
             } catch (err) {
                 console.error(err);
                 alert('Failed to reset votes.');

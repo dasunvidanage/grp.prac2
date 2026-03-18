@@ -5,7 +5,7 @@ const Vote = {
     db.serialize(() => {
       db.run('INSERT INTO votes (election_id, student_id, candidate_id) VALUES (?, ?, ?)', 
         [electionId, studentId, candidateId]);
-      db.run('INSERT INTO voter_participation (election_id, student_id) VALUES (?, ?)', 
+      db.run('INSERT OR IGNORE INTO voter_participation (election_id, student_id) VALUES (?, ?)', 
         [electionId, studentId], callback);
     });
   },
@@ -15,6 +15,18 @@ const Vote = {
       [electionId, studentId], (err, row) => {
         callback(err, !!row);
       });
+  },
+
+  getVoteCountByCategory: (electionId, studentId, category, callback) => {
+    const query = `
+      SELECT COUNT(votes.id) AS count 
+      FROM votes 
+      JOIN candidates ON votes.candidate_id = candidates.id 
+      WHERE votes.election_id = ? AND votes.student_id = ? AND candidates.category = ?
+    `;
+    db.get(query, [electionId, studentId, category], (err, row) => {
+      callback(err, row ? row.count : 0);
+    });
   },
 
   getResults: (electionId, callback) => {

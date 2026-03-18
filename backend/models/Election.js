@@ -2,11 +2,11 @@ const db = require('../database');
 
 const Election = {
   create: (data, callback) => {
-    const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions } = data;
+    const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit, is_vote_limit } = data;
     db.run(
-      `INSERT INTO elections (title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions],
+      `INSERT INTO elections (title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit, is_vote_limit) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit || 1, is_vote_limit || 1],
       function(err) {
         callback(err, this ? this.lastID : null);
       }
@@ -29,8 +29,19 @@ const Election = {
     db.run('UPDATE elections SET nomination_start = ?, nomination_end = ? WHERE id = ?', [start, end, id], callback);
   },
 
+  updateVotingRange: (id, start, end, callback) => {
+    db.run('UPDATE elections SET start_time = ?, end_time = ? WHERE id = ?', [start, end, id], callback);
+  },
+
   resetNominations: (id, callback) => {
     db.run('DELETE FROM nominations WHERE election_id = ?', [id], callback);
+  },
+
+  resetVotes: (id, callback) => {
+    db.serialize(() => {
+      db.run('DELETE FROM votes WHERE election_id = ?', [id]);
+      db.run('DELETE FROM voter_participation WHERE election_id = ?', [id], callback);
+    });
   },
 
   getActive: (callback) => {

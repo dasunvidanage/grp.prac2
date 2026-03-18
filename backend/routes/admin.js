@@ -9,7 +9,9 @@ router.get('/elections', isAdmin, adminController.getElections);
 router.get('/elections/:id', isAdmin, adminController.getElectionById);
 router.put('/elections/:id/status', isAdmin, adminController.updateElectionStatus);
 router.put('/elections/:id/nomination-range', isAdmin, adminController.updateNominationRange);
+router.put('/elections/:id/voting-range', isAdmin, adminController.updateVotingRange);
 router.post('/elections/:id/reset-nominations', isAdmin, adminController.resetNominations);
+router.post('/elections/:id/reset-votes', isAdmin, adminController.resetElectionVotes);
 
 // Student & System Routes
 router.get('/students', isAdmin, adminController.getStudents);

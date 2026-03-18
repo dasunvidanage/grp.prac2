@@ -4,7 +4,7 @@ const Election = require('../models/Election');
 // --- Election Management ---
 
 exports.createElection = (req, res) => {
-  const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions } = req.body;
+  const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit, is_vote_limit } = req.body;
   if (!title || !start_time || !end_time) {
     return res.status(400).json({ error: 'Title, start time, and end time are required.' });
   }
@@ -17,7 +17,9 @@ exports.createElection = (req, res) => {
     nomination_type: nomination_type || '3-person',
     nomination_start,
     nomination_end,
-    positions: positions ? JSON.stringify(positions.split(',').map(p => p.trim())) : '[]'
+    positions: positions ? JSON.stringify(positions.split(',').map(p => p.trim())) : '[]',
+    cs_vote_limit: parseInt(cs_vote_limit) || 1,
+    is_vote_limit: parseInt(is_vote_limit) || 1
   };
 
   Election.create(electionData, (err, id) => {
@@ -112,6 +114,28 @@ exports.getStats = (req, res) => {
   });
 };
 
+exports.updateVotingRange = (req, res) => {
+  const { id } = req.params;
+  const { start_time, end_time } = req.body;
+  
+  if (!start_time || !end_time) {
+    return res.status(400).json({ error: 'Start time and end time are required.' });
+  }
+
+  Election.updateVotingRange(id, start_time, end_time, (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to update voting range.' });
+    res.json({ message: 'Voting range updated successfully.' });
+  });
+};
+
+exports.resetElectionVotes = (req, res) => {
+  const { id } = req.params;
+  Election.resetVotes(id, (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to reset votes for this election.' });
+    res.json({ message: 'All votes for this election have been reset.' });
+  });
+};
+
 // --- Legacy / Deprecated (Keep for backward compat or refactor later) ---
 exports.toggleVoting = (req, res) => { res.json({ message: 'Use Election Management instead.' }); };
 exports.toggleNominations = (req, res) => { res.json({ message: 'Use Election Management instead.' }); };
@@ -130,4 +154,3 @@ exports.getSettings = (req, res) => {
     });
 };
 exports.updateDeadline = (req, res) => { res.json({ message: 'Deprecated.' }); };
-exports.updateVotingRange = (req, res) => { res.json({ message: 'Deprecated.' }); };

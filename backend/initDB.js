@@ -45,6 +45,8 @@ async function init() {
       nomination_start DATETIME,
       nomination_end DATETIME,
       positions TEXT,
+      cs_vote_limit INTEGER DEFAULT 1,
+      is_vote_limit INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
@@ -112,8 +114,8 @@ async function init() {
     const electionStart = new Date().toISOString();
     const electionEnd = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
     const defaultPositions = JSON.stringify(['President', 'Vice-President', 'Secretary', 'Junior Treasurer', 'Editor', 'Committee Member']);
-    const election = await runAsync(`INSERT INTO elections (title, status, start_time, end_time, has_nominations, positions) VALUES (?, ?, ?, ?, ?, ?)`, 
-      ['Student Council Election 2026', 'active', electionStart, electionEnd, 1, defaultPositions]);
+    const election = await runAsync(`INSERT INTO elections (title, status, start_time, end_time, has_nominations, positions, cs_vote_limit, is_vote_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
+      ['Student Council Election 2026', 'active', electionStart, electionEnd, 1, defaultPositions, 2, 2]);
     const electionId = election.lastID;
 
     // Admins
