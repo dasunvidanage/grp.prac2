@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elections - Admin Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white; 
+            margin: 5% auto; 
+            padding: 2.5rem; 
+            border-radius: 1.5rem; 
+            width: 90%; 
+            max-width: 600px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+        .close-modal:hover { color: #374151; }
+
+        .election-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .election-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: transform 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .election-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+        }
+        .status-badge {
+            align-self: flex-start;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-upcoming { background: #e0f2fe; color: #075985; }
+        .status-completed { background: #f3f4f6; color: #4b5563; }
+        
+        .add-election-card {
+            border: 2px dashed #e5e7eb;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            color: #6b7280;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .add-election-card:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Elections</h1>
+                <p>Manage all election events</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <div id="elections-container" class="election-grid">
+            <div class="election-card add-election-card" onclick="openCreateModal()">
+                <i class="fas fa-plus-circle" style="font-size: 3rem;"></i>
+                <span style="font-weight: 600;">Create New Election</span>
+            </div>
+            <!-- Elections loaded here -->
+        </div>
+    </main>
+
+    <!-- Create Election Modal -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 1.5rem;">Create New Election</h2>
+            <form id="create-election-form">
+                <div class="input-wrapper">
+                    <label>Election Title</label>
+                    <input type="text" id="title" class="sleek-input" placeholder="e.g. Student Council 2026" required>
+                </div>
+
+                <div class="input-wrapper">
+                    <label>Available Positions (comma separated)</label>
+                    <input type="text" id="positions" class="sleek-input" placeholder="e.g. President, Vice-President, Secretary" required>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="input-wrapper">
+                        <label>Voting Start</label>
+                        <input type="text" id="start-time" class="sleek-input" placeholder="Select Start Time" required>
+                    </div>
+                    <div class="input-wrapper">
+                        <label>Voting End</label>
+                        <input type="text" id="end-time" class="sleek-input" placeholder="Select End Time" required>
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <label>Nomination Type</label>
+                    <select id="nomination-type" class="sleek-input" required>
+                        <option value="3-person">3-Person Consent (Candidate, Proposer, Seconder)</option>
+                        <option value="self">Self-Nomination (Candidate Only)</option>
+                    </select>
+                </div>
+
+                <div id="nomination-dates" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem;">
+                    <div class="input-wrapper">
+                        <label>Nomination Start</label>
+                        <input type="text" id="nom-start" class="sleek-input" placeholder="Select Start">
+                    </div>
+                    <div class="input-wrapper">
+                        <label>Nomination End</label>
+                        <input type="text" id="nom-end" class="sleek-input" placeholder="Select End">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-sleek" style="margin-top: 2rem; width: 100%;">Create Election</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:3000/api/admin/elections';
+        let startPicker, endPicker, nomStartPicker, nomEndPicker;
+
+        async function init() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.name || 'Admin';
+            document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
+
+            // Init Pickers
+            const config = { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true };
+            startPicker = flatpickr("#start-time", config);
+            endPicker = flatpickr("#end-time", config);
+            nomStartPicker = flatpickr("#nom-start", config);
+            nomEndPicker = flatpickr("#nom-end", config);
+
+            loadElections();
+        }
+
+        async function authFetch(url, options = {}) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+                'x-admin-id': user.student_id
+            };
+            return fetch(url, { ...options, headers, credentials: 'include' });
+        }
+
+        async function loadElections() {
+            try {
+                const res = await authFetch(API_BASE);
+                const elections = await res.json();
+                renderElections(elections);
+            } catch (err) { console.error(err); }
+        }
+
+        function renderElections(elections) {
+            const container = document.getElementById('elections-container');
+            // Keep the "Add New" card
+            const addCard = container.firstElementChild;
+            container.innerHTML = '';
+            container.appendChild(addCard);
+
+            elections.forEach(e => {
+                const start = new Date(e.start_time).toLocaleDateString();
+                const end = new Date(e.end_time).toLocaleDateString();
+                const statusClass = `status-${e.status}`;
+                
+                const card = document.createElement('div');
+                card.className = 'election-card';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span class="status-badge ${statusClass}">${e.status}</span>
+                        <i class="fas fa-chevron-right" style="color: #9ca3af;"></i>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.25rem;">${e.title}</h3>
+                    <div style="font-size: 0.85rem; color: #6b7280;">
+                        <div><i class="far fa-calendar-alt"></i> ${start} - ${end}</div>
+                        <div style="margin-top: 0.25rem;"><i class="fas fa-user-tag"></i> Type: ${e.nomination_type === 'self' ? 'Self' : '3-Person'}</div>
+                    </div>
+                `;
+                card.onclick = () => window.location.href = `admin-election.html?id=${e.id}`;
+                container.appendChild(card);
+            });
+        }
+
+        document.getElementById('create-election-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('title').value,
+                positions: document.getElementById('positions').value,
+                start_time: document.getElementById('start-time').value,
+                end_time: document.getElementById('end-time').value,
+                nomination_type: document.getElementById('nomination-type').value,
+                nomination_start: document.getElementById('nom-start').value,
+                nomination_end: document.getElementById('nom-end').value
+            };
+
+            try {
+                const res = await authFetch(API_BASE, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    closeModal();
+                    loadElections();
+                    document.getElementById('create-election-form').reset();
+                } else {
+                    const data = await res.json();
+                    alert(data.error);
+                }
+            } catch (err) { console.error(err); }
+        };
+
+        function openCreateModal() { document.getElementById('createModal').style.display = 'block'; }
+        function closeModal() { document.getElementById('createModal').style.display = 'none'; }
+        window.onclick = (e) => { if (e.target == document.getElementById('createModal')) closeModal(); }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

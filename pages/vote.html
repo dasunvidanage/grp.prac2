@@ -76,52 +76,19 @@
 <body class="dashboard-body">
     
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-box">
-                <img src="../assets/images/UCSC_logo.png" alt="UCSC Logo">
-            </div>
-            <span>UCSC Portal</span>
-        </div>
-
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="nav-link">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-            </a>
-            <a href="admin-dashboard.html" class="nav-link admin-only" style="display: none;">
-                <i class="fas fa-user-shield"></i>
-                <span>Admin</span>
-            </a>
-            <a href="vote.html" class="nav-link active">
-                <i class="fas fa-vote-yea"></i>
-                <span>Cast Vote</span>
-            </a>
-            <a href="results.html" class="nav-link">
-                <i class="fas fa-chart-bar"></i>
-                <span>Live Results</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-footer">
-            <a href="#" id="logout-btn" class="nav-link logout">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </aside>
+    <aside class="sidebar"></aside>
 
     <!-- Main Content -->
     <main class="main-content">
         <header class="content-header">
             <div>
                 <h1>Cast Your Vote</h1>
-                <p>Select your preferred candidate</p>
+                <p id="election-title-header">Select your preferred candidate</p>
             </div>
             <div class="user-profile">
                 <div class="user-info">
                     <span id="user-name">Loading...</span>
-                    <span class="user-role">Student</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
                 </div>
                 <div class="user-avatar">
                     <i class="fas fa-user-circle"></i>
@@ -167,11 +134,23 @@
         </div>
     </div>
 
+    <script src="../js/sidebar.js"></script>
     <script src="../js/script.js"></script>
     <script>
+        const API_BASE = 'http://127.0.0.1:3000/api';
         let currentCandidateId = null;
+        let currentElectionId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentElectionId = urlParams.get('election_id');
+
+            if (!currentElectionId) {
+                alert('No election specified.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
             const container = document.getElementById('candidate-container');
             const user = JSON.parse(localStorage.getItem('user'));
 
@@ -180,41 +159,25 @@
                 return;
             }
 
-            // Fetch latest status from server to handle admin resets
-            try {
-                const statusRes = await fetch(`http://127.0.0.1:3000/api/status/${user.student_id}`, { credentials: 'include' });
-                if (statusRes.ok) {
-                    const statusData = await statusRes.json();
-                    user.has_voted = statusData.has_voted;
-                    localStorage.setItem('user', JSON.stringify(user));
-                    
-                    // If server says hasn't voted, clear any old vote ID from localStorage
-                    if (!user.has_voted) {
-                        localStorage.removeItem('last_vote_id');
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch status:', err);
-            }
-
-            if (user.has_voted) {
-                showConfirmation(localStorage.getItem('last_vote_id') || '#VERIFIED');
-                return;
-            }
+            // Check if user has already voted in THIS election
+            // We can check local storage first for a quick check, but server validation is key.
+            // Let's rely on server response during load or handle duplicate vote error.
+            // Ideally, we fetch 'my-vote-status' for this election.
+            // For now, let's proceed and handle the "already voted" error if it happens, 
+            // OR check the election status first.
 
             const isVotingOpen = await startCountdown();
 
             if (!isVotingOpen) return;
 
             try {
-                // Requirement: Load ALL candidates from the same source (the API)
-                // Removed the ?category= filter to fetch everyone
-                const response = await fetch(`http://127.0.0.1:3000/api/candidates`, { credentials: 'include' });
+                // Fetch candidates for this election
+                const response = await fetch(`${API_BASE}/candidates?election_id=${currentElectionId}`, { credentials: 'include' });
                 const candidates = await response.json();
 
                 container.innerHTML = '';
                 if (candidates.length === 0) {
-                    container.innerHTML = `<p>No candidates found.</p>`;
+                    container.innerHTML = `<p>No candidates found for this election.</p>`;
                 }
                 candidates.forEach(cand => {
                     const isSameCategory = (user.student_id.includes('CS') && cand.category === 'CS') || 
@@ -223,7 +186,7 @@
                     const card = document.createElement('div');
                     card.className = 'card candidate-card';
                     card.style.cursor = 'pointer';
-                    // Visual cue for students regarding their department restriction
+                    
                     if (!isSameCategory) {
                         card.style.opacity = '0.7';
                     }
@@ -249,21 +212,24 @@
 
         async function startCountdown() {
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/admin/settings', { credentials: 'include' });
-                const settings = await res.json();
+                const res = await fetch(`${API_BASE}/admin/elections/${currentElectionId}`, { credentials: 'include' });
+                if (!res.ok) throw new Error('Election not found');
+                const election = await res.json();
                 
-                if (settings.voting_open !== '1') {
+                document.getElementById('election-title-header').innerText = `Vote for: ${election.title}`;
+
+                if (election.status !== 'active') {
                     document.getElementById('candidate-container').innerHTML = `
                         <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
                             <i class="fas fa-lock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
                             <h3>Voting is currently closed</h3>
-                            <p style="color: var(--text-muted); margin-top: 0.5rem;">Please wait for the election to begin.</p>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">This election is not accepting votes right now.</p>
                         </div>
                     `;
                     return false;
                 }
 
-                const deadline = new Date(settings.voting_deadline).getTime();
+                const deadline = new Date(election.end_time).getTime();
                 const now = new Date().getTime();
                 
                 if (deadline - now < 0) {
@@ -271,7 +237,7 @@
                         <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
                             <i class="fas fa-clock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
                             <h3>Voting has ended</h3>
-                            <p style="color: var(--text-muted); margin-top: 0.5rem;">The election period is over. You can view the final results in the Results section.</p>
+                            <p style="color: var(--text-muted); margin-top: 0.5rem;">The election period is over.</p>
                             <a href="results.html" class="btn-sleek" style="display: inline-block; margin-top: 1.5rem;">View Results</a>
                         </div>
                     `;
@@ -290,30 +256,35 @@
                     if (distance < 0) {
                         clearInterval(timerFunc);
                         timeLeftElement.innerHTML = "EXPIRED";
-                        document.getElementById('candidate-container').innerHTML = `
-                            <div class="card" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                                <i class="fas fa-clock" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
-                                <h3>Voting has ended</h3>
-                                <p style="color: var(--text-muted); margin-top: 0.5rem;">The election period is over. You can view the final results in the Results section.</p>
-                                <a href="results.html" class="btn-sleek" style="display: inline-block; margin-top: 1.5rem;">View Results</a>
-                            </div>
-                        `;
+                        location.reload(); // Reload to show closed state
                         return;
                     }
 
-                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                    timeLeftElement.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    timeLeftElement.innerHTML = formatDistance(distance);
                 }, 1000);
 
                 return true;
 
             } catch (err) { 
                 console.error('Timer error', err);
+                document.getElementById('candidate-container').innerHTML = '<p>Error loading election details.</p>';
                 return false;
             }
+        }
+
+        function formatDistance(distance) {
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            let res = [];
+            if (days > 0) res.push(`${days} day${days > 1 ? 's' : ''}`);
+            if (hours > 0) res.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+            if (minutes > 0) res.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+            if (seconds > 0 || res.length === 0) res.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
+            
+            return res.join(' ');
         }
 
         function openModal(cand) {
@@ -346,17 +317,20 @@
         async function submitVote(candidate_id) {
             const user = JSON.parse(localStorage.getItem('user'));
             try {
-                const res = await fetch('http://127.0.0.1:3000/api/vote', {
+                const res = await fetch(`${API_BASE}/vote`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify({ student_id: user.student_id, candidate_id })
+                    body: JSON.stringify({ 
+                        election_id: currentElectionId,
+                        student_id: user.student_id, 
+                        candidate_id 
+                    })
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    user.has_voted = 1;
-                    localStorage.setItem('user', JSON.stringify(user));
-                    localStorage.setItem('last_vote_id', data.vote_id);
+                    // Don't set global has_voted on user object, as it's per election now.
+                    // Just show confirmation.
                     document.getElementById('candidateModal').style.display = 'none';
                     showConfirmation(data.vote_id);
                 } else {

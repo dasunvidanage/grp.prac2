@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Management - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Flatpickr for Modern Date/Time Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        .election-controls-row {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-right: 1.5rem;
+            border-right: 1px solid #f3f4f6;
+        }
+        .control-group:last-child {
+            border-right: none;
+        }
+        .flatpickr-input-custom {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+            width: 180px;
+        }
+        .btn-modern {
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-upcoming { background: #e0f2fe; color: #075985; }
+        .status-completed { background: #fee2e2; color: #991b1b; }
+
+        /* Modern Voter Activity Feed */
+        .voter-activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0.5rem;
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem;
+            background: white;
+            border-radius: 1.25rem;
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInActivity 0.4s ease-out forwards;
+        }
+        .activity-item:hover {
+            transform: scale(1.01);
+            border-color: var(--primary);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        .activity-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        .activity-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .activity-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .activity-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 2px 0 0 0;
+        }
+        .activity-right {
+            text-align: right;
+        }
+        .voted-status-tag {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 0.35rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #dcfce7;
+        }
+        .voted-pulse {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            animation: pulse-green 2s infinite;
+        }
+        .activity-time {
+            display: block;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        @keyframes slideInActivity {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar"></aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1 id="election-title">Election Management</h1>
+                <p>Configure voting parameters and monitor live progress</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Configuration Section -->
+        <div class="election-controls-row">
+            <div class="control-group">
+                <button id="toggle-voting-btn" class="btn-modern" style="background: var(--primary); color: white;">
+                    <i class="fas fa-play-circle"></i> <span>Start Voting</span>
+                </button>
+            </div>
+            <div class="control-group">
+                <button id="manage-nominations-btn" class="btn-modern" style="background: #8b5cf6; color: white;">
+                    <i class="fas fa-user-plus"></i> <span>Manage Nominations</span>
+                </button>
+            </div>
+            <div class="control-group">
+                <button id="view-results-btn" class="btn-modern" style="background: #3b82f6; color: white;">
+                    <i class="fas fa-chart-bar"></i> <span>View Results</span>
+                </button>
+            </div>
+            <div class="control-group">
+                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Nomination Type</label>
+                    <div id="nomination-type-display" style="font-weight: 600; color: #1e293b; padding: 0.25rem 0;">Loading...</div>
+                </div>
+            </div>
+            <div class="control-group">
+                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Start Time</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-calendar-alt" style="color: #6b7280;"></i>
+                        <input type="text" id="start-time-picker" class="flatpickr-input-custom" placeholder="Set Start Time">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">End Time</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-calendar-check" style="color: #6b7280;"></i>
+                        <input type="text" id="end-time-picker" class="flatpickr-input-custom" placeholder="Set End Time">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <button id="update-range-btn" class="btn-modern" style="background: #10b981; color: white;">
+                    <i class="fas fa-save"></i> Save Range
+                </button>
+            </div>
+            <div class="control-group" style="border-right: none;">
+                <div id="countdown-display" style="text-align: right;">
+                    <div id="countdown-status" class="status-badge status-upcoming">Upcoming</div>
+                    <div id="countdown-timer" style="font-size: 1.4rem; font-weight: 800; color: #1f2937; font-family: monospace; margin-top: 0.2rem;">00:00:00</div>
+                </div>
+            </div>
+            <div class="control-group" style="margin-left: auto;">
+                <button id="reset-votes-btn" class="btn-modern" style="background: #ef4444; color: white;">
+                    <i class="fas fa-redo"></i> Reset Votes
+                </button>
+            </div>
+        </div>
+
+        <!-- Real-time Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Candidates</span>
+                    <h3 class="stat-value" id="stat-total-candidates">0</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Voted</span>
+                    <h3 class="stat-value" id="stat-total-votes">0</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Not Voted</span>
+                    <h3 class="stat-value" id="stat-not-voted">0</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Voter Turnout</span>
+                    <h3 class="stat-value" id="stat-turnout">0%</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Voter Activity Feed -->
+        <section class="dashboard-section" style="margin-top: 2rem;">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b;">Live Voting Feed</h2>
+                <div style="font-size: 0.75rem; color: #64748b; background: #f8fafc; padding: 0.4rem 0.8rem; border-radius: 99px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="voted-pulse"></div> Tracking in real-time
+                </div>
+            </div>
+            <div id="voter-activity-container" class="voter-activity-feed">
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; background: white; border-radius: 1.5rem; border: 1px dashed #e2e8f0;">
+                    <i class="fas fa-stream" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Waiting for voting activity...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Candidate Management Section -->
+        <section class="dashboard-section" style="margin-top: 3rem; margin-bottom: 4rem;">
+            <div class="section-header">
+                <h2>Candidate Roster</h2>
+            </div>
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div id="candidate-table-container" style="max-height: 1000px; overflow-y: auto;">
+                    <table class="data-table" id="candidates-admin-table" style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: white; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);">
+                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                                <th style="padding: 1rem;">Profile</th>
+                                <th style="padding: 1rem;">Candidate Name</th>
+                                <th style="padding: 1rem;">Position</th>
+                                <th style="padding: 1rem;">Slogan / Manifesto</th>
+                                <th style="padding: 1rem;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div id="candidate-loader" style="text-align: center; padding: 1rem; color: #64748b; display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading more candidates...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:3000/api';
+        let startTimePicker, endTimePicker;
+        let countdownInterval;
+        let currentElection = {};
+        let electionId = null;
+        
+        // Lazy Loading State
+        let candidateOffset = 0;
+        const candidateLimit = 10;
+        let candidatesLoading = false;
+        let allCandidatesLoaded = false;
+
+        async function authFetch(url, options = {}) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+                'x-admin-id': user.student_id
+            };
+            return fetch(url, { ...options, headers, credentials: 'include' });
+        }
+
+        async function initAdminElection() {
+            const urlParams = new URLSearchParams(window.location.search);
+            electionId = urlParams.get('id');
+
+            if (!electionId) {
+                alert('No election ID provided.');
+                window.location.href = 'admin-elections-list.html';
+                return;
+            }
+
+            // 1. Initialize Pickers
+            startTimePicker = flatpickr("#start-time-picker", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                time_24hr: true,
+            });
+
+            endTimePicker = flatpickr("#end-time-picker", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                time_24hr: true,
+            });
+
+            // 2. Add Event Listeners
+            document.getElementById('update-range-btn').onclick = saveVotingRange;
+            document.getElementById('reset-votes-btn').onclick = resetVotes;
+            document.getElementById('view-results-btn').onclick = () => {
+                window.location.href = `admin-results.html?id=${electionId}`;
+            };
+
+            // 3. Load Data
+            await refreshData();
+            
+            // 4. Start Intervals
+            countdownInterval = setInterval(updateCountdownUI, 1000);
+            window.refreshInterval = setInterval(refreshData, 10000);
+
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.name || 'Admin';
+            document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
+
+            // 5. Scroll listener for lazy loading
+            const container = document.getElementById('candidate-table-container');
+            container.addEventListener('scroll', () => {
+                if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
+                    if (!candidatesLoading && !allCandidatesLoaded) {
+                        fetchCandidatesAdmin(true);
+                    }
+                }
+            });
+        }
+
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    fetchElectionDetails(),
+                    fetchStudentsAndStats()
+                ]);
+                // Initial load of candidates or refresh from start
+                candidateOffset = 0;
+                allCandidatesLoaded = false;
+                document.querySelector('#candidates-admin-table tbody').innerHTML = '';
+                await fetchCandidatesAdmin();
+            } catch (err) {
+                console.error('Refresh data error:', err);
+            }
+        }
+
+        async function fetchElectionDetails() {
+            try {
+                const res = await authFetch(`${API_BASE}/admin/elections/${electionId}`);
+                currentElection = await res.json();
+                
+                document.getElementById('election-title').textContent = currentElection.title;
+                document.getElementById('nomination-type-display').textContent = currentElection.nomination_type === 'self' ? 'Self-Nomination' : '3-Person Consent';
+                
+                const votingOpen = currentElection.status === 'active';
+                const btn = document.getElementById('toggle-voting-btn');
+                const statusBadge = document.getElementById('countdown-status');
+
+                btn.innerHTML = votingOpen ? '<i class="fas fa-stop-circle"></i> Stop Voting' : '<i class="fas fa-play-circle"></i> Start Voting';
+                btn.style.background = votingOpen ? '#f59e0b' : 'var(--primary)';
+                btn.onclick = () => toggleVoting(votingOpen ? 'completed' : 'active');
+
+                // Always show manage nominations btn since has_nominations is forced to 1
+                document.getElementById('manage-nominations-btn').onclick = () => {
+                    window.location.href = `admin-nominations.html?id=${electionId}`;
+                };
+
+                statusBadge.textContent = currentElection.status;
+                statusBadge.className = `status-badge status-${currentElection.status}`;
+
+                if (currentElection.start_time && startTimePicker) {
+                    startTimePicker.setDate(new Date(currentElection.start_time));
+                }
+                if (currentElection.end_time && endTimePicker) {
+                    endTimePicker.setDate(new Date(currentElection.end_time));
+                }
+                updateCountdownUI();
+            } catch (err) { console.error('Election details error:', err); }
+        }
+
+        async function fetchStudentsAndStats() {
+            try {
+                const statsRes = await authFetch(`${API_BASE}/admin/stats?election_id=${electionId}`);
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    const turnout = stats.total > 0 ? ((stats.voted / stats.total) * 100).toFixed(1) : 0;
+                    
+                    document.getElementById('stat-total-candidates').textContent = stats.candidates;
+                    document.getElementById('stat-total-votes').textContent = stats.voted;
+                    document.getElementById('stat-not-voted').textContent = stats.notVoted;
+                    document.getElementById('stat-turnout').textContent = turnout + '%';
+                    
+                    // Render Activity Feed if stats includes it or fetch separately
+                    if (stats.recentVotes) {
+                        renderActivityFeed(stats.recentVotes);
+                    }
+                }
+            } catch (err) { 
+                console.error('Stats fetch error:', err); 
+            }
+        }
+
+        function renderActivityFeed(votedStudents) {
+            const container = document.getElementById('voter-activity-container');
+            if (!votedStudents || votedStudents.length === 0) {
+                container.innerHTML = `<div style="padding: 3rem; text-align: center; color: #94a3b8; background: white; border-radius: 1.5rem; border: 1px dashed #e2e8f0;"><i class="fas fa-stream" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i><p>Waiting for voting activity...</p></div>`;
+                return;
+            }
+
+            const sortedVoted = [...votedStudents].sort((a, b) => new Date(b.voted_at) - new Date(a.voted_at));
+            container.innerHTML = sortedVoted.slice(0, 8).map((s, index) => {
+                const maskedId = s.student_id.substring(0, 6) + '***';
+                return `
+                    <div class="activity-item" style="animation-delay: ${index * 0.05}s">
+                        <div class="activity-left">
+                            <div class="activity-avatar"><i class="fas fa-user-secret"></i></div>
+                            <div class="activity-info"><h4>Anonymous Voter</h4><p>Masked ID: ${maskedId}</p></div>
+                        </div>
+                        <div class="activity-right">
+                            <span class="voted-status-tag"><div class="voted-pulse"></div> Voted</span>
+                            <span class="activity-time">${formatTimeAgo(s.voted_at)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return new Date(date).toLocaleDateString();
+        }
+
+        function updateCountdownUI() {
+            const timerEl = document.getElementById('countdown-timer');
+            const now = new Date().getTime();
+            
+            if (currentElection.status === 'completed') {
+                timerEl.textContent = '00:00:00';
+                timerEl.style.color = '#ef4444';
+                return;
+            }
+
+            const startTime = currentElection.start_time ? new Date(currentElection.start_time).getTime() : 0;
+            const endTime = currentElection.end_time ? new Date(currentElection.end_time).getTime() : 0;
+
+            if (startTime && now < startTime) {
+                const distance = startTime - now;
+                timerEl.textContent = 'Starts in: ' + formatDistance(distance);
+                timerEl.style.color = '#6366f1';
+                return;
+            }
+
+            if (endTime && now < endTime) {
+                const distance = endTime - now;
+                timerEl.textContent = formatDistance(distance);
+                timerEl.style.color = '#1f2937';
+                return;
+            }
+
+            timerEl.textContent = '00:00:00';
+            timerEl.style.color = '#ef4444';
+        }
+
+        function formatDistance(distance) {
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            let res = [];
+            if (days > 0) res.push(`${days}d`);
+            if (hours > 0) res.push(`${hours}h`);
+            if (minutes > 0) res.push(`${minutes}m`);
+            if (seconds > 0 || res.length === 0) res.push(`${seconds}s`);
+            
+            return res.join(' ');
+        }
+
+        async function toggleVoting(newStatus) {
+            try {
+                await authFetch(`${API_BASE}/admin/elections/${electionId}/status`, { 
+                    method: 'PUT', 
+                    body: JSON.stringify({ status: newStatus }) 
+                });
+                await fetchElectionDetails();
+            } catch (err) { console.error(err); }
+        }
+
+        async function saveVotingRange() {
+            const startTime = document.getElementById('start-time-picker').value;
+            const endTime = document.getElementById('end-time-picker').value;
+            if (!startTime || !endTime) return alert('Please select both start and end times.');
+            
+            // This needs a specific endpoint for updating election times
+            alert('Updating times is currently done by updating status or would require a new endpoint.');
+        }
+
+        async function resetVotes() {
+            if (!confirm('CRITICAL: This will wipe all cast votes for THIS election. This action cannot be undone. Continue?')) return;
+            try {
+                // Needs per-election reset endpoint
+                alert('Wiping votes for a specific election not yet implemented on backend.');
+            } catch (err) {
+                console.error(err);
+                alert('Failed to reset votes.');
+            }
+        }
+
+        async function fetchCandidatesAdmin(isLoadMore = false) {
+            if (candidatesLoading || allCandidatesLoaded) return;
+            
+            candidatesLoading = true;
+            const loader = document.getElementById('candidate-loader');
+            if (loader) loader.style.display = 'block';
+
+            try {
+                const res = await authFetch(`${API_BASE}/candidates?election_id=${electionId}&limit=${candidateLimit}&offset=${candidateOffset}`);
+                const candidates = await res.json();
+                
+                if (candidates.length < candidateLimit) {
+                    allCandidatesLoaded = true;
+                }
+
+                const tbody = document.querySelector('#candidates-admin-table tbody');
+                const rows = candidates.map(c => `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 1rem;"><div style="width: 44px; height: 44px; background: #f3f4f6; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #6366f1; overflow: hidden; border: 1px solid #e2e8f0;">${c.photo ? `<img src="${c.photo}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-user"></i>`}</div></td>
+                        <td style="padding: 1rem; font-weight: 600;">${c.name} <span style="font-size: 0.8rem; background: #e0e7ff; color: #4338ca; padding: 0.2rem 0.5rem; border-radius: 1rem; margin-left: 0.5rem;">${c.category}</span></td>
+                        <td style="padding: 1rem; font-weight: 500; color: #1e293b;">${c.position || 'N/A'}</td>
+                        <td style="padding: 1rem; color: #4b5563; font-size: 0.9rem;">${c.manifesto}</td>
+                        <td style="padding: 1rem;"><button onclick="deleteCandidate(${c.id})" style="color: #ef4444; background: none; border: none; cursor: pointer; padding: 0.5rem;"><i class="fas fa-trash-alt"></i></button></td>
+                    </tr>
+                `).join('');
+
+                if (isLoadMore) {
+                    tbody.insertAdjacentHTML('beforeend', rows);
+                } else {
+                    tbody.innerHTML = rows;
+                }
+
+                candidateOffset += candidates.length;
+            } catch (err) { 
+                console.error('Candidates error:', err); 
+            } finally {
+                candidatesLoading = false;
+                if (loader) loader.style.display = 'none';
+            }
+        }
+
+        async function deleteCandidate(id) {
+            if (!confirm('Remove this candidate?')) return;
+            try {
+                const res = await authFetch(`${API_BASE}/candidates/${id}`, { method: 'DELETE' });
+                if (res.ok) refreshData();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initAdminElection);
+    </script>
+</body>
+</html>

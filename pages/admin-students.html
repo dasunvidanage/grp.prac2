@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .status-pill {
+            padding: 0.3rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        .id-photo-thumb {
+            width: 50px;
+            height: 35px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            cursor: pointer;
+            object-fit: cover;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Full Image Modal */
+        .img-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            padding: 2rem;
+            box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+        }
+        .img-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+        .close-img-modal {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Student Management</h1>
+                <p>Verify and manage student registrations</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <section class="dashboard-section">
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <table class="data-table" id="students-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8fafc; text-align: left; border-bottom: 2px solid #edf2f7;">
+                            <th style="padding: 1.25rem 1.5rem;">Student ID</th>
+                            <th style="padding: 1.25rem 1.5rem;">Name</th>
+                            <th style="padding: 1.25rem 1.5rem;">Email</th>
+                            <th style="padding: 1.25rem 1.5rem;">ID Photo</th>
+                            <th style="padding: 1.25rem 1.5rem;">Status</th>
+                            <th style="padding: 1.25rem 1.5rem;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="students-tbody">
+                    </tbody>
+                </table>
+                <div id="scroll-sentinel" style="height: 20px;"></div>
+                <div id="loading-indicator" style="padding: 1.5rem; text-align: center; color: #64748b; display: none;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading more students...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="imgModal" class="img-modal">
+        <span class="close-img-modal">&times;</span>
+        <img id="fullImg" src="">
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:3000/api/admin';
+        let offset = 0;
+        const limit = 20;
+        let isLoading = false;
+        let hasMore = true;
+
+        async function fetchStudents(isInitial = false) {
+            if (isLoading || (!hasMore && !isInitial)) return;
+            
+            isLoading = true;
+            document.getElementById('loading-indicator').style.display = 'block';
+
+            if (isInitial) {
+                offset = 0;
+                hasMore = true;
+                document.getElementById('students-tbody').innerHTML = '';
+            }
+
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const res = await fetch(`${API_BASE}/students?limit=${limit}&offset=${offset}`, {
+                    headers: { 'x-admin-id': user.student_id },
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    const students = await res.json();
+                    if (students.length < limit) {
+                        hasMore = false;
+                    }
+                    renderStudents(students);
+                    offset += students.length;
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+            } finally {
+                isLoading = false;
+                document.getElementById('loading-indicator').style.display = 'none';
+            }
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('students-tbody');
+            
+            if (offset === 0 && students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 3rem; text-align: center; color: #94a3b8;">No students found.</td></tr>';
+                return;
+            }
+
+            const rows = students.map(s => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1.25rem 1.5rem; font-weight: 600; color: #1e293b;">${s.student_id}</td>
+                    <td style="padding: 1.25rem 1.5rem; color: #475569;">${s.name}</td>
+                    <td style="padding: 1.25rem 1.5rem; color: #475569;">${s.email || 'N/A'}</td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        ${s.id_photo ? `<img src="${s.id_photo}" class="id-photo-thumb" onclick="openImgModal('${s.id_photo}')">` : '<span style="color: #cbd5e1; font-size: 0.8rem;">No Photo</span>'}
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <span class="status-pill status-${s.status}">${s.status}</span>
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            ${s.status === 'pending' || s.status === 'rejected' ? `
+                                <button onclick="updateStatus('${s.student_id}', 'approved')" class="btn-modern" style="background: #10b981; color: white; padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            ` : ''}
+                            ${s.status === 'pending' || s.status === 'approved' ? `
+                                <button onclick="updateStatus('${s.student_id}', 'rejected')" class="btn-modern" style="background: #ef4444; color: white; padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            tbody.insertAdjacentHTML('beforeend', rows);
+        }
+
+        async function updateStatus(studentId, status) {
+            if (!confirm(`Are you sure you want to set status to ${status} for ${studentId}?`)) return;
+
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const res = await fetch(`${API_BASE}/update-student-status`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-id': user.student_id 
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ studentId, status })
+                });
+
+                if (res.ok) {
+                    fetchStudents(true); // Reset and refetch
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to update status');
+                }
+            } catch (err) {
+                alert('Error updating status');
+            }
+        }
+
+        // Infinite Scroll Setup
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMore && !isLoading) {
+                fetchStudents();
+            }
+        }, { threshold: 0.1 });
+
+        function openImgModal(src) {
+            const modal = document.getElementById('imgModal');
+            const img = document.getElementById('fullImg');
+            img.src = src;
+            modal.style.display = 'flex';
+        }
+
+        document.querySelector('.close-img-modal').onclick = () => {
+            document.getElementById('imgModal').style.display = 'none';
+        };
+
+        window.onclick = (e) => {
+            if (e.target == document.getElementById('imgModal')) {
+                document.getElementById('imgModal').style.display = 'none';
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStudents(true);
+            observer.observe(document.getElementById('scroll-sentinel'));
+        });
+    </script>
+</body>
+</html>

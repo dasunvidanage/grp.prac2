@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomination - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white; 
+            margin: 5% auto; 
+            padding: 2.5rem; 
+            border-radius: 1.5rem; 
+            width: 90%; 
+            max-width: 600px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+        .close-modal:hover { color: #374151; }
+        
+        .nomination-detail-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .nom-photo-frame {
+            width: 120px;
+            height: 120px;
+            border-radius: 1rem;
+            background: #f1f5f9;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+        .nom-photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .detail-item {
+            margin-bottom: 1rem;
+        }
+        .detail-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .manifesto-box {
+            background: #f8fafc;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #475569;
+        }
+        .consent-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-pending { background: #f1f5f9; color: #475569; }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar"></aside>
+
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Candidate Nomination</h1>
+                <p>Submit or approve a nomination (3-person consent required)</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <div id="nomination-closed-message" class="card" style="display: none; background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 2rem; text-align: center; margin-bottom: 2rem;">
+            <i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <h2>Nominations are Closed</h2>
+            <p>The nomination period for the upcoming election has ended or has not started yet.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Submit Nomination Form -->
+            <section class="dashboard-section" id="nomination-form-section">
+                <h2 class="section-title">New Nomination</h2>
+                <div class="card">
+                    <form id="nomination-form">
+                        <div class="input-wrapper">
+                            <label>Select Election</label>
+                            <select id="election-id" class="sleek-input" required>
+                                <option value="" disabled selected>Select an Election</option>
+                            </select>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Candidate Student ID</label>
+                            <input type="text" id="candidate-id" class="sleek-input" placeholder="e.g. 2026CS001" required>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Proposer Student ID</label>
+                            <input type="text" id="proposer-id" class="sleek-input" placeholder="e.g. 2026CS002" required>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Seconder Student ID</label>
+                            <input type="text" id="seconder-id" class="sleek-input" placeholder="e.g. 2026CS003" required>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Position</label>
+                            <select id="position" class="sleek-input" required>
+                                <option value="" disabled selected>Select Position</option>
+                            </select>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Category (Degree Program)</label>
+                            <select id="category" class="sleek-input" required>
+                                <option value="CS">Computer Science</option>
+                                <option value="IS">Information Systems</option>
+                            </select>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Language Proficiency</label>
+                            <input type="text" id="lang" class="sleek-input" placeholder="e.g. English, Sinhala" required>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Candidate Photo</label>
+                            <input type="file" id="photo-file" class="sleek-input" accept="image/*">
+                            <small style="color: #64748b;">Photo will be stored in assets/images (local system simulation)</small>
+                        </div>
+                        <div class="input-wrapper">
+                            <label>Manifesto</label>
+                            <textarea id="manifesto" class="sleek-input" rows="4" placeholder="Briefly state your goals..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-sleek">Submit Nomination</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- My Nominations History -->
+            <section class="dashboard-section">
+                <h2 class="section-title">My Nominations History</h2>
+                <div id="pending-consents" class="card" style="padding: 1rem;">
+                    <p style="color: #64748b;">Loading nominations...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Nomination Details Modal -->
+    <div id="nominationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 style="font-weight: 800; letter-spacing: -0.025em; margin-bottom: 0.5rem;">Nomination Review</h2>
+            <div id="modal-status-badge"></div>
+
+            <div class="nomination-detail-grid">
+                <div class="nom-photo-frame">
+                    <img id="modal-photo" src="../assets/images/candidate_pfp.png" alt="Candidate">
+                </div>
+                <div>
+                    <div class="detail-item">
+                        <div class="detail-label">Candidate</div>
+                        <div class="detail-value" id="modal-cand-name">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Position</div>
+                        <div class="detail-value" id="modal-position-val">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div class="detail-item">
+                    <div class="detail-label">Proposer</div>
+                    <div class="detail-value" id="modal-proposer">Loading...</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Seconder</div>
+                    <div class="detail-value" id="modal-seconder">Loading...</div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Consents Status</div>
+                <div id="modal-consents-breakdown" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                    <!-- Consents breakdown here -->
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Language Proficiency</div>
+                <div class="detail-value" id="modal-lang">Loading...</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Manifesto</div>
+                <div class="manifesto-box" id="modal-manifesto"></div>
+            </div>
+
+            <div id="modal-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <!-- Buttons injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:3000/api/nominations';
+        const ADMIN_API = 'http://127.0.0.1:3000/api/admin';
+        let allNominations = [];
+        let allElections = [];
+
+        async function loadElections() {
+            try {
+                const res = await fetch(`${ADMIN_API}/elections`, { 
+                    headers: { 'x-student-id': JSON.parse(localStorage.getItem('user')).student_id },
+                    credentials: 'include' 
+                });
+                allElections = await res.json();
+                
+                const select = document.getElementById('election-id');
+                // Filter elections that have nominations enabled
+                const nominationElections = allElections.filter(e => e.has_nominations === 1);
+                
+                nominationElections.forEach(e => {
+                    const option = document.createElement('option');
+                    option.value = e.id;
+                    option.textContent = e.title;
+                    select.appendChild(option);
+                });
+
+                // Check for election_id in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const electionId = urlParams.get('election_id');
+                if (electionId) {
+                    select.value = electionId;
+                    handleElectionChange();
+                }
+
+                select.onchange = handleElectionChange;
+
+            } catch (err) {
+                console.error('Error loading elections:', err);
+            }
+        }
+
+        function handleElectionChange() {
+            const select = document.getElementById('election-id');
+            const electionId = select.value;
+            const election = allElections.find(e => e.id == electionId);
+            
+            if (election) {
+                const now = new Date();
+                const start = election.nomination_start ? new Date(election.nomination_start) : null;
+                const end = election.nomination_end ? new Date(election.nomination_end) : null;
+                
+                let isOpen = true;
+                if (start && now < start) isOpen = false;
+                if (end && now > end) isOpen = false;
+                
+                if (!isOpen) {
+                    document.getElementById('nomination-form-section').style.opacity = '0.5';
+                    document.getElementById('nomination-form-section').style.pointerEvents = 'none';
+                    document.getElementById('nomination-closed-message').style.display = 'block';
+                } else {
+                    document.getElementById('nomination-form-section').style.opacity = '1';
+                    document.getElementById('nomination-form-section').style.pointerEvents = 'auto';
+                    document.getElementById('nomination-closed-message').style.display = 'none';
+                }
+            }
+        }
+        
+        async function fetchPending() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                console.log('Fetching pending nominations for user:', user.student_id);
+                const res = await fetch(`${API_BASE}/pending`, {
+                    headers: { 'x-student-id': user.student_id },
+                    credentials: 'include'
+                });
+                allNominations = await res.json();
+                console.log('Pending nominations received:', allNominations);
+                renderPending(allNominations, user.student_id);
+            } catch (err) {
+                console.error('Fetch error in fetchPending:', err);
+            }
+        }
+
+        function renderPending(nominations, myId) {
+            const container = document.getElementById('pending-consents');
+            if (!nominations || nominations.length === 0) {
+                container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">No nomination history found.</p>';
+                return;
+            }
+
+            container.innerHTML = nominations.map(n => {
+                const normMyId = myId.toUpperCase();
+                const normCandId = n.candidate_id.toUpperCase();
+                const normPropId = n.proposer_id.toUpperCase();
+                const normSecId = n.seconder_id.toUpperCase();
+
+                let role = '';
+                if (normCandId === normMyId) role = 'candidate';
+                else if (normPropId === normMyId) role = 'proposer';
+                else if (normSecId === normMyId) role = 'seconder';
+
+                let myConsent = false;
+                if (role === 'candidate') myConsent = n.candidate_consent === 'approved';
+                else if (role === 'proposer') myConsent = n.proposer_consent === 'approved';
+                else if (role === 'seconder') myConsent = n.seconder_consent === 'approved';
+
+                let statusText = '';
+                let statusColor = '';
+
+                if (n.admin_status === 'approved') {
+                    statusText = 'APPROVED BY ADMIN';
+                    statusColor = '#10b981';
+                } else if (n.admin_status === 'rejected') {
+                    statusText = 'REJECTED BY ADMIN';
+                    statusColor = '#ef4444';
+                } else if (n.candidate_consent === 'rejected' || n.proposer_consent === 'rejected' || n.seconder_consent === 'rejected') {
+                    statusText = 'REJECTED BY MEMBER';
+                    statusColor = '#ef4444';
+                } else if (n.candidate_consent === 'approved' && n.proposer_consent === 'approved' && n.seconder_consent === 'approved') {
+                    statusText = 'AWAITING ADMIN REVIEW';
+                    statusColor = '#f59e0b';
+                } else {
+                    statusText = 'PENDING CONSENTS';
+                    statusColor = '#64748b';
+                }
+
+                return `
+                    <div style="padding: 1.25rem; border: 1px solid #e2e8f0; border-radius: 1rem; margin-bottom: 1rem; position: relative; background: white; transition: transform 0.2s; cursor: pointer;" onclick="viewDetails(${n.id})">
+                        <div style="position: absolute; top: 1.25rem; right: 1.25rem; font-size: 0.75rem; font-weight: 800; color: ${statusColor}; text-transform: uppercase;">
+                            ${statusText}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: #f8fafc; overflow: hidden; border: 1px solid #e2e8f0;">
+                                <img src="${n.photo || '../assets/images/candidate_pfp.png'}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">${n.candidate_name}</h4>
+                                <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #64748b; font-weight: 500;">Role: ${role.toUpperCase()}</p>
+                                <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #94a3b8;">${n.election_title}</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                            ${myConsent ? '<span style="color: #10b981;"><i class="fas fa-check-circle"></i> Consent Recorded</span>' : '<span style="color: #6366f1;"><i class="fas fa-info-circle"></i> Action Required</span>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusIcon(status) {
+            if (status === 'approved') return '<i class="fas fa-check-circle" style="color: #10b981;"></i>';
+            if (status === 'rejected') return '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
+            return '<i class="fas fa-clock" style="color: #94a3b8;"></i>';
+        }
+
+        function viewDetails(id) {
+            const n = allNominations.find(x => x.id === id);
+            if (!n) return;
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            const normMyId = user.student_id.toUpperCase();
+            const normCandId = n.candidate_id.toUpperCase();
+            const normPropId = n.proposer_id.toUpperCase();
+            const normSecId = n.seconder_id.toUpperCase();
+
+            let role = '';
+            if (normCandId === normMyId) role = 'candidate';
+            else if (normPropId === normMyId) role = 'proposer';
+            else if (normSecId === normMyId) role = 'seconder';
+
+            let myConsent = false;
+            if (role === 'candidate') myConsent = n.candidate_consent === 'approved';
+            else if (role === 'proposer') myConsent = n.proposer_consent === 'approved';
+            else if (role === 'seconder') myConsent = n.seconder_consent === 'approved';
+
+            document.getElementById('modal-photo').src = n.photo || '../assets/images/candidate_pfp.png';
+            document.getElementById('modal-cand-name').innerText = `${n.candidate_name} (${n.candidate_id})`;
+            document.getElementById('modal-position-val').innerText = n.position;
+            document.getElementById('modal-proposer').innerText = `${n.proposer_name} (${n.proposer_id})`;
+            document.getElementById('modal-seconder').innerText = `${n.seconder_name} (${n.seconder_id})`;
+            document.getElementById('modal-lang').innerText = n.language_proficiency;
+            document.getElementById('modal-manifesto').innerText = n.manifesto;
+
+            const breakdown = document.getElementById('modal-consents-breakdown');
+            breakdown.innerHTML = `
+                <div class="consent-status status-${n.candidate_consent}">
+                    ${getStatusIcon(n.candidate_consent)} Candidate: ${n.candidate_consent.toUpperCase()}
+                </div>
+                <div class="consent-status status-${n.proposer_consent}">
+                    ${getStatusIcon(n.proposer_consent)} Proposer: ${n.proposer_consent.toUpperCase()}
+                </div>
+                <div class="consent-status status-${n.seconder_consent}">
+                    ${getStatusIcon(n.seconder_consent)} Seconder: ${n.seconder_consent.toUpperCase()}
+                </div>
+            `;
+
+            const actions = document.getElementById('modal-actions');
+            // Allow action ONLY if admin hasn't processed it AND student hasn't approved/rejected yet
+            const hasMemberRejected = n.candidate_consent === 'rejected' || n.proposer_consent === 'rejected' || n.seconder_consent === 'rejected';
+            
+            if (n.admin_status === 'pending' && !hasMemberRejected && (n[`${role}_consent`] === 'pending')) {
+                actions.innerHTML = `
+                    <button onclick="giveConsent(${n.id}, '${role}', true)" class="btn-modern" style="background: #10b981; color: white; flex: 1; justify-content: center; padding: 1rem;">
+                        <i class="fas fa-check"></i> Give Consent
+                    </button>
+                    <button onclick="giveConsent(${n.id}, '${role}', false)" class="btn-modern" style="background: #ef4444; color: white; flex: 1; justify-content: center; padding: 1rem;">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                `;
+            } else {
+                let finalMsg = '';
+                if (n.admin_status !== 'pending') finalMsg = `<i class="fas fa-lock"></i> Finalized by Administrator (${n.admin_status.toUpperCase()})`;
+                else if (hasMemberRejected) finalMsg = `<i class="fas fa-times-circle"></i> This nomination was rejected by a member.`;
+                else finalMsg = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Your response has been recorded.`;
+
+                actions.innerHTML = `
+                    <div style="width: 100%; text-align: center; color: #64748b; font-size: 0.9rem; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px dashed #e2e8f0;">
+                        ${finalMsg}
+                    </div>
+                `;
+            }
+
+            document.getElementById('nominationModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('nominationModal').style.display = 'none';
+        }
+
+        async function giveConsent(nominationId, role, status) {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const res = await fetch(`${API_BASE}/consent`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-student-id': user.student_id
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ nominationId, role, status })
+                });
+                if (res.ok) {
+                    alert('Response updated.');
+                    closeModal();
+                    fetchPending();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to update response.');
+                }
+            } catch (err) {
+                console.error('Error in giveConsent:', err);
+            }
+        }
+
+        document.getElementById('nomination-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            const photoInput = document.getElementById('photo-file');
+            let photoData = null;
+            let photoName = '';
+
+            if (photoInput.files && photoInput.files[0]) {
+                const file = photoInput.files[0];
+                photoName = file.name;
+                photoData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            const payload = {
+                election_id: document.getElementById('election-id').value,
+                candidate_id: document.getElementById('candidate-id').value,
+                proposer_id: document.getElementById('proposer-id').value,
+                seconder_id: document.getElementById('seconder-id').value,
+                position: document.getElementById('position').value,
+                category: document.getElementById('category').value,
+                language_proficiency: document.getElementById('lang').value,
+                manifesto: document.getElementById('manifesto').value,
+                photo: photoData,
+                photoName: photoName
+            };
+
+            try {
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-student-id': user.student_id
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    fetchPending();
+                    document.getElementById('nomination-form').reset();
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                console.error('Error in nomination submission:', err);
+                alert('Error submitting nomination.');
+            }
+        };
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('nominationModal');
+            if (event.target == modal) closeModal();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadElections();
+            fetchPending();
+        });
+    </script>
+</body>
+</html>

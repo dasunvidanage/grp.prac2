@@ -9,6 +9,7 @@ const candidateRoutes = require('./routes/candidates');
 const voteRoutes = require('./routes/vote');
 const resultRoutes = require('./routes/results');
 const adminRoutes = require('./routes/admin');
+const nominationRoutes = require('./routes/nominations');
 
 const app = express();
 const PORT = 3000;
@@ -19,8 +20,8 @@ app.use(cors({
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Id', 'X-Student-Id']
 }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 // Session setup
 app.use(session({
@@ -39,6 +40,7 @@ app.use('/api/candidates', candidateRoutes);
 app.use('/api/vote', voteRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/nominations', nominationRoutes);
 
 // Start server
 app.listen(PORT, () => {

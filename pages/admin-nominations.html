@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Nominations - Admin Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white; 
+            margin: 5% auto; 
+            padding: 2.5rem; 
+            border-radius: 1.5rem; 
+            width: 90%; 
+            max-width: 600px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+        .close-modal:hover { color: #374151; }
+        
+        .nomination-detail-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .nom-photo-frame {
+            width: 120px;
+            height: 120px;
+            border-radius: 1rem;
+            background: #f1f5f9;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+        .nom-photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .detail-item {
+            margin-bottom: 1rem;
+        }
+        .detail-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .manifesto-box {
+            background: #f8fafc;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #475569;
+        }
+
+        /* Controls Section (Matching Election Page) */
+        .election-controls-row {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 1rem 0 2rem 0;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-right: 1.5rem;
+            border-right: 1px solid #f3f4f6;
+        }
+        .control-group:last-child { border-right: none; }
+        .flatpickr-input-custom {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+            width: 180px;
+        }
+        .btn-modern {
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-upcoming { background: #e0f2fe; color: #075985; }
+        .status-closed { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1 id="election-title">Review Nominations</h1>
+                <p>Approve nominations that have full student consent</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Configuration Section -->
+        <div class="election-controls-row">
+            <div class="control-group">
+                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Nomination Start</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-calendar-alt" style="color: #6b7280;"></i>
+                        <input type="text" id="nom-start-picker" class="flatpickr-input-custom" placeholder="Set Start Time">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Nomination End</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-calendar-check" style="color: #6b7280;"></i>
+                        <input type="text" id="nom-end-picker" class="flatpickr-input-custom" placeholder="Set End Time">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <button id="save-range-btn" class="btn-modern" style="background: #10b981; color: white;">
+                    <i class="fas fa-save"></i> Save Range
+                </button>
+            </div>
+            <div class="control-group" style="border-right: none;">
+                <div id="countdown-display" style="text-align: right;">
+                    <div id="countdown-status" class="status-badge status-upcoming">Upcoming</div>
+                    <div id="countdown-timer" style="font-size: 1.4rem; font-weight: 800; color: #1f2937; font-family: monospace; margin-top: 0.2rem;">00:00:00</div>
+                </div>
+            </div>
+            <div class="control-group" style="margin-left: auto;">
+                <button id="reset-nominations-btn" class="btn-modern" style="background: #ef4444; color: white;">
+                    <i class="fas fa-redo"></i> Reset Nominations
+                </button>
+            </div>
+        </div>
+
+        <section class="dashboard-section">
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div id="nomination-scroll-container" style="max-height: 600px; overflow-y: auto;">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);">
+                            <tr style="text-align: left; border-bottom: 2px solid #edf2f7;">
+                                <th style="padding: 1.25rem 1.5rem;">Candidate</th>
+                                <th style="padding: 1.25rem 1.5rem;">Position</th>
+                                <th style="padding: 1.25rem 1.5rem;">Category</th>
+                                <th style="padding: 1.25rem 1.5rem;">Student Consents</th>
+                                <th style="padding: 1.25rem 1.5rem;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nominations-tbody">
+                            <!-- Rows loaded via JS -->
+                        </tbody>
+                    </table>
+                    <div id="nominations-loader" style="text-align: center; padding: 2rem; color: #64748b; display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading more nominations...
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Nomination Details Modal -->
+    <div id="nominationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title" style="font-weight: 800; letter-spacing: -0.025em; margin-bottom: 0.5rem;">Nomination Details</h2>
+            <div id="modal-badge-container"></div>
+
+            <div class="nomination-detail-grid">
+                <div class="nom-photo-frame">
+                    <img id="modal-photo" src="../assets/images/candidate_pfp.png" alt="Candidate">
+                </div>
+                <div>
+                    <div class="detail-item">
+                        <div class="detail-label">Candidate Name</div>
+                        <div class="detail-value" id="modal-cand-name">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Position applied for</div>
+                        <div class="detail-value" id="modal-position">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div class="detail-item">
+                    <div class="detail-label">Proposer</div>
+                    <div class="detail-value" id="modal-proposer">Loading...</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Seconder</div>
+                    <div class="detail-value" id="modal-seconder">Loading...</div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Manifesto</div>
+                <div class="manifesto-box" id="modal-manifesto"></div>
+            </div>
+
+            <div id="modal-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <!-- Buttons injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:3000/api';
+        let electionId = null;
+        let currentElection = {};
+        let startTimePicker, endTimePicker;
+        let countdownInterval;
+
+        // Lazy Loading State
+        let nomOffset = 0;
+        const nomLimit = 10;
+        let nomLoading = false;
+        let allNomLoaded = false;
+        let allNominations = [];
+
+        async function authFetch(url, options = {}) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+                'x-admin-id': user.student_id
+            };
+            return fetch(url, { ...options, headers, credentials: 'include' });
+        }
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            electionId = urlParams.get('id');
+
+            if (!electionId) {
+                alert('No election ID provided.');
+                window.location.href = 'admin-elections-list.html';
+                return;
+            }
+
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.name || 'Admin';
+            document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
+
+            // 1. Init Pickers
+            startTimePicker = flatpickr("#nom-start-picker", { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true });
+            endTimePicker = flatpickr("#nom-end-picker", { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true });
+
+            // 2. Add Event Listeners
+            document.getElementById('save-range-btn').onclick = saveNominationRange;
+            document.getElementById('reset-nominations-btn').onclick = resetNominations;
+
+            // 3. Load Data
+            await fetchElectionDetails();
+            await fetchNominations();
+
+            // 4. Start Interval
+            countdownInterval = setInterval(updateCountdownUI, 1000);
+
+            // 5. Scroll listener for lazy loading
+            const container = document.getElementById('nomination-scroll-container');
+            container.addEventListener('scroll', () => {
+                if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
+                    fetchNominations(true);
+                }
+            });
+        }
+
+        async function fetchElectionDetails() {
+            try {
+                const res = await authFetch(`${API_BASE}/admin/elections/${electionId}`);
+                currentElection = await res.json();
+                document.getElementById('election-title').textContent = `Review Nominations: ${currentElection.title}`;
+                
+                if (currentElection.nomination_start) startTimePicker.setDate(new Date(currentElection.nomination_start));
+                if (currentElection.nomination_end) endTimePicker.setDate(new Date(currentElection.nomination_end));
+                
+                updateCountdownUI();
+            } catch (err) { console.error(err); }
+        }
+
+        async function saveNominationRange() {
+            const start = document.getElementById('nom-start-picker').value;
+            const end = document.getElementById('nom-end-picker').value;
+            if (!start || !end) return alert('Select both start and end times.');
+
+            try {
+                const res = await authFetch(`${API_BASE}/admin/elections/${electionId}/nomination-range`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ nomination_start: start, nomination_end: end })
+                });
+                if (res.ok) {
+                    alert('Nomination range updated.');
+                    fetchElectionDetails();
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function resetNominations() {
+            if (!confirm('CRITICAL: This will DELETE all nominations for this election. This action is irreversible. Continue?')) return;
+            try {
+                const res = await authFetch(`${API_BASE}/admin/elections/${electionId}/reset-nominations`, { method: 'POST' });
+                if (res.ok) {
+                    alert('Nominations reset.');
+                    nomOffset = 0;
+                    allNomLoaded = false;
+                    document.getElementById('nominations-tbody').innerHTML = '';
+                    fetchNominations();
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function updateCountdownUI() {
+            const statusEl = document.getElementById('countdown-status');
+            const timerEl = document.getElementById('countdown-timer');
+            const now = new Date().getTime();
+            
+            const start = currentElection.nomination_start ? new Date(currentElection.nomination_start).getTime() : 0;
+            const end = currentElection.nomination_end ? new Date(currentElection.nomination_end).getTime() : 0;
+
+            if (!start || !end) {
+                statusEl.textContent = 'Not Set';
+                statusEl.className = 'status-badge status-closed';
+                timerEl.textContent = '00:00:00';
+                return;
+            }
+
+            if (now < start) {
+                statusEl.textContent = 'Upcoming';
+                statusEl.className = 'status-badge status-upcoming';
+                timerEl.textContent = formatDistance(start - now);
+            } else if (now < end) {
+                statusEl.textContent = 'Active';
+                statusEl.className = 'status-badge status-active';
+                timerEl.textContent = formatDistance(end - now);
+            } else {
+                statusEl.textContent = 'Closed';
+                statusEl.className = 'status-badge status-closed';
+                timerEl.textContent = '00:00:00';
+            }
+        }
+
+        function formatDistance(distance) {
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        async function fetchNominations(isLoadMore = false) {
+            if (nomLoading || allNomLoaded) return;
+            nomLoading = true;
+            document.getElementById('nominations-loader').style.display = 'block';
+
+            try {
+                // Use election_id filter in list
+                const res = await authFetch(`${API_BASE}/nominations/admin/list?election_id=${electionId}&limit=${nomLimit}&offset=${nomOffset}`);
+                const nominations = await res.json();
+                
+                if (nominations.length < nomLimit) allNomLoaded = true;
+                if (isLoadMore) allNominations = [...allNominations, ...nominations];
+                else allNominations = nominations;
+
+                renderNominations(nominations, isLoadMore);
+                nomOffset += nominations.length;
+            } catch (err) { console.error(err); }
+            finally {
+                nomLoading = false;
+                document.getElementById('nominations-loader').style.display = 'none';
+            }
+        }
+
+        function renderNominations(nominations, isLoadMore) {
+            const tbody = document.getElementById('nominations-tbody');
+            if (!isLoadMore && nominations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 3rem; text-align: center; color: #94a3b8;">No nominations ready for review.</td></tr>';
+                return;
+            }
+
+            const rows = nominations.map(n => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                <img src="${n.photo || '../assets/images/candidate_pfp.png'}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b;">${n.candidate_name}</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">${n.candidate_id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;"><span style="background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.6rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 700;">${n.position}</span></td>
+                    <td style="padding: 1.25rem 1.5rem; font-weight: 600; color: #475569;">${n.category}</td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <div style="display: flex; gap: 0.25rem;">
+                            <i class="fas fa-check-circle" style="color: ${n.candidate_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                            <i class="fas fa-check-circle" style="color: ${n.proposer_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                            <i class="fas fa-check-circle" style="color: ${n.seconder_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                        </div>
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <button onclick="viewDetails(${n.id})" class="btn-modern" style="background: #f1f5f9; color: #475569; font-size: 0.85rem;">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (isLoadMore) tbody.insertAdjacentHTML('beforeend', rows);
+            else tbody.innerHTML = rows;
+        }
+
+        function viewDetails(id) {
+            const n = allNominations.find(x => x.id === id);
+            if (!n) return;
+
+            document.getElementById('modal-photo').src = n.photo || '../assets/images/candidate_pfp.png';
+            document.getElementById('modal-cand-name').innerText = `${n.candidate_name} (${n.candidate_id})`;
+            document.getElementById('modal-position').innerText = n.position;
+            document.getElementById('modal-proposer').innerText = `${n.proposer_name} (${n.proposer_id})`;
+            document.getElementById('modal-seconder').innerText = `${n.seconder_name} (${n.seconder_id})`;
+            document.getElementById('modal-manifesto').innerText = n.manifesto;
+
+            const actions = document.getElementById('modal-actions');
+            actions.innerHTML = `
+                <button onclick="reviewNomination(${n.id}, 'approved')" class="btn-modern" style="background: #10b981; color: white; flex: 1; justify-content: center; padding: 1rem;">
+                    <i class="fas fa-check"></i> Approve & Create Profile
+                </button>
+                <button onclick="reviewNomination(${n.id}, 'rejected')" class="btn-modern" style="background: #ef4444; color: white; flex: 1; justify-content: center; padding: 1rem;">
+                    <i class="fas fa-times"></i> Reject Nomination
+                </button>
+            `;
+
+            document.getElementById('nominationModal').style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('nominationModal').style.display = 'none'; }
+
+        async function reviewNomination(nominationId, status) {
+            try {
+                const res = await authFetch(`${API_BASE}/nominations/admin/review`, {
+                    method: 'POST',
+                    body: JSON.stringify({ nominationId, status })
+                });
+                if (res.ok) {
+                    alert(`Nomination ${status}.`);
+                    closeModal();
+                    nomOffset = 0; allNomLoaded = false;
+                    document.getElementById('nominations-tbody').innerHTML = '';
+                    fetchNominations();
+                }
+            } catch (err) { alert('Error reviewing nomination.'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

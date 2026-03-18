@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Redirect based on role
                     if (data.user.isAdmin) {
-                        console.log('Admin detected, redirecting to dashboard...');
-                        window.location.href = 'admin-dashboard.html';
+                        console.log('Admin detected, redirecting to home...');
+                        window.location.href = 'admin-home.html';
                     } else {
                         window.location.href = 'dashboard.html';
                     }
@@ -98,8 +98,11 @@ function checkAuth() {
 
     const path = window.location.pathname;
 
-    // Protect admin dashboard
-    if (path.includes('admin-dashboard.html')) {
+    // Protect admin pages
+    const adminPages = ['admin-election.html', 'admin-students.html', 'admin-nominations.html', 'admin-results.html'];
+    const isAdminPage = adminPages.some(page => path.includes(page));
+
+    if (isAdminPage) {
         if (!user || user.role !== 'admin') {
             console.warn('Unauthorized admin access attempt');
             window.location.href = 'login.html';
@@ -107,8 +110,24 @@ function checkAuth() {
         }
     }
 
+    // Protect student-only pages
+    const studentOnlyPages = ['vote.html', 'nominate.html'];
+    const isStudentOnly = studentOnlyPages.some(page => path.includes(page));
+
+    if (isStudentOnly) {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        if (user.role === 'admin') {
+            console.warn('Admin attempted to access student-only page');
+            window.location.href = 'admin-home.html';
+            return;
+        }
+    }
+
     // Protect other private pages
-    const privatePages = ['dashboard.html', 'vote.html', 'results.html', 'admin-dashboard.html'];
+    const privatePages = ['dashboard.html'];
     const isPrivate = privatePages.some(page => path.includes(page));
 
     if (isPrivate && !user) {
@@ -134,5 +153,11 @@ function updateUI(user) {
     const userNameDisplay = document.querySelector('#user-name');
     if (userNameDisplay && user) {
         userNameDisplay.textContent = user.name;
+    }
+
+    // Display user ID if element exists
+    const userIdDisplay = document.querySelector('#user-id');
+    if (userIdDisplay && user) {
+        userIdDisplay.textContent = user.student_id ? `ID: ${user.student_id}` : (user.role === 'admin' ? 'Administrator' : '');
     }
 }
