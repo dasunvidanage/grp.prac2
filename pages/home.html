@@ -200,7 +200,7 @@
                     <p>Apply for a position</p>
                 </div>
             </a>
-            <a href="vote.html" class="action-card">
+            <a href="candidates.html" class="action-card">
                 <div class="action-icon"><i class="fas fa-vote-yea"></i></div>
                 <div class="action-info">
                     <h4>Cast Your Vote</h4>
@@ -289,7 +289,7 @@
                         statusClass = 'status-upcoming'; // blue
                         actionBtn = `<a href="nominate.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none; background: var(--primary);">Nominate</a>`;
                     } else if (e.status === 'active') {
-                        actionBtn = `<a href="vote.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none;">Vote Now</a>`;
+                        actionBtn = `<a href="candidates.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none;">Vote Now</a>`;
                     } else if (e.status === 'upcoming') {
                         actionBtn = `<button class="btn-sleek" disabled style="opacity: 0.5; cursor: not-allowed; width: 100%;">Starts Soon</button>`;
                     } else if (e.status === 'completed') {

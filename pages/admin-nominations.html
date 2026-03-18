@@ -252,7 +252,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <div id="modal-prop-sec-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 <div class="detail-item">
                     <div class="detail-label">Proposer</div>
                     <div class="detail-value" id="modal-proposer">Loading...</div>
@@ -450,6 +450,8 @@
                 return;
             }
 
+            const isSelf = currentElection.nomination_type === 'self';
+
             const rows = nominations.map(n => `
                 <tr style="border-bottom: 1px solid #f1f5f9;">
                     <td style="padding: 1.25rem 1.5rem;">
@@ -466,10 +468,15 @@
                     <td style="padding: 1.25rem 1.5rem;"><span style="background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.6rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 700;">${n.position}</span></td>
                     <td style="padding: 1.25rem 1.5rem; font-weight: 600; color: #475569;">${n.category}</td>
                     <td style="padding: 1.25rem 1.5rem;">
-                        <div style="display: flex; gap: 0.25rem;">
-                            <i class="fas fa-check-circle" style="color: ${n.candidate_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
-                            <i class="fas fa-check-circle" style="color: ${n.proposer_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
-                            <i class="fas fa-check-circle" style="color: ${n.seconder_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                        <div style="display: flex; gap: 0.25rem; align-items: center;">
+                            ${isSelf ? `
+                                <i class="fas fa-check-circle" style="color: ${n.candidate_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin-left: 0.25rem;">Self-Nominated</span>
+                            ` : `
+                                <i class="fas fa-check-circle" title="Candidate" style="color: ${n.candidate_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                                <i class="fas fa-check-circle" title="Proposer" style="color: ${n.proposer_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                                <i class="fas fa-check-circle" title="Seconder" style="color: ${n.seconder_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                            `}
                         </div>
                     </td>
                     <td style="padding: 1.25rem 1.5rem;">
@@ -488,11 +495,21 @@
             const n = allNominations.find(x => x.id === id);
             if (!n) return;
 
+            const isSelf = currentElection.nomination_type === 'self';
+
             document.getElementById('modal-photo').src = n.photo || '../assets/images/candidate_pfp.png';
             document.getElementById('modal-cand-name').innerText = `${n.candidate_name} (${n.candidate_id})`;
             document.getElementById('modal-position').innerText = n.position;
-            document.getElementById('modal-proposer').innerText = `${n.proposer_name} (${n.proposer_id})`;
-            document.getElementById('modal-seconder').innerText = `${n.seconder_name} (${n.seconder_id})`;
+            
+            const propSecRow = document.getElementById('modal-prop-sec-row');
+            if (isSelf) {
+                if (propSecRow) propSecRow.style.display = 'none';
+            } else {
+                if (propSecRow) propSecRow.style.display = 'grid';
+                document.getElementById('modal-proposer').innerText = `${n.proposer_name} (${n.proposer_id})`;
+                document.getElementById('modal-seconder').innerText = `${n.seconder_name} (${n.seconder_id})`;
+            }
+
             document.getElementById('modal-manifesto').innerText = n.manifesto;
 
             const actions = document.getElementById('modal-actions');

@@ -107,6 +107,29 @@
         }
         .type-self { background: #e0e7ff; color: #4338ca; }
         .type-3person { background: #fef3c7; color: #92400e; }
+
+        /* Election Selector Styling from Results page */
+        .election-selector {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        .select-custom {
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+            min-width: 250px;
+            outline: none;
+        }
     </style>
 </head>
 <body class="dashboard-body">
@@ -132,6 +155,15 @@
             </div>
         </header>
 
+        <div class="election-selector">
+            <i class="fas fa-filter" style="color: #64748b;"></i>
+            <label for="election-id" style="font-weight: 700; color: #475569;">Select Election:</label>
+            <select id="election-id" class="select-custom">
+                <option value="" disabled selected>Select an Election</option>
+            </select>
+            <div id="nomination-type-info" style="margin-left: auto;"></div>
+        </div>
+
         <div id="nomination-closed-message" class="card" style="display: none; background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 2rem; text-align: center; margin-bottom: 2rem;">
             <i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 1rem;"></i>
             <h2>Nominations are Closed</h2>
@@ -140,19 +172,11 @@
 
         <div class="dashboard-grid">
             <!-- Submit Nomination Form -->
-            <section class="dashboard-section" id="nomination-form-section">
+            <section class="dashboard-section" id="nomination-form-section" style="display: none;">
                 <h2 class="section-title">New Nomination</h2>
                 <div class="card">
                     <form id="nomination-form">
-                        <div class="input-wrapper">
-                            <label>Select Election</label>
-                            <select id="election-id" class="sleek-input" required>
-                                <option value="" disabled selected>Select an Election</option>
-                            </select>
-                            <div id="nomination-type-info"></div>
-                        </div>
-
-                        <div id="nomination-fields" style="display: none;">
+                        <div id="nomination-fields">
                             <div class="input-wrapper" id="candidate-field">
                                 <label>Candidate Student ID</label>
                                 <input type="text" id="candidate-id" class="sleek-input" placeholder="e.g. 2026CS001" required>
@@ -194,6 +218,15 @@
                             <button type="submit" class="btn-sleek">Submit Nomination</button>
                         </div>
                     </form>
+                </div>
+            </section>
+
+            <!-- Placeholder message when no election selected -->
+            <section class="dashboard-section" id="no-election-selected-section">
+                <h2 class="section-title">New Nomination</h2>
+                <div class="card" style="text-align: center; padding: 4rem; color: #94a3b8;">
+                    <i class="fas fa-id-card" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                    <p>Select an election to start a new nomination.</p>
                 </div>
             </section>
 
@@ -322,16 +355,15 @@
                 if (end && now > end) isOpen = false;
                 
                 if (!isOpen) {
-                    document.getElementById('nomination-form-section').style.opacity = '0.5';
-                    document.getElementById('nomination-form-section').style.pointerEvents = 'none';
                     document.getElementById('nomination-closed-message').style.display = 'block';
-                    document.getElementById('nomination-fields').style.display = 'none';
+                    document.getElementById('nomination-form-section').style.display = 'none';
+                    document.getElementById('no-election-selected-section').style.display = 'none';
+                    document.getElementById('nomination-type-info').innerHTML = '';
                     return;
                 } else {
-                    document.getElementById('nomination-form-section').style.opacity = '1';
-                    document.getElementById('nomination-form-section').style.pointerEvents = 'auto';
                     document.getElementById('nomination-closed-message').style.display = 'none';
-                    document.getElementById('nomination-fields').style.display = 'block';
+                    document.getElementById('nomination-form-section').style.display = 'block';
+                    document.getElementById('no-election-selected-section').style.display = 'none';
                 }
 
                 // Update UI based on nomination type
@@ -372,6 +404,11 @@
                         posSelect.appendChild(opt);
                     });
                 } catch (e) { console.error('Error parsing positions', e); }
+            } else {
+                document.getElementById('nomination-form-section').style.display = 'none';
+                document.getElementById('no-election-selected-section').style.display = 'block';
+                document.getElementById('nomination-closed-message').style.display = 'none';
+                document.getElementById('nomination-type-info').innerHTML = '';
             }
         }
         

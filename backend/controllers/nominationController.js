@@ -140,6 +140,7 @@ exports.reviewNomination = (req, res) => {
            if (err || !student) return;
            Candidate.create({
              election_id: nomination.election_id,
+             student_id: nomination.candidate_id,
              name: student.name,
              manifesto: nomination.manifesto,
              language_proficiency: nomination.language_proficiency,

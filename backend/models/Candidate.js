@@ -14,10 +14,10 @@ const Candidate = {
     db.get('SELECT * FROM candidates WHERE id = ?', [id], callback);
   },
   create: (data, callback) => {
-    const { election_id, name, manifesto, language_proficiency, category, position, photo } = data;
+    const { election_id, student_id, name, manifesto, language_proficiency, category, position, photo } = data;
     db.run(
-      'INSERT INTO candidates (election_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [election_id, name, manifesto, language_proficiency, category, position, photo],
+      'INSERT INTO candidates (election_id, student_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [election_id, student_id, name, manifesto, language_proficiency, category, position, photo],
       callback
     );
   }

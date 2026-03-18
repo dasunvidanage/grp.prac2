@@ -61,13 +61,15 @@ async function init() {
     await runAsync(`CREATE TABLE candidates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       election_id INTEGER NOT NULL,
+      student_id TEXT NOT NULL,
       name TEXT NOT NULL,
       manifesto TEXT NOT NULL,
       language_proficiency TEXT NOT NULL,
       category TEXT NOT NULL,
       position TEXT NOT NULL,
       photo TEXT,
-      FOREIGN KEY (election_id) REFERENCES elections(id)
+      FOREIGN KEY (election_id) REFERENCES elections(id),
+      FOREIGN KEY (student_id) REFERENCES students(student_id)
     )`);
 
     await runAsync(`CREATE TABLE votes (
@@ -117,7 +119,7 @@ async function init() {
     // Admins
     for (let i = 1; i <= 5; i++) {
       await runAsync(`INSERT INTO students (student_id, name, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?, 'approved')`,
-        [`ADM${String(i).padStart(3, '0')}`, `Admin User ${i}`, `admin${i}@ucsc.lk`, adminPass, 'admin']);
+        [`ADM${String(i).padStart(3, '0')}`, `Admin User ${i}`, `admin${i}@ucsc.cmb.ac.lk`, adminPass, 'admin']);
     }
 
     // Students
@@ -125,7 +127,7 @@ async function init() {
       const dept = i <= 150 ? 'CS' : 'IS';
       const sId = `2026${dept}${String(i).padStart(3, '0')}`;
       await runAsync(`INSERT INTO students (student_id, name, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?, 'approved')`,
-        [sId, `Student ${dept} ${i}`, `${sId.toLowerCase()}@stu.ucsc.lk`, studentPass, 'student']);
+        [sId, `Student ${dept} ${i}`, `${sId.toLowerCase()}@stu.ucsc.cmb.ac.lk`, studentPass, 'student']);
     }
 
     // Candidates
@@ -133,8 +135,10 @@ async function init() {
     for (let i = 1; i <= 10; i++) {
       const cat = i % 2 === 0 ? 'CS' : 'IS';
       const pos = positions[i % positions.length];
-      await runAsync(`INSERT INTO candidates (election_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [electionId, `Candidate ${i}`, `Manifesto for ${pos}`, 'English', cat, pos, '../assets/images/candidate_pfp.png']);
+      const dept = cat;
+      const sId = `2026${dept}${String(i).padStart(3, '0')}`; // Pick an existing student
+      await runAsync(`INSERT INTO candidates (election_id, student_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [electionId, sId, `Candidate ${i}`, `Manifesto for ${pos}`, 'English', cat, pos, '../assets/images/candidate_pfp.png']);
     }
 
     // Votes & Participation

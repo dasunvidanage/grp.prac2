@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log('Admin detected, redirecting to home...');
                         window.location.href = 'admin-home.html';
                     } else {
-                        window.location.href = 'admin-home.html';
+                        window.location.href = 'home.html';
                     }
                 } else {
                     alert(data.error || 'Login failed');
@@ -111,7 +111,7 @@ function checkAuth() {
     }
 
     // Protect student-only pages
-    const studentOnlyPages = ['vote.html', 'nominate.html'];
+    const studentOnlyPages = ['candidates.html', 'nominate.html'];
     const isStudentOnly = studentOnlyPages.some(page => path.includes(page));
 
     if (isStudentOnly) {
