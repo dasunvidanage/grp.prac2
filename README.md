@@ -15,6 +15,7 @@ Modern campus elections require more than just a digital ballot; they require a 
 Our application replaces static registries with a **Self-Service Registration & Approval Engine**, giving administrators granular control over every phase of the democratic process.
 
 ### 1. Robust Identity Management
+* **OCR-Assisted Registration:** The portal features an integrated **Tesseract.js OCR engine** that automatically extracts Student Name, ID, and Email from uploaded ID card photos, significantly reducing manual entry errors.
 * **Document-Backed Registration:** Students register with their Full Name, UCSC ID, and Email, supported by a **mandatory University ID image upload**.
 * **Admin Gatekeeping:** A dedicated verification tier where admins manually approve or reject registrations based on the provided credentials and image proof.
 
