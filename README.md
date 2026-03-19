@@ -63,8 +63,8 @@ To establish a functional local environment, execute the following steps in sequ
 Clone the source and enter the root directory:
 
 ```bash
-git clone https://github.com/dasunvidanage/grp.prac2.git
-cd grp.prac2
+git clone https://github.com/dasunvidanage/Election-Portal.git
+cd Election-Portal
 
 ```
 
@@ -108,6 +108,7 @@ Use the following identities to verify role-based access control (RBAC) within t
 | **Admin** | `ADM001` | `admin123` | System Oversight |
 | **Admin** | `ADM002` | `admin123` | System Oversight |
 | **Student** | `2026CS001` | `student123` | Computer Science |
+| **Student** | `2026CS002` | `student123` | Computer Science |
 | **Student** | `2026IS151` | `student123` | Information Systems |
-
+| **Student** | `2026IS152` | `student123` | Information Systems |
 

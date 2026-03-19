@@ -44,11 +44,11 @@
             font-weight: 700;
             text-transform: uppercase;
         }
-        .bg-blue { background: #eff6ff; color: #1d4ed8; }
-        .bg-green { background: #f0fdf4; color: #15803d; }
-        .bg-amber { background: #fffbeb; color: #b45309; }
-        .bg-purple { background: #faf5ff; color: #7e22ce; }
-        .bg-red { background: #fef2f2; color: #b91c1c; }
+        .bg-blue { background: #dbeafe; color: #1e40af; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-amber { background: #fef3c7; color: #92400e; }
+        .bg-purple { background: #f3e8ff; color: #6b21a8; }
+        .bg-red { background: #fee2e2; color: #991b1b; }
 
         .election-list-grid {
             display: grid;
@@ -62,7 +62,7 @@
             padding: 1.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s;
-            border: 1px solid #f3f4f6;
+            border: 1px solid #e5e7eb;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -81,8 +81,8 @@
             margin-bottom: 1rem;
         }
         .status-active { background: #dcfce7; color: #166534; }
-        .status-upcoming { background: #e0f2fe; color: #075985; }
-        .status-completed { background: #f3f4f6; color: #4b5563; }
+        .status-upcoming { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #f3f4f6; color: #374151; }
 
         .quick-actions {
             display: grid;
@@ -99,7 +99,7 @@
             align-items: center;
             gap: 1rem;
             text-decoration: none;
-            color: #374151;
+            color: #1f2937;
             transition: all 0.2s;
         }
         .action-card:hover {
@@ -119,7 +119,7 @@
         .action-info p {
             margin: 0;
             font-size: 0.8rem;
-            color: #6b7280;
+            color: #4b5563;
         }
     </style>
 </head>
@@ -153,7 +153,7 @@
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="active-elections-stat">0</h3>
-                    <p style="color: #6b7280; font-size: 0.9rem;">Live Events</p>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Live Events</p>
                 </div>
             </div>
 
@@ -166,7 +166,7 @@
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="account-eligibility">Eligible</h3>
-                    <p style="color: #6b7280; font-size: 0.9rem;">To Vote</p>
+                    <p style="color: #4b5563; font-size: 0.9rem;">To Vote</p>
                 </div>
             </div>
 
@@ -179,7 +179,7 @@
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="user-dept" style="font-size: 1.5rem;">Loading...</h3>
-                    <p style="color: #6b7280; font-size: 0.9rem;">Assigned Group</p>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Assigned Group</p>
                 </div>
             </div>
         </div>
@@ -187,7 +187,7 @@
         <section class="dashboard-section">
             <h2 class="section-title">Active & Upcoming Elections</h2>
             <div id="active-elections-container" class="election-list-grid">
-                <p style="color: #6b7280; grid-column: 1/-1;">Loading elections...</p>
+                <p style="color: #4b5563; grid-column: 1/-1;">Loading elections...</p>
             </div>
         </section>
 
@@ -266,7 +266,7 @@
                 const container = document.getElementById('active-elections-container');
                 
                 if (elections.length === 0) {
-                    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 2rem;">No elections at the moment.</p>';
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #4b5563; padding: 2rem;">No elections at the moment.</p>';
                     return;
                 }
 
@@ -301,7 +301,7 @@
                             <div>
                                 <span class="status-badge ${statusClass}">${statusText}</span>
                                 <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">${e.title}</h3>
-                                <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 1.5rem;">
+                                <p style="font-size: 0.85rem; color: #4b5563; margin-bottom: 1.5rem;">
                                     <i class="far fa-calendar"></i> Voting: ${start.toLocaleDateString()}
                                 </p>
                             </div>
