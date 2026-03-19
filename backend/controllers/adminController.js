@@ -75,8 +75,9 @@ exports.resetNominations = (req, res) => {
 exports.getStudents = (req, res) => {
   const limit = parseInt(req.query.limit) || 20;
   const offset = parseInt(req.query.offset) || 0;
+  const orderBy = req.query.orderBy || null;
 
-  Admin.getAllStudents(limit, offset, (err, students) => {
+  Admin.getAllStudents(limit, offset, orderBy, (err, students) => {
     if (err) return res.status(500).json({ error: 'Failed to fetch students.' });
     res.json(students);
   });

@@ -44,11 +44,11 @@
             font-weight: 700;
             text-transform: uppercase;
         }
-        .bg-blue { background: #eff6ff; color: #1d4ed8; }
-        .bg-green { background: #f0fdf4; color: #15803d; }
-        .bg-amber { background: #fffbeb; color: #b45309; }
-        .bg-purple { background: #faf5ff; color: #7e22ce; }
-        .bg-red { background: #fef2f2; color: #b91c1c; }
+        .bg-blue { background: #dbeafe; color: #1e40af; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-amber { background: #fef3c7; color: #92400e; }
+        .bg-purple { background: #f3e8ff; color: #6b21a8; }
+        .bg-red { background: #fee2e2; color: #991b1b; }
 
         .quick-actions {
             display: grid;
@@ -65,7 +65,7 @@
             align-items: center;
             gap: 1rem;
             text-decoration: none;
-            color: #374151;
+            color: #1f2937;
             transition: all 0.2s;
         }
         .action-card:hover {
@@ -85,7 +85,7 @@
         .action-info p {
             margin: 0;
             font-size: 0.8rem;
-            color: #6b7280;
+            color: #4b5563;
         }
 
         .system-status-section {
@@ -94,6 +94,7 @@
             border-radius: 1rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             margin-top: 2rem;
+            border: 1px solid #e5e7eb;
         }
         .status-list {
             list-style: none;
@@ -115,6 +116,7 @@
         }
         .status-value {
             font-weight: 500;
+            color: #1f2937;
         }
     </style>
 </head>
@@ -124,8 +126,8 @@
     <main class="main-content">
         <header class="content-header">
             <div>
-                <h1>Portal Overview</h1>
-                <p>Welcome back, Admin. Multi-election monitoring dashboard.</p>
+                <h1>Admin Dashboard</h1>
+                <p>Welcome back to the UCSC Election Portal.</p>
             </div>
             <div class="user-profile">
                 <div class="user-info">
@@ -148,7 +150,7 @@
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="verified-students">0</h3>
-                    <p style="color: #6b7280; font-size: 0.9rem;">Verified Voters</p>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Verified Voters</p>
                 </div>
             </div>
 
@@ -161,7 +163,7 @@
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="total-elections">0</h3>
-                    <p style="color: #6b7280; font-size: 0.9rem;">Total Events</p>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Total Events</p>
                 </div>
             </div>
 
@@ -174,7 +176,7 @@
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="total-votes">0</h3>
-                    <p style="color: #6b7280; font-size: 0.9rem;">Total Votes Cast</p>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Total Votes Cast</p>
                 </div>
             </div>
 
@@ -187,7 +189,7 @@
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="total-pending">0</h3>
-                    <p style="color: #6b7280; font-size: 0.9rem;">Actions Required</p>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Actions Required</p>
                 </div>
             </div>
         </div>
@@ -224,6 +226,13 @@
                 <div class="action-info">
                     <h4>Student Verification</h4>
                     <p>Approve/Reject students</p>
+                </div>
+            </a>
+            <a href="results.html" class="action-card">
+                <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="action-info">
+                    <h4>View Results</h4>
+                    <p>See live election standings</p>
                 </div>
             </a>
         </div>

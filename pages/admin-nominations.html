@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Nominations - Admin Portal</title>
+    <title>Review Nominations - UCSC Election Portal</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,6 +13,180 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
+        :root {
+            --primary-light: #eef2ff;
+            --success-light: #ecfdf5;
+            --warning-light: #fffbeb;
+            --danger-light: #fef2f2;
+            --purple-light: #f5f3ff;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .breadcrumb-nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .admin-action-bar {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid #f1f5f9;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1200px) {
+            .config-dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-modern {
+            background: #f8fafc;
+            border: 2px solid #f1f5f9;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: #1e293b;
+            transition: all 0.2s;
+            outline: none;
+            width: 100%;
+        }
+
+        .input-modern:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-modern {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+
+        .status-overview-card {
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            border: 1px solid #f1f5f9;
+            text-align: center;
+        }
+
+        .countdown-timer-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1e293b;
+            font-family: 'Inter', monospace;
+            letter-spacing: -0.02em;
+        }
+
+        .status-pill-large {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-pill-active { background: #dcfce7; color: #166534; }
+        .status-pill-upcoming { background: #e0f2fe; color: #0369a1; }
+        .status-pill-closed { background: #fee2e2; color: #991b1b; }
+
+        .roster-card {
+            background: white;
+            border-radius: 1.5rem;
+            border: 1px solid #f1f5f9;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 4rem;
+        }
+
+        .data-table-modern {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table-modern th {
+            background: #f8fafc;
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #f1f5f9;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table-modern td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
         .modal {
             display: none; 
             position: fixed; 
@@ -21,128 +195,138 @@
             top: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease-out;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .modal-content {
             background: white; 
-            margin: 5% auto; 
-            padding: 2.5rem; 
+            margin: 4% auto; 
+            padding: 0; 
             border-radius: 1.5rem; 
             width: 90%; 
-            max-width: 600px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 650px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             position: relative;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
         }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 2rem 2.5rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #f8fafc;
+        }
+
+        .modal-body {
+            padding: 2.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2.5rem 2.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
         .close-modal {
             position: absolute;
             right: 1.5rem;
-            top: 1rem;
-            font-size: 2rem;
+            top: 1.5rem;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: #9ca3af;
+            color: #94a3b8;
+            transition: color 0.2s;
+            z-index: 10;
         }
-        .close-modal:hover { color: #374151; }
+        .close-modal:hover { color: #ef4444; }
         
         .nomination-detail-grid {
             display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            grid-template-columns: 140px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
+
         .nom-photo-frame {
-            width: 120px;
-            height: 120px;
-            border-radius: 1rem;
+            width: 140px;
+            height: 140px;
+            border-radius: 1.25rem;
             background: #f1f5f9;
             overflow: hidden;
-            border: 2px solid #e2e8f0;
+            border: 4px solid white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+
         .nom-photo-frame img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         .detail-item {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
+
         .detail-label {
-            font-size: 0.75rem;
-            font-weight: 700;
+            font-size: 0.7rem;
+            font-weight: 800;
             color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
         }
+
         .detail-value {
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 700;
             color: #1e293b;
         }
+
         .manifesto-box {
             background: #f8fafc;
-            padding: 1.25rem;
-            border-radius: 1rem;
-            border: 1px solid #e2e8f0;
-            margin-top: 1rem;
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            border: 1px solid #f1f5f9;
             font-size: 0.95rem;
             line-height: 1.6;
             color: #475569;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
-        /* Controls Section (Matching Election Page) */
-        .election-controls-row {
-            display: flex;
+        .consent-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 1.5rem;
-            background: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin: 1rem 0 2rem 0;
-            flex-wrap: wrap;
-        }
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding-right: 1.5rem;
-            border-right: 1px solid #f3f4f6;
-        }
-        .control-group:last-child { border-right: none; }
-        .flatpickr-input-custom {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            padding: 0.6rem 1rem;
+            gap: 0.4rem;
+            padding: 0.25rem 0.6rem;
             border-radius: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-            width: 180px;
-        }
-        .btn-modern {
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-modern:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .status-badge {
-            padding: 0.4rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 700;
-            text-transform: uppercase;
+            background: #f1f5f9;
+            color: #64748b;
         }
-        .status-active { background: #dcfce7; color: #166534; }
-        .status-upcoming { background: #e0f2fe; color: #075985; }
-        .status-closed { background: #fee2e2; color: #991b1b; }
+
+        .consent-approved { background: #dcfce7; color: #166534; }
+
+        .pos-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body class="dashboard-body">
@@ -152,8 +336,15 @@
     <main class="main-content">
         <header class="content-header">
             <div>
+                <nav class="breadcrumb-nav">
+                    <a href="admin-home.html">Dashboard</a>
+                    <i class="fas fa-chevron-right" style="font-size: 0.7rem; color: #cbd5e1;"></i>
+                    <a href="admin-elections-list.html">Elections</a>
+                    <i class="fas fa-chevron-right" style="font-size: 0.7rem; color: #cbd5e1;"></i>
+                    <span id="breadcrumb-current">Review Nominations</span>
+                </nav>
                 <h1 id="election-title">Review Nominations</h1>
-                <p>Approve nominations that have full student consent</p>
+                <p>Approve or reject candidate submissions after consent verification</p>
             </div>
             <div class="user-profile">
                 <div class="user-info">
@@ -161,68 +352,86 @@
                     <span id="user-id" class="user-id">ID: Loading...</span>
                 </div>
                 <div class="user-avatar">
-                    <i class="fas fa-user-circle"></i>
+                    <i class="fas fa-user-shield"></i>
                 </div>
             </div>
         </header>
 
-        <!-- Configuration Section -->
-        <div class="election-controls-row">
-            <div class="control-group">
-                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Nomination Start</label>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-calendar-alt" style="color: #6b7280;"></i>
-                        <input type="text" id="nom-start-picker" class="flatpickr-input-custom" placeholder="Set Start Time">
+        <!-- Configuration Dashboard -->
+        <div class="config-dashboard-grid">
+            
+            <!-- Nomination Range -->
+            <div class="admin-action-bar">
+                <h3 style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-calendar-alt" style="color: var(--primary);"></i> Nomination Window
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div class="control-item">
+                        <label class="control-label">Start Time</label>
+                        <div style="position: relative;">
+                            <i class="fas fa-calendar-day" style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+                            <input type="text" id="nom-start-picker" class="input-modern" style="padding-left: 2.4rem; font-size: 0.85rem;" placeholder="Set Start">
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <label class="control-label">End Time</label>
+                        <div style="position: relative;">
+                            <i class="fas fa-calendar-check" style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+                            <input type="text" id="nom-end-picker" class="input-modern" style="padding-left: 2.4rem; font-size: 0.85rem;" placeholder="Set End">
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="control-group">
-                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Nomination End</label>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-calendar-check" style="color: #6b7280;"></i>
-                        <input type="text" id="nom-end-picker" class="flatpickr-input-custom" placeholder="Set End Time">
-                    </div>
+                <div style="margin-top: auto;">
+                    <button id="save-range-btn" class="btn-modern btn-success" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-save"></i> <span>Save Range</span>
+                    </button>
                 </div>
             </div>
-            <div class="control-group">
-                <button id="save-range-btn" class="btn-modern" style="background: #10b981; color: white;">
-                    <i class="fas fa-save"></i> Save Range
-                </button>
-            </div>
-            <div class="control-group" style="border-right: none;">
-                <div id="countdown-display" style="text-align: right;">
-                    <div id="countdown-status" class="status-badge status-upcoming">Upcoming</div>
-                    <div id="countdown-timer" style="font-size: 1.4rem; font-weight: 800; color: #1f2937; font-family: monospace; margin-top: 0.2rem;">00:00:00</div>
+
+            <!-- Status -->
+            <div class="admin-action-bar">
+                <h3 style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-hourglass-half" style="color: #64748b;"></i> Window Status
+                </h3>
+                <div class="status-overview-card" style="margin-bottom: auto;">
+                    <div id="countdown-status" class="status-pill-large status-pill-upcoming">Upcoming</div>
+                    <div id="countdown-timer" class="countdown-timer-text">00:00:00</div>
                 </div>
             </div>
-            <div class="control-group" style="margin-left: auto;">
-                <button id="reset-nominations-btn" class="btn-modern" style="background: #ef4444; color: white;">
-                    <i class="fas fa-redo"></i> Reset Nominations
-                </button>
+
+            <!-- System -->
+            <div class="admin-action-bar">
+                <h3 style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-cogs" style="color: #ef4444;"></i> System Controls
+                </h3>
+                <div style="margin-top: auto;">
+                    <button id="reset-nominations-btn" class="btn-modern btn-danger" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-trash-alt"></i> <span>Clear Nominations</span>
+                    </button>
+                </div>
             </div>
         </div>
 
         <section class="dashboard-section">
-            <div class="card" style="padding: 0; overflow: hidden;">
-                <div id="nomination-scroll-container" style="max-height: 600px; overflow-y: auto;">
-                    <table class="data-table" style="width: 100%; border-collapse: collapse;">
-                        <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);">
-                            <tr style="text-align: left; border-bottom: 2px solid #edf2f7;">
-                                <th style="padding: 1.25rem 1.5rem;">Candidate</th>
-                                <th style="padding: 1.25rem 1.5rem;">Position</th>
-                                <th style="padding: 1.25rem 1.5rem;">Category</th>
-                                <th style="padding: 1.25rem 1.5rem;">Student Consents</th>
-                                <th style="padding: 1.25rem 1.5rem;">Actions</th>
+            <div class="roster-card">
+                <div id="nomination-scroll-container" style="max-height: 700px; overflow-y: auto;">
+                    <table class="data-table-modern">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Position</th>
+                                <th>Category</th>
+                                <th>Verification Status</th>
+                                <th style="text-align: right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="nominations-tbody">
                             <!-- Rows loaded via JS -->
                         </tbody>
                     </table>
-                    <div id="nominations-loader" style="text-align: center; padding: 2rem; color: #64748b; display: none;">
-                        <i class="fas fa-spinner fa-spin"></i> Loading more nominations...
+                    <div id="nominations-loader" style="text-align: center; padding: 3rem; color: #64748b; display: none;">
+                        <i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                        <p style="font-size: 0.85rem; font-weight: 600;">Updating nomination list...</p>
                     </div>
                 </div>
             </div>
@@ -233,42 +442,47 @@
     <div id="nominationModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title" style="font-weight: 800; letter-spacing: -0.025em; margin-bottom: 0.5rem;">Nomination Details</h2>
-            <div id="modal-badge-container"></div>
+            
+            <div class="modal-header">
+                <h2 id="modal-title" style="font-size: 1.25rem; font-weight: 800; color: #1e293b; letter-spacing: -0.025em; margin-bottom: 0.25rem;">Nomination Review</h2>
+                <div id="modal-badge-container"></div>
+            </div>
 
-            <div class="nomination-detail-grid">
-                <div class="nom-photo-frame">
-                    <img id="modal-photo" src="../assets/images/candidate_pfp.png" alt="Candidate">
+            <div class="modal-body">
+                <div class="nomination-detail-grid">
+                    <div class="nom-photo-frame">
+                        <img id="modal-photo" src="../assets/images/candidate_pfp.png" alt="Candidate">
+                    </div>
+                    <div>
+                        <div class="detail-item">
+                            <div class="detail-label">Candidate Identity</div>
+                            <div class="detail-value" id="modal-cand-name">Loading...</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Target Position</div>
+                            <div class="detail-value" id="modal-position">Loading...</div>
+                        </div>
+                    </div>
                 </div>
-                <div>
+
+                <div id="modal-prop-sec-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; padding-top: 1.5rem; border-top: 1px dashed #e2e8f0;">
                     <div class="detail-item">
-                        <div class="detail-label">Candidate Name</div>
-                        <div class="detail-value" id="modal-cand-name">Loading...</div>
+                        <div class="detail-label"><i class="fas fa-user-plus" style="margin-right: 0.4rem; color: var(--primary);"></i> Proposer</div>
+                        <div class="detail-value" id="modal-proposer" style="font-size: 0.95rem;">Loading...</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Position applied for</div>
-                        <div class="detail-value" id="modal-position">Loading...</div>
+                        <div class="detail-label"><i class="fas fa-user-friends" style="margin-right: 0.4rem; color: var(--primary);"></i> Seconder</div>
+                        <div class="detail-value" id="modal-seconder" style="font-size: 0.95rem;">Loading...</div>
                     </div>
                 </div>
-            </div>
 
-            <div id="modal-prop-sec-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 <div class="detail-item">
-                    <div class="detail-label">Proposer</div>
-                    <div class="detail-value" id="modal-proposer">Loading...</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Seconder</div>
-                    <div class="detail-value" id="modal-seconder">Loading...</div>
+                    <div class="detail-label">Campaign Manifesto</div>
+                    <div class="manifesto-box" id="modal-manifesto"></div>
                 </div>
             </div>
 
-            <div class="detail-item">
-                <div class="detail-label">Manifesto</div>
-                <div class="manifesto-box" id="modal-manifesto"></div>
-            </div>
-
-            <div id="modal-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <div id="modal-actions" class="modal-footer">
                 <!-- Buttons injected here -->
             </div>
         </div>
@@ -285,7 +499,7 @@
 
         // Lazy Loading State
         let nomOffset = 0;
-        const nomLimit = 10;
+        const nomLimit = 15;
         let nomLoading = false;
         let allNomLoaded = false;
         let allNominations = [];
@@ -315,8 +529,8 @@
             document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
 
             // 1. Init Pickers
-            startTimePicker = flatpickr("#nom-start-picker", { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true });
-            endTimePicker = flatpickr("#nom-end-picker", { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true });
+            startTimePicker = flatpickr("#nom-start-picker", { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true, disableMobile: true });
+            endTimePicker = flatpickr("#nom-end-picker", { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true, disableMobile: true });
 
             // 2. Add Event Listeners
             document.getElementById('save-range-btn').onclick = saveNominationRange;
@@ -332,7 +546,7 @@
             // 5. Scroll listener for lazy loading
             const container = document.getElementById('nomination-scroll-container');
             container.addEventListener('scroll', () => {
-                if (container.scrollTop + container.clientHeight >= container.scrollHeight - 20) {
+                if (container.scrollTop + container.clientHeight >= container.scrollHeight - 50) {
                     fetchNominations(true);
                 }
             });
@@ -343,6 +557,7 @@
                 const res = await authFetch(`${API_BASE}/admin/elections/${electionId}`);
                 currentElection = await res.json();
                 document.getElementById('election-title').textContent = `Review Nominations: ${currentElection.title}`;
+                document.getElementById('breadcrumb-current').textContent = currentElection.title;
                 
                 if (currentElection.nomination_start) startTimePicker.setDate(new Date(currentElection.nomination_start));
                 if (currentElection.nomination_end) endTimePicker.setDate(new Date(currentElection.nomination_end));
@@ -391,23 +606,23 @@
             const end = currentElection.nomination_end ? new Date(currentElection.nomination_end).getTime() : 0;
 
             if (!start || !end) {
-                statusEl.textContent = 'Not Set';
-                statusEl.className = 'status-badge status-closed';
+                statusEl.textContent = 'NOT SET';
+                statusEl.className = 'status-pill-large status-pill-closed';
                 timerEl.textContent = '00:00:00';
                 return;
             }
 
             if (now < start) {
-                statusEl.textContent = 'Upcoming';
-                statusEl.className = 'status-badge status-upcoming';
+                statusEl.textContent = 'UPCOMING';
+                statusEl.className = 'status-pill-large status-pill-upcoming';
                 timerEl.textContent = formatDistance(start - now);
             } else if (now < end) {
-                statusEl.textContent = 'Active';
-                statusEl.className = 'status-badge status-active';
+                statusEl.textContent = 'ACTIVE';
+                statusEl.className = 'status-pill-large status-pill-active';
                 timerEl.textContent = formatDistance(end - now);
             } else {
-                statusEl.textContent = 'Closed';
-                statusEl.className = 'status-badge status-closed';
+                statusEl.textContent = 'CLOSED';
+                statusEl.className = 'status-pill-large status-pill-closed';
                 timerEl.textContent = '00:00:00';
             }
         }
@@ -417,7 +632,14 @@
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            
+            let res = [];
+            if (days > 0) res.push(`${days}d`);
+            if (hours > 0) res.push(`${hours}h`);
+            if (minutes > 0) res.push(`${minutes}m`);
+            if (seconds > 0 || res.length === 0) res.push(`${seconds}s`);
+            
+            return res.join(' ');
         }
 
         async function fetchNominations(isLoadMore = false) {
@@ -426,7 +648,6 @@
             document.getElementById('nominations-loader').style.display = 'block';
 
             try {
-                // Use election_id filter in list
                 const res = await authFetch(`${API_BASE}/nominations/admin/list?election_id=${electionId}&limit=${nomLimit}&offset=${nomOffset}`);
                 const nominations = await res.json();
                 
@@ -446,42 +667,53 @@
         function renderNominations(nominations, isLoadMore) {
             const tbody = document.getElementById('nominations-tbody');
             if (!isLoadMore && nominations.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="padding: 3rem; text-align: center; color: #94a3b8;">No nominations ready for review.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 4rem; text-align: center; color: #94a3b8; background: white;"><i class="fas fa-inbox" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.3;"></i><p style="font-weight: 600;">No nominations ready for review.</p></td></tr>';
                 return;
             }
 
             const isSelf = currentElection.nomination_type === 'self';
 
             const rows = nominations.map(n => `
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1.25rem 1.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 32px; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; overflow: hidden; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); background: #f1f5f9;">
                                 <img src="${n.photo || '../assets/images/candidate_pfp.png'}" style="width:100%; height:100%; object-fit:cover;">
                             </div>
                             <div>
                                 <div style="font-weight: 700; color: #1e293b;">${n.candidate_name}</div>
-                                <div style="font-size: 0.75rem; color: #64748b;">${n.candidate_id}</div>
+                                <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">${n.candidate_id}</div>
                             </div>
                         </div>
                     </td>
-                    <td style="padding: 1.25rem 1.5rem;"><span style="background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.6rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 700;">${n.position}</span></td>
-                    <td style="padding: 1.25rem 1.5rem; font-weight: 600; color: #475569;">${n.category}</td>
-                    <td style="padding: 1.25rem 1.5rem;">
-                        <div style="display: flex; gap: 0.25rem; align-items: center;">
+                    <td><span class="pos-badge">${n.position}</span></td>
+                    <td><div style="font-weight: 600; color: #475569;">${n.category}</div></td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
                             ${isSelf ? `
-                                <i class="fas fa-check-circle" style="color: ${n.candidate_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
-                                <span style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin-left: 0.25rem;">Self-Nominated</span>
+                                <div class="consent-badge ${n.candidate_consent === 'approved' ? 'consent-approved' : ''}">
+                                    <i class="fas ${n.candidate_consent === 'approved' ? 'fa-check-circle' : 'fa-clock'}"></i>
+                                    <span>SELF</span>
+                                </div>
                             ` : `
-                                <i class="fas fa-check-circle" title="Candidate" style="color: ${n.candidate_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
-                                <i class="fas fa-check-circle" title="Proposer" style="color: ${n.proposer_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
-                                <i class="fas fa-check-circle" title="Seconder" style="color: ${n.seconder_consent === 'approved' ? '#10b981' : '#cbd5e1'}"></i>
+                                <div class="consent-badge ${n.candidate_consent === 'approved' ? 'consent-approved' : ''}" title="Candidate">
+                                    <i class="fas ${n.candidate_consent === 'approved' ? 'fa-check-circle' : 'fa-clock'}"></i>
+                                    <span>C</span>
+                                </div>
+                                <div class="consent-badge ${n.proposer_consent === 'approved' ? 'consent-approved' : ''}" title="Proposer">
+                                    <i class="fas ${n.proposer_consent === 'approved' ? 'fa-check-circle' : 'fa-clock'}"></i>
+                                    <span>P</span>
+                                </div>
+                                <div class="consent-badge ${n.seconder_consent === 'approved' ? 'consent-approved' : ''}" title="Seconder">
+                                    <i class="fas ${n.seconder_consent === 'approved' ? 'fa-check-circle' : 'fa-clock'}"></i>
+                                    <span>S</span>
+                                </div>
                             `}
                         </div>
                     </td>
-                    <td style="padding: 1.25rem 1.5rem;">
-                        <button onclick="viewDetails(${n.id})" class="btn-modern" style="background: #f1f5f9; color: #475569; font-size: 0.85rem;">
-                            <i class="fas fa-eye"></i> View Details
+                    <td style="text-align: right;">
+                        <button onclick="viewDetails(${n.id})" class="btn-modern" style="background: #f1f5f9; color: #475569; padding: 0.5rem 1rem;">
+                            <i class="fas fa-eye"></i> Review
                         </button>
                     </td>
                 </tr>
@@ -506,19 +738,19 @@
                 if (propSecRow) propSecRow.style.display = 'none';
             } else {
                 if (propSecRow) propSecRow.style.display = 'grid';
-                document.getElementById('modal-proposer').innerText = `${n.proposer_name} (${n.proposer_id})`;
-                document.getElementById('modal-seconder').innerText = `${n.seconder_name} (${n.seconder_id})`;
+                document.getElementById('modal-proposer').innerHTML = `<strong>${n.proposer_name}</strong><br><span style="color: #64748b;">ID: ${n.proposer_id}</span>`;
+                document.getElementById('modal-seconder').innerHTML = `<strong>${n.seconder_name}</strong><br><span style="color: #64748b;">ID: ${n.seconder_id}</span>`;
             }
 
-            document.getElementById('modal-manifesto').innerText = n.manifesto;
+            document.getElementById('modal-manifesto').innerText = n.manifesto || 'No manifesto provided.';
 
             const actions = document.getElementById('modal-actions');
             actions.innerHTML = `
-                <button onclick="reviewNomination(${n.id}, 'approved')" class="btn-modern" style="background: #10b981; color: white; flex: 1; justify-content: center; padding: 1rem;">
-                    <i class="fas fa-check"></i> Approve & Create Profile
+                <button onclick="reviewNomination(${n.id}, 'approved')" class="btn-modern btn-success" style="flex: 1; justify-content: center; height: 3.5rem;">
+                    <i class="fas fa-check-circle"></i> Approve Nomination
                 </button>
-                <button onclick="reviewNomination(${n.id}, 'rejected')" class="btn-modern" style="background: #ef4444; color: white; flex: 1; justify-content: center; padding: 1rem;">
-                    <i class="fas fa-times"></i> Reject Nomination
+                <button onclick="reviewNomination(${n.id}, 'rejected')" class="btn-modern btn-danger" style="flex: 1; justify-content: center; height: 3.5rem;">
+                    <i class="fas fa-times-circle"></i> Reject Nomination
                 </button>
             `;
 

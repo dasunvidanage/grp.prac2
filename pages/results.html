@@ -261,17 +261,6 @@
             display: block;
         }
 
-        .leading-indicator {
-            background: #dcfce7;
-            color: #166534;
-            padding: 0.25rem 0.625rem;
-            border-radius: 0.5rem;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-left: 0.75rem;
-        }
-
         .no-data-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -477,6 +466,9 @@
             container.innerHTML = '';
 
             Object.entries(grouped).forEach(([position, candidates], index) => {
+                // Sort candidates by vote count descending so color assignment is consistent
+                candidates.sort((a, b) => b.vote_count - a.vote_count);
+
                 const posId = `pos-${index}`;
                 const section = document.createElement('div');
                 section.className = 'position-card';
@@ -543,25 +535,22 @@
         }
 
         function renderCandidateList(containerId, candidates) {
-            const sorted = [...candidates].sort((a,b) => b.vote_count - a.vote_count);
             const container = document.getElementById(containerId);
-            const totalPosVotes = sorted.reduce((s, c) => s + c.vote_count, 0);
+            const totalPosVotes = candidates.reduce((s, c) => s + c.vote_count, 0);
 
-            container.innerHTML = sorted.map((c, i) => {
-                const isLeading = i === 0 && c.vote_count > 0;
+            container.innerHTML = candidates.map((c, i) => {
                 const pct = totalPosVotes > 0 ? ((c.vote_count / totalPosVotes) * 100).toFixed(1) : 0;
-                const color = designColors[candidates.indexOf(c) % designColors.length];
+                const color = designColors[i % designColors.length];
                 
                 return `
                     <div class="candidate-result-item-modern">
                         <div class="candidate-meta-row">
                             <div class="candidate-info-group">
-                                <div class="erc-avatar" style="background: ${color}20; color: ${color}; width: 40px; height: 40px; font-size: 0.9rem;">
-                                    ${c.name.charAt(0)}
+                                <div class="erc-avatar" style="background: ${color}20; color: ${color}; width: 40px; height: 40px; font-size: 0.9rem; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem;">
+                                    ${c.photo ? `<img src="${c.photo}" style="width:100%; height:100%; object-fit:cover;">` : c.name.charAt(0)}
                                 </div>
                                 <div>
                                     <span class="candidate-name-text">${c.name}</span>
-                                    ${isLeading ? '<span class="leading-indicator"><i class="fas fa-crown"></i> Leading</span>' : ''}
                                 </div>
                             </div>
                             <span class="vote-count-badge">${c.vote_count.toLocaleString()}</span>

@@ -175,7 +175,7 @@
                     <div class="status-icon bg-purple">
                         <i class="fas fa-id-badge"></i>
                     </div>
-                    <span class="status-badge-large bg-purple">Department</span>
+                    <span class="status-badge-large bg-purple">Course</span>
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="user-dept" style="font-size: 1.5rem;">Loading...</h3>
@@ -292,8 +292,6 @@
                         actionBtn = `<a href="candidates.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none;">Vote Now</a>`;
                     } else if (e.status === 'upcoming') {
                         actionBtn = `<button class="btn-sleek" disabled style="opacity: 0.5; cursor: not-allowed; width: 100%;">Starts Soon</button>`;
-                    } else if (e.status === 'completed') {
-                        actionBtn = `<a href="admin-results.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none; background: #4b5563;">View Results</a>`;
                     }
 
                     return `

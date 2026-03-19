@@ -99,7 +99,7 @@ function checkAuth() {
     const path = window.location.pathname;
 
     // Protect admin pages
-    const adminPages = ['admin-election.html', 'admin-students.html', 'admin-nominations.html', 'admin-results.html'];
+    const adminPages = ['admin-election.html', 'admin-students.html', 'admin-nominations.html'];
     const isAdminPage = adminPages.some(page => path.includes(page));
 
     if (isAdminPage) {

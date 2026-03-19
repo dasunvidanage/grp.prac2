@@ -1,12 +1,17 @@
 const db = require('../database');
 
 const Admin = {
-  getAllStudents: (limit, offset, callback) => {
-    db.all(
-      'SELECT student_id, name, email, status, id_photo FROM students WHERE role = "student" LIMIT ? OFFSET ?',
-      [limit, offset],
-      callback
-    );
+  getAllStudents: (limit, offset, orderBy, callback) => {
+    let sql = 'SELECT student_id, name, email, status, id_photo FROM students WHERE role = "student"';
+    if (orderBy === 'status') {
+      // Prioritize pending first, then approved, then rejected
+      sql += " ORDER BY CASE status WHEN 'pending' THEN 1 WHEN 'approved' THEN 2 WHEN 'rejected' THEN 3 ELSE 4 END ASC, name ASC";
+    } else {
+      // Default stable sort
+      sql += " ORDER BY name ASC";
+    }
+    sql += ' LIMIT ? OFFSET ?';
+    db.all(sql, [limit, offset], callback);
   },
   updateStudentStatus: (studentId, status, callback) => {
     db.run('UPDATE students SET status = ? WHERE student_id = ?', [status, studentId], callback);
