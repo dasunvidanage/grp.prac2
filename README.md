@@ -65,8 +65,8 @@ To establish a functional local environment, execute the following steps in sequ
 Clone the source and enter the root directory:
 
 ```bash
-git clone https://github.com/dasunvidanage/grp.prac2.git
-cd grp.prac2
+git clone https://github.com/dasunvidanage/Election-Portal.git
+cd Election-Portal
 
 ```
 
