@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomination - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+        }
+        .modal-content {
+            background: white; 
+            margin: 3rem auto; 
+            padding: 2.5rem; 
+            border-radius: 1.5rem; 
+            width: 90%; 
+            max-width: 650px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes modalSlideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-modal {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.25rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #f1f5f9;
+        }
+        .close-modal:hover { color: #1e293b; background: #e2e8f0; }
+        
+        .nomination-detail-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .nom-photo-frame {
+            width: 140px;
+            height: 140px;
+            border-radius: 1.25rem;
+            background: #f8fafc;
+            overflow: hidden;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .nom-photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .detail-item {
+            margin-bottom: 1.25rem;
+        }
+        .detail-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.075em;
+            margin-bottom: 0.35rem;
+        }
+        .detail-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .manifesto-box {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #4b5563;
+        }
+        
+        .status-badge-compact {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .bg-green-light { background: #dcfce7; color: #166534; }
+        .bg-red-light { background: #fee2e2; color: #991b1b; }
+        .bg-gray-light { background: #f1f5f9; color: #475569; }
+        .bg-amber-light { background: #fef3c7; color: #92400e; }
+
+        .type-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .type-self { background: #e0e7ff; color: #3730a3; }
+        .type-3person { background: #fef3c7; color: #92400e; }
+
+        .election-selector-box {
+            background: white;
+            padding: 1.25rem 2rem;
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
+        .select-modern {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+            min-width: 320px;
+            outline: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .select-modern:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Form Grid Improvements */
+        .nomination-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .form-full-width { grid-column: 1 / -1; }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        /* History List Improvements */
+        .history-card {
+            padding: 1.5rem;
+            border: 1px solid #f1f5f9;
+            border-radius: 1.25rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            background: white;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .history-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        .history-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .history-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 1rem;
+            background: #f8fafc;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        .history-info h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .history-meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.25rem;
+            font-size: 0.8rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+        .history-card-footer {
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .role-tag {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .no-selection-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            color: #94a3b8;
+            background: white;
+            border-radius: 1.5rem;
+            border: 2px dashed #f1f5f9;
+        }
+
+        @media (max-width: 768px) {
+            .nomination-form-grid { grid-template-columns: 1fr; }
+            .election-selector-box { flex-direction: column; align-items: stretch; }
+            .select-modern { min-width: unset; }
+            .nomination-detail-grid { grid-template-columns: 1fr; text-align: center; }
+            .nom-photo-frame { margin: 0 auto; }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Candidate Nomination</h1>
+                <p>Submit or approve a nomination for a position</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="election-selector-box">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="stat-icon" style="background: #eff6ff; color: #3b82f6; width: 40px; height: 40px; font-size: 1rem;">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <label for="election-id" style="font-weight: 700; color: #1e293b;">Select Election:</label>
+                <select id="election-id" class="select-modern">
+                    <option value="" disabled selected>Select an Election</option>
+                </select>
+            </div>
+            <div id="nomination-type-info" style="margin-left: auto;"></div>
+        </div>
+
+        <div id="nomination-closed-message" class="card" style="display: none; background: #fff1f2; border: 1px solid #fecaca; color: #991b1b; padding: 3rem; text-align: center; margin-bottom: 2.5rem; border-radius: 1.5rem;">
+            <div style="width: 64px; height: 64px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <i class="fas fa-lock" style="font-size: 1.5rem; color: #ef4444;"></i>
+            </div>
+            <h2 style="font-weight: 800; margin-bottom: 0.5rem;">Nominations are Closed</h2>
+            <p style="color: #b91c1c; font-weight: 500;">The nomination period for this election has ended or has not started yet.</p>
+        </div>
+
+        <div class="two-column-grid">
+            <!-- Submit Nomination Form -->
+            <section class="dashboard-section" id="nomination-form-section" style="display: none;">
+                <h2 class="section-title">New Nomination</h2>
+                <div class="card" style="padding: 2rem;">
+                    <form id="nomination-form">
+                        <div class="nomination-form-grid">
+                            <div class="input-group" id="candidate-field">
+                                <label>Candidate ID</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-user-id"></i>
+                                    <input type="text" id="candidate-id" class="sleek-input" placeholder="e.g. 2026CS001" required>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Degree Category</label>
+                                <select id="category" class="sleek-input" style="padding-left: 1rem; background-color: #f1f5f9; cursor: not-allowed;" required disabled>
+                                    <option value="" selected disabled>Auto-detected from ID</option>
+                                    <option value="CS">Computer Science</option>
+                                    <option value="IS">Information Systems</option>
+                                </select>
+                                <p style="font-size: 0.7rem; color: #64748b; margin-top: 0.25rem;">Detected from Candidate ID</p>
+                            </div>
+                            
+                            <div class="input-group" id="proposer-field" style="display: none;">
+                                <label>Proposer ID</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-user-friends"></i>
+                                    <input type="text" id="proposer-id" class="sleek-input" placeholder="e.g. 2026CS002">
+                                </div>
+                            </div>
+                            <div class="input-group" id="seconder-field" style="display: none;">
+                                <label>Seconder ID</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-user-friends"></i>
+                                    <input type="text" id="seconder-id" class="sleek-input" placeholder="e.g. 2026CS003">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Seeking Position</label>
+                                <select id="position" class="sleek-input" style="padding-left: 1rem;" required>
+                                    <option value="" disabled selected>Select Position</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Language Proficiency</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-language"></i>
+                                    <input type="text" id="lang" class="sleek-input" placeholder="e.g. English, Sinhala" required>
+                                </div>
+                            </div>
+
+                            <div class="input-group form-full-width">
+                                <label>Candidate Photo</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-image"></i>
+                                    <input type="file" id="photo-file" class="sleek-input" accept="image/*" style="padding-top: 0.8rem;">
+                                </div>
+                                <p style="font-size: 0.75rem; color: #4b5563; margin-top: 0.5rem; font-weight: 500;">Upload a clear portrait photo for the ballot.</p>
+                            </div>
+
+                            <div class="input-group form-full-width">
+                                <label>Election Manifesto</label>
+                                <textarea id="manifesto" class="sleek-input" style="padding: 1rem; border-radius: 1rem;" rows="5" placeholder="Share your vision and goals with the voters..." required></textarea>
+                            </div>
+
+                            <div class="form-full-width">
+                                <button type="submit" id="submit-btn" class="btn-sleek" style="padding: 1.125rem;">
+                                    <i class="fas fa-paper-plane"></i> Submit Nomination
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Placeholder message when no election selected -->
+            <section class="dashboard-section" id="no-election-selected-section">
+                <h2 class="section-title">New Nomination</h2>
+                <div class="no-selection-state">
+                    <div style="width: 80px; height: 80px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; border: 1px solid #f1f5f9;">
+                        <i class="fas fa-id-card" style="font-size: 2rem; color: #cbd5e1;"></i>
+                    </div>
+                    <p style="font-size: 1.1rem; font-weight: 600; color: #64748b;">Ready to nominate?</p>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">Select an election from the menu above to start.</p>
+                </div>
+            </section>
+
+            <!-- My Nominations History -->
+            <section class="dashboard-section">
+                <h2 class="section-title">Nominations Activity</h2>
+                <div id="pending-consents">
+                    <div class="card" style="text-align: center; padding: 3rem;">
+                        <p style="color: #4b5563; font-weight: 500;">Loading nominations...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Nomination Details Modal -->
+    <div id="nominationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <h2 style="font-weight: 800; letter-spacing: -0.025em; color: #1e293b;">Nomination Details</h2>
+                <div id="modal-status-badge"></div>
+            </div>
+            <p style="color: #4b5563; font-weight: 500; font-size: 0.9rem;">Review the candidate information and status below.</p>
+
+            <div class="nomination-detail-grid">
+                <div class="nom-photo-frame">
+                    <img id="modal-photo" src="../assets/images/candidate_pfp.png" alt="Candidate">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                    <div class="detail-item">
+                        <div class="detail-label">Full Name & ID</div>
+                        <div class="detail-value" id="modal-cand-name" style="font-size: 1.25rem;">Loading...</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Position Sought</div>
+                        <div class="detail-value" id="modal-position-val" style="color: var(--primary);">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-consent-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+                <div class="detail-item">
+                    <div class="detail-label">Proposer</div>
+                    <div class="detail-value" id="modal-proposer" style="font-size: 0.95rem;">Loading...</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Seconder</div>
+                    <div class="detail-value" id="modal-seconder" style="font-size: 0.95rem;">Loading...</div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Consents Progress</div>
+                <div id="modal-consents-breakdown" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem;">
+                    <!-- Consents breakdown here -->
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div class="detail-item">
+                    <div class="detail-label">Degree</div>
+                    <div class="detail-value" id="modal-category-val" style="font-size: 0.95rem;">CS</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Languages</div>
+                    <div class="detail-value" id="modal-lang" style="font-size: 0.95rem;">Loading...</div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Candidate Manifesto</div>
+                <div class="manifesto-box" id="modal-manifesto"></div>
+            </div>
+
+            <div id="modal-actions" style="display: flex; gap: 1rem; margin-top: 2.5rem;">
+                <!-- Buttons injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:3000/api/nominations';
+        const ELECTION_API = 'http://127.0.0.1:3000/api/elections';
+        let allNominations = [];
+        let allElections = [];
+
+        async function loadElections() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const res = await fetch(`${ELECTION_API}`, { 
+                    headers: { 'x-student-id': user.student_id },
+                    credentials: 'include' 
+                });
+                allElections = await res.json();
+                
+                const select = document.getElementById('election-id');
+                // Filter elections that have nominations enabled
+                const nominationElections = allElections.filter(e => e.has_nominations === 1);
+                
+                nominationElections.forEach(e => {
+                    const option = document.createElement('option');
+                    option.value = e.id;
+                    option.textContent = e.title;
+                    select.appendChild(option);
+                });
+
+                // Check for election_id in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const electionId = urlParams.get('election_id');
+                if (electionId) {
+                    select.value = electionId;
+                    handleElectionChange();
+                }
+
+                select.onchange = handleElectionChange;
+
+                // Auto-set category for student
+                const categorySelect = document.getElementById('category');
+                if (user.student_id.includes('CS')) {
+                    categorySelect.value = 'CS';
+                } else if (user.student_id.includes('IS')) {
+                    categorySelect.value = 'IS';
+                }
+
+            } catch (err) {
+                console.error('Error loading elections:', err);
+            }
+        }
+
+        function handleElectionChange() {
+            const select = document.getElementById('election-id');
+            const electionId = select.value;
+            const election = allElections.find(e => e.id == electionId);
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            if (election) {
+                const now = new Date();
+                const start = election.nomination_start ? new Date(election.nomination_start) : null;
+                const end = election.nomination_end ? new Date(election.nomination_end) : null;
+                
+                let isOpen = true;
+                if (start && now < start) isOpen = false;
+                if (end && now > end) isOpen = false;
+                
+                if (!isOpen) {
+                    document.getElementById('nomination-closed-message').style.display = 'block';
+                    document.getElementById('nomination-form-section').style.display = 'none';
+                    document.getElementById('no-election-selected-section').style.display = 'none';
+                    document.getElementById('nomination-type-info').innerHTML = '';
+                    return;
+                } else {
+                    document.getElementById('nomination-closed-message').style.display = 'none';
+                    document.getElementById('nomination-form-section').style.display = 'block';
+                    document.getElementById('no-election-selected-section').style.display = 'none';
+                }
+
+                // Update UI based on nomination type
+                const typeInfo = document.getElementById('nomination-type-info');
+                const isSelf = election.nomination_type === 'self';
+                
+                typeInfo.innerHTML = `<span class="type-badge type-${election.nomination_type}">${isSelf ? 'Self-Nomination' : '3-Person Consent'}</span>`;
+                
+                const propField = document.getElementById('proposer-field');
+                const secField = document.getElementById('seconder-field');
+                const candInput = document.getElementById('candidate-id');
+                const submitBtn = document.getElementById('submit-btn');
+
+                if (isSelf) {
+                    propField.style.display = 'none';
+                    secField.style.display = 'none';
+                    document.getElementById('proposer-id').removeAttribute('required');
+                    document.getElementById('seconder-id').removeAttribute('required');
+                    candInput.value = user.student_id;
+                    candInput.setAttribute('readonly', true);
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Become Candidate';
+                } else {
+                    propField.style.display = 'block';
+                    secField.style.display = 'block';
+                    document.getElementById('proposer-id').setAttribute('required', true);
+                    document.getElementById('seconder-id').setAttribute('required', true);
+                    candInput.value = '';
+                    candInput.removeAttribute('readonly');
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Nomination';
+                }
+
+                // Populate positions
+                const posSelect = document.getElementById('position');
+                posSelect.innerHTML = '<option value="" disabled selected>Select Position</option>';
+                try {
+                    const positions = JSON.parse(election.positions || '[]');
+                    positions.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p;
+                        opt.textContent = p;
+                        posSelect.appendChild(opt);
+                    });
+                } catch (e) { console.error('Error parsing positions', e); }
+            } else {
+                document.getElementById('nomination-form-section').style.display = 'none';
+                document.getElementById('no-election-selected-section').style.display = 'block';
+                document.getElementById('nomination-closed-message').style.display = 'none';
+                document.getElementById('nomination-type-info').innerHTML = '';
+            }
+        }
+        
+        async function fetchPending() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const res = await fetch(`${API_BASE}/pending`, {
+                    headers: { 'x-student-id': user.student_id },
+                    credentials: 'include'
+                });
+                allNominations = await res.json();
+                renderPending(allNominations, user.student_id);
+            } catch (err) {
+                console.error('Fetch error in fetchPending:', err);
+                document.getElementById('pending-consents').innerHTML = '<div class="card" style="text-align: center; padding: 2rem; color: #ef4444;">Error loading history.</div>';
+            }
+        }
+
+        function renderPending(nominations, myId) {
+            const container = document.getElementById('pending-consents');
+            if (!nominations || nominations.length === 0) {
+                container.innerHTML = `
+                    <div class="card" style="text-align: center; padding: 4rem; color: #94a3b8; border: 2px dashed #f1f5f9; background: transparent;">
+                        <i class="fas fa-history" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <p style="font-weight: 600;">No nomination history</p>
+                        <p style="font-size: 0.85rem; margin-top: 0.25rem;">Your submitted or requested nominations will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = nominations.map(n => {
+                const normMyId = myId.toUpperCase();
+                const normCandId = n.candidate_id.toUpperCase();
+                const normPropId = n.proposer_id.toUpperCase();
+                const normSecId = n.seconder_id.toUpperCase();
+
+                let role = '';
+                if (normCandId === normMyId) role = 'candidate';
+                else if (normPropId === normMyId) role = 'proposer';
+                else if (normSecId === normMyId) role = 'seconder';
+
+                let myConsent = false;
+                if (role === 'candidate') myConsent = n.candidate_consent === 'approved';
+                else if (role === 'proposer') myConsent = n.proposer_consent === 'approved';
+                else if (role === 'seconder') myConsent = n.seconder_consent === 'approved';
+
+                let statusText = '';
+                let statusClass = '';
+
+                const isSelf = n.proposer_id === n.candidate_id;
+
+                if (n.admin_status === 'approved') {
+                    statusText = 'Approved by Admin';
+                    statusClass = 'bg-green-light';
+                } else if (n.admin_status === 'rejected') {
+                    statusText = 'Rejected by Admin';
+                    statusClass = 'bg-red-light';
+                } else if (n.candidate_consent === 'rejected' || (!isSelf && (n.proposer_consent === 'rejected' || n.seconder_consent === 'rejected'))) {
+                    statusText = 'Member Rejected';
+                    statusClass = 'bg-red-light';
+                } else if (n.candidate_consent === 'approved' && (isSelf || (n.proposer_consent === 'approved' && n.seconder_consent === 'approved'))) {
+                    statusText = 'Awaiting Admin';
+                    statusClass = 'bg-amber-light';
+                } else {
+                    statusText = 'Pending Consents';
+                    statusClass = 'bg-gray-light';
+                }
+
+                return `
+                    <div class="history-card" onclick="viewDetails(${n.id})">
+                        <div class="history-card-header">
+                            <div class="history-avatar">
+                                <img src="${n.photo || '../assets/images/candidate_pfp.png'}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div class="history-info">
+                                <h4>${n.candidate_name}</h4>
+                                <div class="history-meta">
+                                    <span><i class="fas fa-vote-yea"></i> ${n.position}</span>
+                                    <span><i class="far fa-calendar-alt"></i> ${n.election_title}</span>
+                                </div>
+                            </div>
+                            <div style="margin-left: auto;">
+                                <span class="status-badge-compact ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="history-card-footer">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="role-tag">${role.toUpperCase()}</span>
+                                <span style="font-size: 0.8rem; color: #4b5563; font-weight: 500;">
+                                    ${myConsent ? '<i class="fas fa-check-circle" style="color: #10b981;"></i> My Consent Recorded' : '<i class="fas fa-exclamation-circle" style="color: #6366f1;"></i> Action Required'}
+                                </span>
+                            </div>
+                            <i class="fas fa-chevron-right" style="color: #cbd5e1; font-size: 0.8rem;"></i>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusIcon(status) {
+            if (status === 'approved') return '<i class="fas fa-check-circle" style="color: #10b981;"></i>';
+            if (status === 'rejected') return '<i class="fas fa-times-circle" style="color: #ef4444;"></i>';
+            return '<i class="fas fa-clock" style="color: #94a3b8;"></i>';
+        }
+
+        function viewDetails(id) {
+            const n = allNominations.find(x => x.id === id);
+            if (!n) return;
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            const normMyId = user.student_id.toUpperCase();
+            const normCandId = n.candidate_id.toUpperCase();
+            const normPropId = n.proposer_id.toUpperCase();
+            const normSecId = n.seconder_id.toUpperCase();
+
+            const isSelf = n.proposer_id === n.candidate_id;
+
+            let role = '';
+            if (normCandId === normMyId) role = 'candidate';
+            else if (normPropId === normMyId) role = 'proposer';
+            else if (normSecId === normMyId) role = 'seconder';
+
+            let myConsent = false;
+            if (role === 'candidate') myConsent = n.candidate_consent === 'approved';
+            else if (role === 'proposer') myConsent = n.proposer_consent === 'approved';
+            else if (role === 'seconder') myConsent = n.seconder_consent === 'approved';
+
+            document.getElementById('modal-photo').src = n.photo || '../assets/images/candidate_pfp.png';
+            document.getElementById('modal-cand-name').innerText = `${n.candidate_name} (${n.candidate_id})`;
+            document.getElementById('modal-position-val').innerText = n.position;
+            document.getElementById('modal-proposer').innerText = `${n.proposer_name} (${n.proposer_id})`;
+            document.getElementById('modal-seconder').innerText = `${n.seconder_name} (${n.seconder_id})`;
+            document.getElementById('modal-lang').innerText = n.language_proficiency;
+            document.getElementById('modal-manifesto').innerText = n.manifesto;
+            document.getElementById('modal-category-val').innerText = n.category || 'CS';
+
+            const consentRow = document.getElementById('modal-consent-row');
+            const breakdown = document.getElementById('modal-consents-breakdown');
+            
+            if (isSelf) {
+                consentRow.style.display = 'none';
+                breakdown.innerHTML = `
+                    <div class="consent-status bg-gray-light" style="padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 600;">
+                        ${getStatusIcon(n.candidate_consent)} Self-Nomination: ${n.candidate_consent.toUpperCase()}
+                    </div>
+                `;
+            } else {
+                consentRow.style.display = 'grid';
+                breakdown.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
+                        <div class="bg-gray-light" style="padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                            ${getStatusIcon(n.candidate_consent)} Cand: ${n.candidate_consent.toUpperCase()}
+                        </div>
+                        <div class="bg-gray-light" style="padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                            ${getStatusIcon(n.proposer_consent)} Prop: ${n.proposer_consent.toUpperCase()}
+                        </div>
+                        <div class="bg-gray-light" style="padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                            ${getStatusIcon(n.seconder_consent)} Sec: ${n.seconder_consent.toUpperCase()}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const actions = document.getElementById('modal-actions');
+            const hasMemberRejected = n.candidate_consent === 'rejected' || (!isSelf && (n.proposer_consent === 'rejected' || n.seconder_consent === 'rejected'));
+            
+            if (n.admin_status === 'pending' && !hasMemberRejected && (n[`${role}_consent`] === 'pending')) {
+                actions.innerHTML = `
+                    <button onclick="giveConsent(${n.id}, '${role}', true)" class="btn-sleek" style="background: #10b981; flex: 1; padding: 1.125rem;">
+                        <i class="fas fa-check"></i> Give Consent
+                    </button>
+                    <button onclick="giveConsent(${n.id}, '${role}', false)" class="btn-sleek" style="background: #ef4444; flex: 1; padding: 1.125rem;">
+                        <i class="fas fa-times"></i> Reject Nomination
+                    </button>
+                `;
+            } else {
+                let finalMsg = '';
+                let finalIcon = '';
+                if (n.admin_status !== 'pending') {
+                    finalMsg = `Finalized by Administrator (${n.admin_status.toUpperCase()})`;
+                    finalIcon = n.admin_status === 'approved' ? 'fa-check-double' : 'fa-ban';
+                } else if (hasMemberRejected) {
+                    finalMsg = `Nomination rejected by a member.`;
+                    finalIcon = 'fa-times-circle';
+                } else {
+                    finalMsg = `Your response has been recorded.`;
+                    finalIcon = 'fa-check-circle';
+                }
+
+                actions.innerHTML = `
+                    <div style="width: 100%; text-align: center; color: #4b5563; font-size: 0.95rem; background: #f8fafc; padding: 1.25rem; border-radius: 1rem; border: 2px dashed #e2e8f0; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                        <i class="fas ${finalIcon}"></i> ${finalMsg}
+                    </div>
+                `;
+            }
+
+            document.getElementById('nominationModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('nominationModal').style.display = 'none';
+        }
+
+        async function giveConsent(nominationId, role, status) {
+            try {
+                const user = JSON.parse(localStorage.getItem('user'));
+                const res = await fetch(`${API_BASE}/consent`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-student-id': user.student_id
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ nominationId, role, status })
+                });
+                if (res.ok) {
+                    closeModal();
+                    fetchPending();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to update response.');
+                }
+            } catch (err) {
+                console.error('Error in giveConsent:', err);
+            }
+        }
+
+        document.getElementById('nomination-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const user = JSON.parse(localStorage.getItem('user'));
+            const electionId = document.getElementById('election-id').value;
+            const election = allElections.find(x => x.id == electionId);
+            const isSelf = election.nomination_type === 'self';
+            
+            const photoInput = document.getElementById('photo-file');
+            let photoData = null;
+            let photoName = '';
+
+            if (photoInput.files && photoInput.files[0]) {
+                const file = photoInput.files[0];
+                photoName = file.name;
+                photoData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            const payload = {
+                election_id: electionId,
+                candidate_id: document.getElementById('candidate-id').value,
+                proposer_id: isSelf ? document.getElementById('candidate-id').value : document.getElementById('proposer-id').value,
+                seconder_id: isSelf ? document.getElementById('candidate-id').value : document.getElementById('seconder-id').value,
+                position: document.getElementById('position').value,
+                category: document.getElementById('category').value,
+                language_proficiency: document.getElementById('lang').value,
+                manifesto: document.getElementById('manifesto').value,
+                photo: photoData,
+                photoName: photoName
+            };
+
+            try {
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-student-id': user.student_id
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    fetchPending();
+                    document.getElementById('nomination-form').reset();
+                    handleElectionChange(); // Reset UI state
+                    alert('Nomination submitted successfully!');
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                console.error('Error in nomination submission:', err);
+                alert('Error submitting nomination.');
+            }
+        };
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('nominationModal');
+            if (event.target == modal) closeModal();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadElections();
+            fetchPending();
+            
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.name || 'Student';
+            document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
+
+            // Add auto-detection for category based on Candidate ID
+            const candInput = document.getElementById('candidate-id');
+            const categorySelect = document.getElementById('category');
+            
+            candInput.addEventListener('input', () => {
+                const id = candInput.value.toUpperCase();
+                if (id.includes('CS')) {
+                    categorySelect.value = 'CS';
+                } else if (id.includes('IS')) {
+                    categorySelect.value = 'IS';
+                } else {
+                    categorySelect.value = ''; // Reset if neither
+                }
+            });
+        });
+    </script>
+</body>
+</html>

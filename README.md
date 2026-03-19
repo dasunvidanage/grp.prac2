@@ -1,70 +1,73 @@
-# 🗳️ UCSC Localized Voting Terminal (LVT)
+# 🗳️ UCSC Universal Election Portal (UEP)
 
-**Strategic Vision:** An infrastructure-independent digital voting system designed to modernize the UCSC Student Union elections through high-integrity local logic and interactive data visualization.
+**Strategic Vision:** A high-integrity, flexible digital voting ecosystem designed to facilitate diverse student elections—from Student Union blocks to Faculty Clubs—through a robust administrative-approval workflow and multi-tier anonymity.
 
 ## 🚩 The Problem Landscape
 
-Despite being a computing faculty, current election processes at UCSC suffer from critical vulnerabilities that undermine democratic integrity:
+Modern campus elections require more than just a digital ballot; they require a system that can adapt to varying constitutional requirements without compromising security:
 
-* **The Manual Inefficiency:** Traditional paper ballots lead to hours of human-led counting, resulting in significant delays and high error rates.
-* **The "Google Form" Trap:** While digital, basic forms lack voter verification. Links can be shared outside the faculty, and there is no database-level enforcement to prevent multiple entries (spamming).
-* **The Connectivity Gap:** Cloud-based solutions are unreliable in a local auditorium setting where Wi-Fi can be unstable or non-existent.
+* **The Verification Gap:** Standard forms cannot verify if a user is a legitimate student or a specific club member.
+* **Rigid Election Logic:** Most systems are hardcoded for one specific election type, failing to account for varying "Proposer/Seconder" rules or multi-vote quotas.
+* **The Privacy Paradox:** Balancing the need for auditability with the absolute necessity of voter anonymity, even from system administrators.
 
-## 💡 The Solution: Localized Digital Integrity
+## 💡 The Solution: Dynamic Governance
 
-Our application replaces manual overhead and "leaky" digital forms with a **standalone terminal** that requires zero internet connectivity.
+Our application replaces static registries with a **Self-Service Registration & Approval Engine**, giving administrators granular control over every phase of the democratic process.
 
-* **Identity-First Verification:** By using a pre-verified registry of Student IDs and unique passwords, we eliminate unauthorized voting and link-leaks.
-* **One-Vote Constraint:** Our database logic prevents "double-voting" at the source, ensuring 100% accurate results.
-* **Infrastructure Independence:** By running 100% local logic, the system remains fully functional during network outages—a necessity for a mission-critical voting environment.
+### 1. Robust Identity Management
+* **OCR-Assisted Registration:** The portal features an integrated **Tesseract.js OCR engine** that automatically extracts Student Name, ID, and Email from uploaded ID card photos, significantly reducing manual entry errors.
+* **Document-Backed Registration:** Students register with their Full Name, UCSC ID, and Email, supported by a **mandatory University ID image upload**.
+* **Admin Gatekeeping:** A dedicated verification tier where admins manually approve or reject registrations based on the provided credentials and image proof.
+
+### 2. Hyper-Flexible Election Configuration
+Admins can customize the "Rules of Engagement" for every election:
+* **Temporal Control:** Independent definitions for the **Nomination Period** and **Voting Period**.
+* **Candidacy Models:** Support for both **Self-Nomination** and **Endorsed Nomination** (requiring a Proposer and Seconder).
+* **Weighted Voting Quotas:** Admins define exactly how many votes a student can cast per department (e.g., *Allow 2 votes for CS candidates and 1 for IS candidates*).
+* **Eligibility Filters:** Limit participation (both voting and running) to specific academic years or departments.
+
+### 3. Absolute Anonymity
+* **Application-Level Blindness:** The database is architected to ensure **zero-linkage** between a voter's identity and their specific ballot. Not even the System Administrator can de-anonymize a vote.
+* **Aggregated Transparency:** Students view results in real-time, but only as aggregated, high-level data.
 
 ## 🛠️ Technical Architecture
 
-We have opted for a high-performance stack that respects the "Local Logic" mandate:
-
-* **Frontend:** Clean **HTML5, CSS3 (Vanilla), and JavaScript (ES6+)**. This ensures maximum compatibility and performance without the overhead of heavy frameworks.
-* **Backend:** **Node.js with Express**. A lightweight and scalable server architecture to handle API requests and authentication.
-* **Database:** **SQLite (sqlite3)**. A self-contained, serverless database engine that ensures data integrity and simplifies local deployment.
-* **Data Visualization:** **Highcharts 3D**. Provides interactive, high-contrast 3D donut charts for real-time results analysis.
-* **Reporting:** **jsPDF & jsPDF-AutoTable**. Enables professional PDF report generation for official election record-keeping.
-* **Environment:** 100% Local. No external APIs required for core functionality.
+* **Frontend:** Vanilla HTML5/CSS3 and ES6+ JavaScript.
+* **Backend:** Node.js with Express.
+* **Database:** SQLite (sqlite3) for atomic, reliable local transactions.
+* **Security:** Cryptographic hashing for passwords and an isolated file-storage system for ID verification images.
+* **Visualization:** Highcharts 3D for real-time, interactive turnout and result tracking.
 
 ## ⚙️ Core Logic Flow
 
-### 1. The Voter "Check-In"
-* **Verification:** Students login using their **UCSC Student ID** and a secure password.
-* **Registry Check:** The system queries the local `students` table. If the ID is missing or `has_voted` is already true, access to the voting booth is denied.
+### 1. The Onboarding Pipeline
+* **Student Sign-up:** User submits details and uploads an ID photo.
+* **Verification:** Admin reviews the "Pending Requests" dashboard to approve the student.
+* **Credentialing:** Once approved, the student gains access to the portal.
 
-### 2. Secure Voting & Anonymity
-* **Database Integrity:** Votes are recorded securely while updating the voter's status to "Voted" in an atomic operation.
-* **Real-Time Synchronization:** Results are updated instantly across all connected terminals using periodic polling.
+### 2. The Nomination Lifecycle
+* **Application:** Eligible students apply for positions during the Nomination Period.
+* **Endorsement (Optional):** If required, candidates must secure digital approval from a Proposer and Seconder.
+* **Vetting:** Admins perform a final check on candidates before they appear on the official ballot.
 
-## 🔒 Key Logic & Functionalities
+### 3. The Voting Phase
 
-1. **Identity Verification:** Students authenticate using verified credentials.
-2. **One-Vote Enforcement:** Strict database-level checks prevent duplicate votes.
-3. **Interactive Results:** **3D Donut Charts** for Computer Science (CS) and Information Systems (IS) candidates, allowing for visual vote share analysis.
-4. **Professional Export:** Admin capability to generate detailed **PDF reports** containing ranking, vote counts, and turnout statistics.
-5. **Real-Time Activity Feed:** Live tracking of voter turnout and recent activity in the Admin Panel.
-
-
-The current README has a few structural weaknesses that could lead to "environment drift" or failed builds. If you want this to be a professional-grade document, you need to eliminate ambiguity and enforce a strict sequence.
-
-Here is the revised version. I have standardized the formatting, added a critical environment check, and cleaned up the credential block for better readability.
-
----
+* **Dynamic Quota Enforcement**: The system strictly validates each ballot against the specific CS and IS vote limits configured by the administrator for that particular election.
+* **Atomic Interaction**: To maintain high integrity, the system records the vote and updates the user's participation status in a single, inseparable operation, ensuring no student can submit multiple ballots.
+* **Absolute Anonymization**: The connection between the student's identity and their specific choices is severed at the point of submission. Votes are cast into an encrypted, anonymized pool where they remain disconnected from the voter's credentials.
+* **Real-time Aggregation**: While individual choices stay private, the system instantly updates the collective results, allowing students to monitor the election's progress through live, high-level data visualizations.
 
 ## Getting Started
 
-To establish a functional local environment, execute the following steps in sequence. **Failure to follow the directory transitions (`cd`) precisely will result in broken dependency links.**
+To establish a functional local environment, execute the following steps in sequence.
 
 ### 1. Repository Acquisition
 
 Clone the source and enter the root directory:
 
 ```bash
-git clone https://github.com/dasunvidanage/grp.prac2.git
-cd grp.prac2
+git clone https://github.com/dasunvidanage/Election-Portal.git
+cd Election-Portal
 
 ```
 
@@ -98,6 +101,11 @@ npm start
 ```
 
 
+### Future Roadmap: Club Integration
+The system is built with **extensibility** at its core. While currently optimized for UCSC CS/IS departments, the "Eligibility Filter" logic can be expanded to verify **Club Membership lists**, allowing the platform to host elections for Special Clubs and other Union with minimal configuration changes.
+
+---
+
 
 ### Test Credentials
 
@@ -107,5 +115,9 @@ Use the following identities to verify role-based access control (RBAC) within t
 | --- | --- | --- | --- |
 | **Admin** | `ADM001` | `admin123` | System Oversight |
 | **Admin** | `ADM002` | `admin123` | System Oversight |
-| **Student** | `2026CS001` | `student123` | Computer Science |
-| **Student** | `2026IS151` | `student123` | Information Systems |
+| **Student** | `2025CS001` | `student123` | Computer Science |
+| **Student** | `2025CS002` | `student123` | Computer Science |
+| **Student** | `2023IS151` | `student123` | Information Systems |
+| **Student** | `2023IS152` | `student123` | Information Systems |
+
+

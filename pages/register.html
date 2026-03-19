@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="../js/tesseract.min.js"></script>
+    <style>
+        .auto-filled {
+            animation: highlight-pulse 2s ease-out;
+            border-color: #0066cc !important;
+            background-color: #f0f7ff !important;
+        }
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 102, 204, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 102, 204, 0); }
+        }
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+        /* Fix icon distortion by anchoring to top of input, not center of wrapper */
+        .input-wrapper i {
+            top: 26px !important;
+            transform: translateY(-50%) !important;
+            z-index: 5;
+        }
+        .autofill-hint {
+            font-size: 0.75rem;
+            color: #0066cc;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .autofill-hint.show {
+            opacity: 1;
+            max-height: 20px;
+            margin-bottom: 0.5rem;
+        }
+        .autofill-hint i { margin-right: 4px; }
+    </style>
+</head>
+<body class="login-body">
+    
+    <div class="sleek-card" style="max-width: 480px; padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="width: 60px; height: 60px; background: white; border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1); overflow: hidden; padding: 0.4rem;">
+                <img src="../assets/images/UCSC_logo.png" alt="UCSC Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; letter-spacing: -0.025em; margin-bottom: 0.25rem;">Create Account</h2>
+            <p style="color: #64748b; font-size: 0.9rem; font-weight: 500;">Join the UCSC Election Portal</p>
+        </div>
+
+        <form id="register-form">
+            <!-- Step 1: ID Upload -->
+            <div style="margin-bottom: 2rem; padding: 1.25rem; background: #f8fafc; border-radius: 1.25rem; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <span class="step-badge">1</span>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0;">Upload Student ID</h3>
+                </div>
+                
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem; line-height: 1.4;">
+                    Upload your ID card photo to <strong>automatically fill</strong> the form details below.
+                </p>
+
+                <div id="id-preview-container" style="width: 100%; height: 160px; background: white; border-radius: 1rem; border: 2px dashed #cbd5e1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; overflow: hidden; position: relative; transition: all 0.3s ease;" onclick="document.getElementById('reg-id-photo').click()">
+                    <i class="fas fa-camera" style="font-size: 1.75rem; margin-bottom: 0.5rem;"></i>
+                    <span style="font-size: 0.85rem; font-weight: 600;">Snap or Upload ID</span>
+                    <img id="id-preview-img" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; display: none; background: white;">
+                    
+                    <!-- OCR Progress Overlay -->
+                    <div id="ocr-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
+                        <div style="width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #0066cc; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+                        <span id="ocr-step" style="font-size: 0.8rem; font-weight: 700; color: #0066cc;">Scanning...</span>
+                        <span id="ocr-pct" style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin-top: 0.25rem;">0%</span>
+                    </div>
+                </div>
+                <input type="file" id="reg-id-photo" accept="image/*" style="display: none;" required>
+            </div>
+
+            <!-- Step 2: Verify & Complete -->
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; margin-bottom: 1.25rem;">
+                    <span class="step-badge">2</span>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0;">Verify & Complete Details</h3>
+                </div>
+
+                <div class="input-wrapper">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="reg-name" class="sleek-input" placeholder="Student Full Name" required>
+                    <div id="hint-name" class="autofill-hint"><i class="fas fa-magic"></i> Auto-filled from ID</div>
+                </div>
+
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="reg-email" class="sleek-input" placeholder="Email Address" required>
+                    <div id="hint-email" class="autofill-hint"><i class="fas fa-magic"></i> Auto-filled from ID</div>
+                </div>
+
+                <div class="input-wrapper">
+                    <i class="fas fa-id-card"></i>
+                    <input type="text" id="reg-student-id" class="sleek-input" placeholder="Student ID (e.g. 2025CS003)" required>
+                    <div id="hint-id" class="autofill-hint"><i class="fas fa-magic"></i> Auto-filled from ID</div>
+                </div>
+                
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="reg-password" class="sleek-input" placeholder="Set Password" required>
+                </div>
+            </div>
+
+            <button type="submit" id="reg-btn" class="btn-sleek" style="margin-top: 0.5rem;">
+                Create Account <i class="fas fa-arrow-right" style="margin-left: 0.5rem; font-size: 0.8rem;"></i>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <p style="color: #64748b; font-size: 0.875rem;">
+                Already have an account? <a href="login.html" style="color: var(--primary); font-weight: 600;">Sign In</a>
+            </p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+        let selectedIdPhoto = "";
+
+        document.getElementById('reg-id-photo').onchange = function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const previewImg = document.getElementById('id-preview-img');
+                    previewImg.src = event.target.result;
+                    previewImg.style.display = 'block';
+                    selectedIdPhoto = event.target.result;
+                    
+                    // Trigger OCR scan
+                    performOCR(file);
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        async function performOCR(file) {
+            const overlay = document.getElementById('ocr-overlay');
+            const stepText = document.getElementById('ocr-step');
+            const pctText = document.getElementById('ocr-pct');
+            const regBtn = document.getElementById('reg-btn');
+
+            overlay.style.display = 'flex';
+            regBtn.disabled = true;
+            regBtn.style.opacity = '0.7';
+
+            function updateProgress(p, label) {
+                pctText.textContent = p + '%';
+                stepText.textContent = label;
+            }
+
+            try {
+                const { data } = await Tesseract.recognize(file, 'eng', {
+                    logger: m => {
+                        if(m.status === 'loading tesseract core') updateProgress(10, 'Initializing...');
+                        if(m.status === 'recognizing text') updateProgress(Math.round((m.progress || 0) * 100), 'Scanning ID...');
+                    }
+                });
+
+                updateProgress(100, 'Scan Complete');
+                parseAndFill(data.text);
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    regBtn.disabled = false;
+                    regBtn.style.opacity = '1';
+                }, 800);
+
+            } catch (err) {
+                console.error('OCR Error:', err);
+                stepText.textContent = 'Scan failed';
+                stepText.style.color = '#ef4444';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    regBtn.disabled = false;
+                    regBtn.style.opacity = '1';
+                }, 2000);
+            }
+        }
+
+        function parseAndFill(text) {
+            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+            function nextLineAfter(labelRegex) {
+                for (let i = 0; i < lines.length; i++) {
+                    if (labelRegex.test(lines[i])) {
+                        for (let j = i + 1; j < lines.length; j++) {
+                            const candidate = lines[j].trim();
+                            if (candidate && candidate.length > 3 && !/^(student|stream|faculty|registration|reg|nic|number|email|name|official|university|identity|no\.?|#)/i.test(candidate)) {
+                                return candidate;
+                            }
+                        }
+                    }
+                }
+                return '';
+            }
+
+            function toTitle(s){return s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());}
+
+            // Student Name
+            let name = nextLineAfter(/student\s*(?:full\s*)?name/i);
+            if (!name) {
+                const m = text.match(/(?:student\s*(?:full\s*)?name|full\s*name|name)\s*[:\-]\s*([A-Za-z][A-Za-z\s\.\']{2,45})/i);
+                if (m) name = m[1].split(/[\n\r]/)[0].trim();
+            }
+            if (!name) {
+                const m = text.match(/(?:mr\.?|ms\.?|mrs\.?|dr\.?)\s+([A-Z][a-zA-Z\s\.\']{2,35})/i);
+                if (m) name = m[1].trim();
+            }
+            if (!name) {
+                const skipWords = /university|faculty|department|college|institute|school|stream|course|computing|science|engineering|official|identity|student/i;
+                for (const l of lines) {
+                    if (/^[A-Z][a-z]+(\s+[A-Z][a-z]+){1,3}$/.test(l) && l.length > 4 && l.length < 55 && !skipWords.test(l)) {
+                        name = l; break;
+                    }
+                }
+            }
+            if (!name) {
+                const skipWords = /university|faculty|department|college|institute|school|stream|course|computing|official|identity|student/i;
+                for (const l of lines) {
+                    if (/^[A-Z]{2,}(\s+[A-Z]{2,}){1,3}$/.test(l) && l.length > 5 && l.length < 55 && !skipWords.test(l)) {
+                        name = toTitle(l); break;
+                    }
+                }
+            }
+
+            // Registration Number (Student ID)
+            function fixRegNumber(raw) {
+                if (!raw) return raw;
+                const s = raw.toUpperCase().trim();
+                if (s.includes('/') || s.includes('-')) {
+                    return s.replace(/[\/\-]/g, sep => sep).split(/([\/\-])/).map(part =>
+                        /^[0-9O]+$/.test(part) ? part.replace(/O/g, '0') : part
+                    ).join('');
+                }
+                let i = 0;
+                while (i < s.length && s[i] >= '0' && s[i] <= '9') i++;
+                const yearPart = s.slice(0, i);
+                let rest = s.slice(i);
+                let letterBlock = '';
+                let j = 0;
+                while (j < rest.length) {
+                    const c = rest[j];
+                    if (c >= '0' && c <= '9') break;
+                    if (c === 'O' && letterBlock.length >= 2) break;
+                    letterBlock += c;
+                    j++;
+                }
+                const suffix = rest.slice(j).replace(/O/g, '0');
+                return yearPart + letterBlock + suffix;
+            }
+
+            let reg = nextLineAfter(/registration\s*(?:no\.?|number|#)|reg(?:istration)?\s*(?:no\.?|number|#)/i);
+            if (!reg) {
+                let regMatch = text.match(/(?:registration\s*(?:no\.?|number|#)|reg(?:istration)?\s*(?:no\.?|number|#)|index\s*(?:no\.?|number|#)|registration|reg(?:istration)?|index)\s*[:\-#\s]\s*([A-Z0-9][A-Z0-9\/\-\.]{5,20})/i);
+                if (regMatch) reg = regMatch[1].trim();
+            }
+            if (reg) reg = fixRegNumber(reg);
+            if (reg && (reg.length < 5 || /^NO\.?$/i.test(reg))) reg = '';
+            if (!reg) {
+                const regFallbacks = [
+                    /\b(\d{4}[A-Z]{2,4}[A-Z0-9]{1,6})\b/i,
+                    /\b([A-Z]{2,6}[\/\-]\d{2,4}[\/\-]\d{2,6})\b/i,
+                    /\b([A-Z]{2,5}\d{5,10})\b/i,
+                ];
+                for (const r of regFallbacks) {
+                    const m = text.match(r);
+                    if (m) { reg = fixRegNumber(m[1].trim()); break; }
+                }
+            }
+
+            // Student Email
+            let email = '';
+            const allEmails = [...text.matchAll(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g)].map(m => m[0].toLowerCase());
+            if (allEmails.length >= 1) {
+                email = allEmails.find(e => /\.ac\.lk|\.edu|\.ac\.|stu\.|student\./i.test(e)) || allEmails[0];
+            }
+            if (email && email.includes('@')) {
+                const atIdx = email.indexOf('@');
+                const fixedLocal = email.slice(0, atIdx).replace(/[a-z0-9]+/g, seg =>
+                    /^[0-9o]+$/.test(seg) ? seg.replace(/o/g, '0') : seg
+                );
+                email = fixedLocal + email.slice(atIdx);
+            }
+
+            // Fill fields with visual feedback
+            const fields = [
+                { id: 'reg-name', val: name, hint: 'hint-name' },
+                { id: 'reg-email', val: email, hint: 'hint-email' },
+                { id: 'reg-student-id', val: reg, hint: 'hint-id' }
+            ];
+
+            fields.forEach(f => {
+                if (f.val) {
+                    const el = document.getElementById(f.id);
+                    el.value = f.val;
+                    el.classList.add('auto-filled');
+                    document.getElementById(f.hint).style.display = 'flex';
+                    
+                    // Remove highlight after user interacts with the field
+                    el.onfocus = () => {
+                        el.classList.remove('auto-filled');
+                        document.getElementById(f.hint).style.display = 'none';
+                    };
+                }
+            });
+        }
+
+        document.getElementById('register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            if (!selectedIdPhoto) {
+                alert('Please upload your Student ID photo.');
+                return;
+            }
+
+            const payload = {
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                student_id: document.getElementById('reg-student-id').value,
+                password: document.getElementById('reg-password').value,
+                id_photo: selectedIdPhoto
+            };
+
+            try {
+                const res = await fetch('http://127.0.0.1:3000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.error || 'Registration failed');
+                }
+            } catch (err) {
+                console.error('Registration error:', err);
+                alert('An error occurred during registration.');
+            }
+        };
+    </script>
+</body>
+</html>

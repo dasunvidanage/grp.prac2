@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Home - UCSC Election Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .status-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .status-badge-large {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .bg-blue { background: #dbeafe; color: #1e40af; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-amber { background: #fef3c7; color: #92400e; }
+        .bg-purple { background: #f3e8ff; color: #6b21a8; }
+        .bg-red { background: #fee2e2; color: #991b1b; }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .action-card {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: #1f2937;
+            transition: all 0.2s;
+        }
+        .action-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+        }
+        .action-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        .action-info h4 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .action-info p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .system-status-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            border: 1px solid #e5e7eb;
+        }
+        .status-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .status-list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .status-list-item:last-child {
+            border-bottom: none;
+        }
+        .status-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .status-value {
+            font-weight: 500;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p>Welcome back to the UCSC Election Portal.</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="overview-grid">
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon bg-blue">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <span class="status-badge-large bg-blue">Students</span>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="verified-students">0</h3>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Verified Voters</p>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon bg-purple">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <span class="status-badge-large bg-purple">Elections</span>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="total-elections">0</h3>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Total Events</p>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon bg-green">
+                        <i class="fas fa-vote-yea"></i>
+                    </div>
+                    <span class="status-badge-large bg-green">Participation</span>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="total-votes">0</h3>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Total Votes Cast</p>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon bg-red">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <span class="status-badge-large bg-red">Pending</span>
+                </div>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="total-pending">0</h3>
+                    <p style="color: #4b5563; font-size: 0.9rem;">Actions Required</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="system-status-section">
+            <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Live Portal Health</h2>
+            <div class="status-list">
+                <div class="status-list-item">
+                    <span class="status-label">Active Elections</span>
+                    <span id="active-elections-count" class="status-value">Loading...</span>
+                </div>
+                <div class="status-list-item">
+                    <span class="status-label">New Student Requests</span>
+                    <span id="pending-students" class="status-value">Loading...</span>
+                </div>
+                <div class="status-list-item">
+                    <span class="status-label">New Nomination Requests</span>
+                    <span id="pending-nominations" class="status-value">Loading...</span>
+                </div>
+            </div>
+        </section>
+
+        <h2 style="margin-top: 2.5rem; margin-bottom: 1rem; font-size: 1.25rem;">Quick Navigation</h2>
+        <div class="quick-actions">
+            <a href="admin-elections-list.html" class="action-card">
+                <div class="action-icon"><i class="fas fa-tasks"></i></div>
+                <div class="action-info">
+                    <h4>Election Management</h4>
+                    <p>Create & monitor elections</p>
+                </div>
+            </a>
+            <a href="admin-students.html" class="action-card">
+                <div class="action-icon"><i class="fas fa-user-check"></i></div>
+                <div class="action-info">
+                    <h4>Student Verification</h4>
+                    <p>Approve/Reject students</p>
+                </div>
+            </a>
+            <a href="results.html" class="action-card">
+                <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="action-info">
+                    <h4>View Results</h4>
+                    <p>See live election standings</p>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:3000/api';
+
+        async function authFetch(url, options = {}) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+                'x-admin-id': user.student_id
+            };
+            return fetch(url, { ...options, headers, credentials: 'include' });
+        }
+
+        async function fetchOverview() {
+            try {
+                const res = await authFetch(`${API_BASE}/admin/overview`);
+                if (!res.ok) throw new Error('Failed to fetch overview');
+                const data = await res.json();
+
+                document.getElementById('verified-students').textContent = data.verifiedStudents;
+                document.getElementById('total-elections').textContent = data.totalElections;
+                document.getElementById('total-votes').textContent = data.totalVotes;
+                document.getElementById('total-pending').textContent = data.totalPendingActions;
+
+                document.getElementById('active-elections-count').textContent = data.activeElections;
+                document.getElementById('pending-students').textContent = data.pendingStudents;
+                document.getElementById('pending-nominations').textContent = data.pendingNominations;
+
+            } catch (err) {
+                console.error('Overview fetch error:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('user-name').textContent = user.name || 'Admin';
+            document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
+
+            fetchOverview();
+            setInterval(fetchOverview, 30000); // Refresh every 30s
+        });
+    </script>
+</body>
+</html>
+

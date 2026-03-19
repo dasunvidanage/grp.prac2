@@ -9,311 +9,582 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="../js/highcharts.js"></script>
     <script src="../js/highcharts-3d.js"></script>
+    <style>
+        .results-container {
+            width: 100%;
+        }
+
+        .election-selector-box {
+            background: white;
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .select-modern {
+            padding: 0.625rem 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+            min-width: 320px;
+            outline: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .select-modern:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .overview-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .election-title-main {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-closed { background: #fee2e2; color: #991b1b; }
+        .status-upcoming { background: #fef3c7; color: #92400e; }
+
+        .pulse-dot-results {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse-results 1.5s infinite;
+        }
+
+        @keyframes pulse-results {
+            0% { transform: scale(0.95); opacity: 1; }
+            70% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
+
+        .results-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .stat-modern-box {
+            background: #f8fafc;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+
+        .stat-modern-box:hover {
+            background: white;
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .stat-label-modern {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-value-modern {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .position-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid #f1f5f9;
+        }
+
+        .position-header-modern {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .position-icon-box {
+            width: 40px;
+            height: 40px;
+            background: #eef2ff;
+            color: var(--primary);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .position-title-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .layout-grid-modern {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1100px) {
+            .layout-grid-modern { grid-template-columns: 1fr; gap: 2rem; }
+            .election-selector-box { flex-direction: column; align-items: stretch; padding: 1.5rem; }
+            .select-modern { min-width: unset; }
+        }
+
+        .candidate-result-item-modern {
+            margin-bottom: 1.5rem;
+        }
+
+        .candidate-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .candidate-info-group {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        .candidate-pfp-mini {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.75rem;
+            background: #f1f5f9;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .candidate-name-text {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1rem;
+        }
+
+        .vote-count-badge {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .progress-track-modern {
+            height: 10px;
+            background: #f1f5f9;
+            border-radius: 99px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill-modern {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: linear-gradient(90deg, var(--primary), #818cf8);
+        }
+
+        .percentage-label-float {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 0.375rem;
+            text-align: right;
+            display: block;
+        }
+
+        .no-data-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 1rem;
+            border: 2px dashed #f1f5f9;
+        }
+
+        .no-data-icon {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body class="dashboard-body">
     
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-box">
-                <img src="../assets/images/UCSC_logo.png" alt="UCSC Logo">
-            </div>
-            <span>UCSC Portal</span>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="nav-link">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-            </a>
-            <a href="vote.html" class="nav-link">
-                <i class="fas fa-vote-yea"></i>
-                <span>Cast Vote</span>
-            </a>
-            <a href="results.html" class="nav-link active">
-                <i class="fas fa-chart-bar"></i>
-                <span>Results</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <a href="#" id="logout-btn" class="nav-link logout">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </aside>
+    <aside class="sidebar"></aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header class="content-header">
             <div>
                 <h1>ELECTION RESULTS</h1>
-                <p>Real-time voting analytics & distribution</p>
+                <p>Live voting analytics & candidate distribution</p>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-id" class="user-id">ID: Loading...</span>
+                </div>
+                <div class="user-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
             </div>
         </header>
 
-        <!-- Live Election Results Card -->
-        <div class="election-results-card">
-            <div class="erc-header">
-                <div class="erc-title-group">
-                    <h2 id="erc-election-title">UCSC Student Union — Board Elections 2026</h2>
-                    <p id="erc-position-subtitle">Executive Committee · Voting in progress</p>
-                </div>
-                <div id="erc-status-badge" class="erc-status-badge">
-                    <div class="erc-pulse-dot"></div>
-                    <span>Live</span>
+        <div class="results-container">
+            <div class="election-selector-box">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="stat-icon" style="background: #eff6ff; color: #3b82f6; width: 40px; height: 40px; font-size: 1rem;">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <label for="election-id" style="font-weight: 700; color: #1e293b;">Select Election:</label>
+                    <select id="election-id" class="select-modern">
+                        <option value="" disabled selected>Select an Election</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Stats Row -->
-            <div class="erc-stats-row">
-                <div class="erc-stat-box">
-                    <span class="erc-stat-label">Total votes</span>
-                    <span id="erc-total-votes" class="erc-stat-value">0</span>
+            <div id="results-content" style="display: none;">
+                <div class="overview-card">
+                    <div class="overview-header">
+                        <div>
+                            <h2 id="erc-election-title" class="election-title-main">Loading Election...</h2>
+                            <div class="status-container">
+                                <div id="erc-status-badge" class="status-pill">
+                                    <div class="pulse-dot-results"></div>
+                                    <span>--</span>
+                                </div>
+                                <span id="erc-position-subtitle" style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Fetching status...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-stats-grid">
+                        <div class="stat-modern-box">
+                            <span class="stat-label-modern">Total Verified Votes</span>
+                            <div class="stat-value-modern">
+                                <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.25rem;"></i>
+                                <span id="erc-total-votes">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-modern-box">
+                            <span class="stat-label-modern">Time Remaining</span>
+                            <div class="stat-value-modern">
+                                <i class="fas fa-clock" style="color: var(--primary); font-size: 1.25rem;"></i>
+                                <span id="erc-time-left">--:--:--</span>
+                            </div>
+                        </div>
+                        <div class="stat-modern-box">
+                            <span class="stat-label-modern">Live Accuracy</span>
+                            <div class="stat-value-modern">
+                                <i class="fas fa-shield-alt" style="color: #3b82f6; font-size: 1.25rem;"></i>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="erc-stat-box">
-                    <span class="erc-stat-label">Turnout</span>
-                    <span id="erc-turnout" class="erc-stat-value">0%</span>
-                </div>
-                <div class="erc-stat-box">
-                    <span class="erc-stat-label">Time left</span>
-                    <span id="erc-time-left" class="erc-stat-value">--:--:--</span>
+
+                <div id="positions-container">
+                    <!-- Position-wise results injected here -->
                 </div>
             </div>
 
-            <!-- Side-by-Side Results Grid -->
-            <div class="erc-results-grid">
-                <!-- CS Candidates Column -->
-                <div class="erc-category-column">
-                    <h3 class="erc-category-title"><i class="fas fa-laptop-code"></i> Computer Science (CS)</h3>
-                    <div id="cs-chart-container" style="height: 320px; width: 100%; margin-bottom: 20px;"></div>
-                    <div id="cs-candidates-list" class="erc-candidates-list">
-                        <!-- Candidates injected here -->
-                    </div>
+            <div id="no-election-msg" class="no-data-state">
+                <div class="no-data-icon">
+                    <i class="fas fa-chart-bar"></i>
                 </div>
-
-                <!-- IS Candidates Column -->
-                <div class="erc-category-column">
-                    <h3 class="erc-category-title"><i class="fas fa-network-wired"></i> Information Systems (IS)</h3>
-                    <div id="is-chart-container" style="height: 320px; width: 100%; margin-bottom: 20px;"></div>
-                    <div id="is-candidates-list" class="erc-candidates-list">
-                        <!-- Candidates injected here -->
-                    </div>
-                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.75rem;">Waiting for Selection</h3>
+                <p style="color: #64748b; font-weight: 500;">Select an election from the menu above to visualize live voting data.</p>
             </div>
         </div>
     </main>
 
+    <script src="../js/sidebar.js"></script>
     <script src="../js/script.js"></script>
     <script>
         const API_BASE = 'http://127.0.0.1:3000/api';
-        const designColors = ['#378ADD', '#7F77DD', '#1D9E75', '#EF9F27'];
-        const avatarClasses = ['blue', 'purple', 'teal', 'amber'];
-        let electionDeadline = null;
-        let isVotingOpen = false;
+        const designColors = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#3b82f6'];
+        let electionId = null;
+        let electionData = null;
+        let refreshInterval = null;
 
-        async function fetchResults() {
-            try {
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                const studentId = user.student_id || user.id || "";
-                const fetchOptions = { credentials: 'include' };
-
-                const [settingsRes, resultsRes] = await Promise.all([
-                    fetch(`${API_BASE}/admin/settings`, fetchOptions),
-                    fetch(`${API_BASE}/results`, fetchOptions)
-                ]);
-
-                if (!settingsRes.ok || !resultsRes.ok) {
-                    throw new Error('Failed to fetch basic data');
-                }
-
-                const settings = await settingsRes.json();
-                const results = await resultsRes.json();
-
-                electionDeadline = settings.voting_deadline;
-                isVotingOpen = settings.voting_open === '1';
-
-                let totalStudents = 100; 
-                if (user.role === 'admin') {
-                    try {
-                        const studentsRes = await fetch(`${API_BASE}/admin/students`, {
-                            ...fetchOptions,
-                            headers: { 'x-admin-id': studentId }
-                        });
-                        if (studentsRes.ok) {
-                            const students = await studentsRes.json();
-                            totalStudents = students.length;
-                        }
-                    } catch (e) { console.warn('Turnout calc fallback used'); }
-                }
-
-                renderERC(settings, results, totalStudents);
-            } catch (err) { 
-                console.error('Error fetching results:', err); 
-            }
-        }
-
-        function getInitials(name) {
-            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        }
-
-        function renderERC(settings, results, totalStudents) {
-            const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
-            const turnout = totalStudents > 0 ? ((totalVotes / totalStudents) * 100).toFixed(0) : 0;
-            
-            document.getElementById('erc-total-votes').textContent = totalVotes;
-            document.getElementById('erc-turnout').textContent = turnout + '%';
-            
-            const statusBadge = document.getElementById('erc-status-badge');
-            const isOpen = settings.voting_open === '1';
-            const deadline = new Date(settings.voting_deadline).getTime();
-            const now = new Date().getTime();
-            const isEnded = deadline - now < 0;
-
-            if (!isOpen) {
-                statusBadge.innerHTML = '<span>Results pending</span>';
-                statusBadge.style.background = '#FAEEDA';
-                statusBadge.style.color = '#854F0B';
-            } else if (isEnded) {
-                statusBadge.innerHTML = '<span>Final results</span>';
-                statusBadge.style.background = '#EAF3DE';
-                statusBadge.style.color = '#3B6D11';
-            } else {
-                statusBadge.innerHTML = '<div class="erc-pulse-dot"></div><span>Live</span>';
-                statusBadge.style.background = '#FCEBEB';
-                statusBadge.style.color = '#A32D2D';
-            }
-
-            const csResults = results.filter(r => r.category === 'CS').sort((a,b) => b.vote_count - a.vote_count);
-            const isResults = results.filter(r => r.category === 'IS').sort((a,b) => b.vote_count - a.vote_count);
-
-            renderCategoryResults('cs', csResults);
-            renderCategoryResults('is', isResults);
-
-            renderCategoryChart('cs', csResults);
-            renderCategoryChart('is', isResults);
-
-            runCountdown();
-        }
-
-        function renderCategoryChart(prefix, catResults) {
-            const container = document.getElementById(`${prefix}-chart-container`);
-            if (catResults.length === 0) {
-                container.style.display = 'none';
+        async function init() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.student_id) {
+                window.location.href = 'login.html';
                 return;
             }
-            container.style.display = 'block';
+            document.getElementById('user-name').textContent = user.name || 'Student';
+            document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
 
-            const data = catResults.map((c, i) => ({
+            await loadElections();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const idParam = urlParams.get('election_id') || urlParams.get('id');
+            if (idParam) {
+                document.getElementById('election-id').value = idParam;
+                handleElectionChange(idParam);
+            }
+
+            document.getElementById('election-id').onchange = (e) => {
+                handleElectionChange(e.target.value);
+            };
+
+            setInterval(updateCountdown, 1000);
+        }
+
+        async function loadElections() {
+            try {
+                const res = await fetch(`${API_BASE}/elections`);
+                const elections = await res.json();
+                const filter = document.getElementById('election-id');
+                filter.innerHTML = '<option value="" disabled selected>Select an Election</option>' + 
+                    elections.map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        function handleElectionChange(id) {
+            electionId = id;
+            if (refreshInterval) clearInterval(refreshInterval);
+            
+            if (!id) {
+                document.getElementById('results-content').style.display = 'none';
+                document.getElementById('no-election-msg').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('results-content').style.display = 'block';
+            document.getElementById('no-election-msg').style.display = 'none';
+
+            fetchAllData();
+            refreshInterval = setInterval(fetchAllData, 10000);
+        }
+
+        async function fetchAllData() {
+            if (!electionId) return;
+            try {
+                const [electionRes, resultsRes] = await Promise.all([
+                    fetch(`${API_BASE}/elections/${electionId}`),
+                    fetch(`${API_BASE}/results?election_id=${electionId}`)
+                ]);
+
+                if (electionRes.ok && resultsRes.ok) {
+                    electionData = await electionRes.json();
+                    const results = await resultsRes.json();
+                    renderUI(electionData, results);
+                }
+            } catch (err) {
+                console.error('Error fetching data:', err);
+            }
+        }
+
+        function renderUI(election, results) {
+            document.getElementById('erc-election-title').textContent = election.title;
+            const totalVotes = results.reduce((sum, r) => sum + r.vote_count, 0);
+            document.getElementById('erc-total-votes').textContent = totalVotes.toLocaleString();
+            
+            const statusBadge = document.getElementById('erc-status-badge');
+            const statusText = statusBadge.querySelector('span');
+            statusText.textContent = election.status.toUpperCase();
+            statusBadge.className = `status-pill status-${election.status}`;
+            
+            document.getElementById('erc-position-subtitle').textContent = `The election is currently ${election.status}.`;
+
+            const grouped = {};
+            results.forEach(r => {
+                if (!grouped[r.position]) grouped[r.position] = [];
+                grouped[r.position].push(r);
+            });
+
+            const container = document.getElementById('positions-container');
+            container.innerHTML = '';
+
+            Object.entries(grouped).forEach(([position, candidates], index) => {
+                // Sort candidates by vote count descending so color assignment is consistent
+                candidates.sort((a, b) => b.vote_count - a.vote_count);
+
+                const posId = `pos-${index}`;
+                const section = document.createElement('div');
+                section.className = 'position-card';
+                section.innerHTML = `
+                    <div class="position-header-modern">
+                        <div class="position-icon-box"><i class="fas fa-award"></i></div>
+                        <h3 class="position-title-text">${position}</h3>
+                    </div>
+                    <div class="layout-grid-modern">
+                        <div id="${posId}-chart" style="height: 380px;"></div>
+                        <div id="${posId}-list"></div>
+                    </div>
+                `;
+                container.appendChild(section);
+
+                renderPieChart(`${posId}-chart`, position, candidates);
+                renderCandidateList(`${posId}-list`, candidates);
+            });
+        }
+
+        function renderPieChart(containerId, title, candidates) {
+            const data = candidates.map((c, i) => ({
                 name: c.name,
                 y: c.vote_count,
                 color: designColors[i % designColors.length]
             }));
 
-            Highcharts.chart(`${prefix}-chart-container`, {
+            Highcharts.chart(containerId, {
                 chart: {
                     type: 'pie',
-                    options3d: {
-                        enabled: true,
-                        alpha: 45,
-                        beta: 0
-                    },
+                    options3d: { enabled: true, alpha: 45, beta: 0 },
                     backgroundColor: 'transparent'
                 },
                 title: { text: '' },
-                accessibility: { point: { valueSuffix: '%' } },
-                tooltip: { pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>' },
+                tooltip: { 
+                    headerFormat: '',
+                    pointFormat: '<span style="color:{point.color}">\u25CF</span> {point.name}: <b>{point.y}</b> ({point.percentage:.1f}%)' 
+                },
                 plotOptions: {
                     pie: {
                         allowPointSelect: true,
                         cursor: 'pointer',
                         depth: 35,
-                        innerSize: 100,
+                        innerSize: '60%',
                         dataLabels: {
                             enabled: true,
-                            format: '{point.name}',
-                            style: {
-                                fontSize: '11px',
-                                fontFamily: 'Inter, sans-serif',
-                                fontWeight: '600'
-                            }
-                        }
+                            format: '{point.percentage:.1f}%',
+                            style: { fontWeight: '800', fontSize: '12px' },
+                            distance: -30,
+                            color: 'white'
+                        },
+                        showInLegend: true
                     }
                 },
-                series: [{
-                    type: 'pie',
-                    name: 'Vote Share',
-                    data: data
-                }],
+                legend: {
+                    itemStyle: { color: '#1e293b', fontWeight: '600', fontSize: '11px' },
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle'
+                },
+                series: [{ name: 'Votes', data: data }],
                 credits: { enabled: false }
             });
         }
 
-        function renderCategoryResults(prefix, catResults) {
-            const catTotalVotes = catResults.reduce((sum, r) => sum + r.vote_count, 0);
-            const listContainer = document.getElementById(`${prefix}-candidates-list`);
-            
-            if (catResults.length === 0) {
-                listContainer.innerHTML = '<p class="erc-no-data">No candidates found for this category.</p>';
-                return;
-            }
+        function renderCandidateList(containerId, candidates) {
+            const container = document.getElementById(containerId);
+            const totalPosVotes = candidates.reduce((s, c) => s + c.vote_count, 0);
 
-            listContainer.innerHTML = catResults.map((c, i) => {
-                const pct = catTotalVotes > 0 ? ((c.vote_count / catTotalVotes) * 100).toFixed(0) : 0;
-                const isLeading = i === 0 && c.vote_count > 0;
+            container.innerHTML = candidates.map((c, i) => {
+                const pct = totalPosVotes > 0 ? ((c.vote_count / totalPosVotes) * 100).toFixed(1) : 0;
                 const color = designColors[i % designColors.length];
-                const avatarClass = avatarClasses[i % avatarClasses.length];
                 
                 return `
-                    <div class="erc-candidate-item">
-                        <div class="erc-avatar ${avatarClass}" style="overflow: hidden; border: 1px solid rgba(0,0,0,0.05);">
-                            ${c.photo ? `<img src="${c.photo}" style="width: 100%; height: 100%; object-fit: cover;">` : getInitials(c.name)}
-                        </div>
-                        <div class="erc-candidate-info">
-                            <div class="erc-candidate-header">
-                                <div class="erc-candidate-name-group">
-                                    <span class="erc-candidate-name">${c.name}</span>
-                                    ${isLeading ? '<span class="erc-leading-badge">Leading</span>' : ''}
+                    <div class="candidate-result-item-modern">
+                        <div class="candidate-meta-row">
+                            <div class="candidate-info-group">
+                                <div class="erc-avatar" style="background: ${color}20; color: ${color}; width: 40px; height: 40px; font-size: 0.9rem; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 0.75rem;">
+                                    ${c.photo ? `<img src="${c.photo}" style="width:100%; height:100%; object-fit:cover;">` : c.name.charAt(0)}
                                 </div>
-                                <span class="erc-percentage-label" style="color: ${color}">${pct}%</span>
+                                <div>
+                                    <span class="candidate-name-text">${c.name}</span>
+                                </div>
                             </div>
-                            <div class="erc-progress-track">
-                                <div class="erc-progress-fill" style="width: ${pct}%; background-color: ${color}"></div>
-                            </div>
-                            <div class="erc-vote-count-meta">
-                                <span>${c.vote_count} total votes</span>
-                            </div>
+                            <span class="vote-count-badge">${c.vote_count.toLocaleString()}</span>
                         </div>
+                        <div class="progress-track-modern">
+                            <div class="progress-fill-modern" style="width: ${pct}%; background: ${color};"></div>
+                        </div>
+                        <span class="percentage-label-float">${pct}% of total votes</span>
                     </div>
                 `;
             }).join('');
         }
 
-        function runCountdown() {
+        function updateCountdown() {
             const timerEl = document.getElementById('erc-time-left');
-            if (!isVotingOpen || !electionDeadline) {
-                timerEl.textContent = 'CLOSED';
-                return;
-            }
-            const deadline = new Date(electionDeadline).getTime();
+            if (!electionData || !electionData.end_time) return;
+
+            const end = new Date(electionData.end_time).getTime();
             const now = new Date().getTime();
-            const dist = deadline - now;
+            const dist = end - now;
+
             if (dist < 0) {
                 timerEl.textContent = 'ENDED';
                 return;
             }
-            
-            const hours = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+            const hours = Math.floor(dist / (1000 * 60 * 60));
             const minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((dist % (1000 * 60)) / 1000);
-            
-            timerEl.textContent = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+
+            timerEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchResults();
-            setInterval(fetchResults, 30000);
-            setInterval(runCountdown, 1000);
-        });
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>

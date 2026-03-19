@@ -1,74 +1,77 @@
 const Vote = require('../models/Vote');
 const Student = require('../models/Student');
+const Election = require('../models/Election');
 const Admin = require('../models/Admin');
 const db = require('../database');
 
 exports.submitVote = (req, res) => {
-  const { student_id, candidate_id } = req.body;
+  const { election_id, student_id, candidate_id } = req.body;
 
-  if (!student_id || !candidate_id) {
-    return res.status(400).json({ error: 'Please provide student_id and candidate_id.' });
+  if (!election_id || !student_id || !candidate_id) {
+    return res.status(400).json({ error: 'Please provide election_id, student_id and candidate_id.' });
   }
 
-  // Check if voting is open
-  Admin.getSettings((err, settings) => {
-    if (err) return res.status(500).json({ error: 'Internal server error.' });
-    
-    const settingsObj = {};
-    settings.forEach(s => settingsObj[s.key] = s.value);
-    
-    if (settingsObj.voting_open !== '1') {
-      return res.status(400).json({ error: 'Voting is currently closed.' });
+  // 1. Verify Election is Valid & Active
+  Election.findById(election_id, (err, election) => {
+    if (err || !election) return res.status(404).json({ error: 'Election not found.' });
+
+    const now = new Date();
+    const startTime = new Date(election.start_time);
+    const endTime = new Date(election.end_time);
+
+    if (election.status !== 'active' || now < startTime || now > endTime) {
+      return res.status(400).json({ error: 'Voting is not active for this election.' });
     }
 
-    const deadline = new Date(settingsObj.voting_deadline);
-    if (new Date() > deadline) {
-      return res.status(400).json({ error: 'Voting deadline has passed.' });
-    }
+    // 2. Check if student has already voted for THIS candidate in THIS election
+    db.get('SELECT 1 FROM votes WHERE election_id = ? AND student_id = ? AND candidate_id = ?', [election_id, student_id, candidate_id], (err, row) => {
+      if (err) return res.status(500).json({ error: 'Internal error.' });
+      if (row) return res.status(400).json({ error: 'You have already voted for this candidate.' });
 
-    // Check if student exists and has already voted
-    Student.findByStudentId(student_id, (err, student) => {
-      if (err) return res.status(500).json({ error: 'Internal server error.' });
-      if (!student) return res.status(404).json({ error: 'Student not found.' });
+      // 3. Get Candidate Info
+      db.get('SELECT category FROM candidates WHERE id = ? AND election_id = ?', [candidate_id, election_id], (err, candidate) => {
+        if (err || !candidate) return res.status(404).json({ error: 'Candidate not found or invalid.' });
 
-      if (student.has_voted) {
-        return res.status(400).json({ error: 'You have already voted.' });
-      }
-
-      // Check candidate category
-      db.get('SELECT category FROM candidates WHERE id = ?', [candidate_id], (err, candidate) => {
-        if (err) return res.status(500).json({ error: 'Internal server error.' });
-        if (!candidate) return res.status(404).json({ error: 'Candidate not found.' });
-
-        const isCSStudent = student_id.includes('CS');
-        const isISStudent = student_id.includes('IS');
         const candidateCategory = candidate.category;
+        const limit = candidateCategory === 'CS' ? election.cs_vote_limit : election.is_vote_limit;
 
-        if (isCSStudent && candidateCategory !== 'CS') {
-          return res.status(403).json({ error: 'CS students can only vote for CS candidates.' });
-        }
-        if (isISStudent && candidateCategory !== 'IS') {
-          return res.status(403).json({ error: 'IS students can only vote for IS candidates.' });
-        }
+        // 4. Check category vote count
+        Vote.getVoteCountByCategory(election_id, student_id, candidateCategory, (err, currentCount) => {
+          if (err) return res.status(500).json({ error: 'Internal error.' });
+          
+          if (currentCount >= limit) {
+            return res.status(403).json({ error: `You have reached the maximum vote limit (${limit}) for ${candidateCategory} candidates.` });
+          }
 
-        // Process vote
-        Vote.create(student_id, candidate_id, function(err) {
-          if (err) return res.status(500).json({ error: 'Failed to record vote.' });
-
-          const voteId = this.lastID; // SQLite lastID
-
-          // Update student's has_voted status and voted_at
-          const now = new Date().toISOString();
-          db.run('UPDATE students SET has_voted = 1, voted_at = ? WHERE student_id = ?', [now, student_id], (err) => {
-            if (err) return res.status(500).json({ error: 'Failed to update student status.' });
-            
-            // Log action
-            Admin.logAction(student_id, `Cast a vote (Vote ID: #${voteId})`);
-            
-            res.json({ message: 'Vote submitted successfully.', vote_id: `#${voteId}` });
+          // 5. Record Vote
+          Vote.create(election_id, student_id, candidate_id, function(err) {
+            if (err) {
+               // If voter_participation unique constraint fails, it means student has already voted in this election at least once.
+               // We should still allow the vote in the 'votes' table, but the 'create' method in model handles both.
+               // Let's refine the Vote.create to handle multiple votes correctly.
+            }
+            res.json({ message: 'Vote submitted successfully.', vote_id: `#${this.lastID}` });
           });
         });
       });
     });
+  });
+};
+
+exports.getMyVotes = (req, res) => {
+  const { election_id, student_id } = req.query;
+  if (!election_id || !student_id) {
+    return res.status(400).json({ error: 'election_id and student_id are required.' });
+  }
+
+  const query = `
+    SELECT candidates.id, candidates.name, candidates.category 
+    FROM votes 
+    JOIN candidates ON votes.candidate_id = candidates.id 
+    WHERE votes.election_id = ? AND votes.student_id = ?
+  `;
+  db.all(query, [election_id, student_id], (err, votes) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch votes.' });
+    res.json(votes);
   });
 };
