@@ -58,30 +58,47 @@ Admins can customize the "Rules of Engagement" for every election:
 
 ## Getting Started
 
+To establish a functional local environment, execute the following steps in sequence.
+
 ### 1. Repository Acquisition
+
+Clone the source and enter the root directory:
+
 ```bash
-git clone https://github.com/dasunvidanage/Election-Portal.git
-cd Election-Portal
+git clone https://github.com/dasunvidanage/grp.prac2.git
+cd grp.prac2
+
 ```
 
-### 2. Setup & Dependencies
+### 2. Backend Configuration & Dependencies
+
+The core logic resides in the `backend` directory. You must install the environment before attempting to initialize the data layer.
+
 ```bash
 cd backend
 npm install
+
 ```
 
-### 3. Database & Storage Initialization
-Ensure you have a `uploads/` directory in your backend to handle the University ID images.
+### 3. Database Initialization
+
+Before launching the server, you must seed the local database. Ensure you have Node.js installed and verified ($node -v$).
+
 ```bash
+# Populate schema and sample datasets
 node initDB.js
+
 ```
 
-### 4. Launch
+### 4. Service Launch
+
+Start the Node.js runtime. The server must remain active to handle frontend requests.
+
 ```bash
 npm start
+
 ```
 
----
 
 ### Future Roadmap: Club Integration
 The system is built with **extensibility** at its core. While currently optimized for UCSC CS/IS departments, the "Eligibility Filter" logic can be expanded to verify **Club Membership lists**, allowing the platform to host elections for Special Clubs and other Union with minimal configuration changes.
