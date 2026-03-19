@@ -365,10 +365,11 @@
                             </div>
 
                             <div class="form-full-width">
-                                <button type="submit" class="btn-sleek" style="padding: 1.125rem;">
+                                <button type="submit" id="submit-btn" class="btn-sleek" style="padding: 1.125rem;">
                                     <i class="fas fa-paper-plane"></i> Submit Nomination
                                 </button>
                             </div>
+
                         </div>
                     </form>
                 </div>
@@ -475,8 +476,9 @@
 
         async function loadElections() {
             try {
+                const user = JSON.parse(localStorage.getItem('user'));
                 const res = await fetch(`${ELECTION_API}`, { 
-                    headers: { 'x-student-id': JSON.parse(localStorage.getItem('user')).student_id },
+                    headers: { 'x-student-id': user.student_id },
                     credentials: 'include' 
                 });
                 allElections = await res.json();
@@ -501,6 +503,14 @@
                 }
 
                 select.onchange = handleElectionChange;
+
+                // Auto-set category for student
+                const categorySelect = document.getElementById('category');
+                if (user.student_id.includes('CS')) {
+                    categorySelect.value = 'CS';
+                } else if (user.student_id.includes('IS')) {
+                    categorySelect.value = 'IS';
+                }
 
             } catch (err) {
                 console.error('Error loading elections:', err);
@@ -543,6 +553,7 @@
                 const propField = document.getElementById('proposer-field');
                 const secField = document.getElementById('seconder-field');
                 const candInput = document.getElementById('candidate-id');
+                const submitBtn = document.getElementById('submit-btn');
 
                 if (isSelf) {
                     propField.style.display = 'none';
@@ -551,6 +562,7 @@
                     document.getElementById('seconder-id').removeAttribute('required');
                     candInput.value = user.student_id;
                     candInput.setAttribute('readonly', true);
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Become Candidate';
                 } else {
                     propField.style.display = 'block';
                     secField.style.display = 'block';
@@ -558,6 +570,7 @@
                     document.getElementById('seconder-id').setAttribute('required', true);
                     candInput.value = '';
                     candInput.removeAttribute('readonly');
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Nomination';
                 }
 
                 // Populate positions

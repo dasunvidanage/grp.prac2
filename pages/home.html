@@ -175,7 +175,7 @@
                     <div class="status-icon bg-purple">
                         <i class="fas fa-id-badge"></i>
                     </div>
-                    <span class="status-badge-large bg-purple">Course</span>
+                    <span class="status-badge-large bg-purple" id="user-year-badge">Year -</span>
                 </div>
                 <div class="stat-info">
                     <h3 class="stat-value" id="user-dept" style="font-size: 1.5rem;">Loading...</h3>
@@ -235,6 +235,12 @@
             const dept = user.student_id.includes('CS') ? 'Computer Science' : 'Information Systems';
             document.getElementById('user-dept').textContent = dept;
 
+            // Display Academic Year
+            const yearBadge = document.getElementById('user-year-badge');
+            if (user.academic_year) {
+                yearBadge.textContent = `Year ${user.academic_year}`;
+            }
+
             // Set account status
             const statusBadge = document.getElementById('account-status-badge');
             const eligibilityStat = document.getElementById('account-eligibility');
@@ -287,7 +293,8 @@
                     if (isNominationPhase) {
                         statusText = 'Nomination Phase';
                         statusClass = 'status-upcoming'; // blue
-                        actionBtn = `<a href="nominate.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none; background: var(--primary);">Nominate</a>`;
+                        const btnText = e.nomination_type === 'self' ? 'Become Candidate' : 'Nominate';
+                        actionBtn = `<a href="nominate.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none; background: var(--primary);">${btnText}</a>`;
                     } else if (e.status === 'active') {
                         actionBtn = `<a href="candidates.html?election_id=${e.id}" class="btn-sleek" style="text-align: center; display: block; text-decoration: none;">Vote Now</a>`;
                     } else if (e.status === 'upcoming') {

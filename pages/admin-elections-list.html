@@ -288,6 +288,24 @@
                     </div>
 
                     <div class="form-section-title">
+                        <i class="fas fa-graduation-cap"></i> Target Academic Years
+                    </div>
+                    <div class="input-group" style="display: flex; gap: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px solid #f1f5f9;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: #475569;">
+                            <input type="checkbox" name="allowed_years" value="1" checked> 1st Year
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: #475569;">
+                            <input type="checkbox" name="allowed_years" value="2" checked> 2nd Year
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: #475569;">
+                            <input type="checkbox" name="allowed_years" value="3" checked> 3rd Year
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: #475569;">
+                            <input type="checkbox" name="allowed_years" value="4" checked> 4th Year
+                        </label>
+                    </div>
+
+                    <div class="form-section-title">
                         <i class="fas fa-users-cog"></i> Faculty Quotas
                     </div>
 
@@ -361,6 +379,31 @@
                 const end = new Date(e.end_time).toLocaleDateString();
                 const statusClass = `status-${e.status}`;
                 
+                // Parse allowed years
+                console.log(`Processing election: ${e.title}, allowed_years raw:`, e.allowed_years);
+                let yearsDisplay = 'All';
+                if (e.allowed_years) {
+                    try {
+                        const years = typeof e.allowed_years === 'string' && (e.allowed_years.startsWith('[') || e.allowed_years.startsWith('{')) 
+                            ? JSON.parse(e.allowed_years) 
+                            : e.allowed_years;
+                        
+                        console.log(`Parsed years for ${e.title}:`, years);
+
+                        if (Array.isArray(years) && years.length > 0) {
+                            yearsDisplay = years.map(y => y + (y == 1 ? 'st' : y == 2 ? 'nd' : y == 3 ? 'rd' : 'th')).join(', ') + ' Year';
+                        } else if (typeof years === 'string' && years.trim() !== '') {
+                            // Handle comma separated string fallback
+                            const yearsArray = years.split(',').map(y => y.trim());
+                            yearsDisplay = yearsArray.map(y => y + (y == 1 ? 'st' : y == 2 ? 'nd' : y == 3 ? 'rd' : 'th')).join(', ') + ' Year';
+                        }
+                    } catch (err) {
+                        console.error(`Error parsing allowed_years for ${e.title}:`, err);
+                        yearsDisplay = e.allowed_years; // Fallback
+                    }
+                }
+                console.log(`Final yearsDisplay for ${e.title}:`, yearsDisplay);
+
                 const card = document.createElement('div');
                 card.className = 'election-card';
                 card.innerHTML = `
@@ -371,6 +414,7 @@
                     <h3 style="margin: 0; font-size: 1.25rem;">${e.title}</h3>
                     <div style="font-size: 0.85rem; color: #6b7280;">
                         <div><i class="far fa-calendar-alt"></i> ${start} - ${end}</div>
+                        <div style="margin-top: 0.25rem;"><i class="fas fa-user-graduate"></i> Years: ${yearsDisplay}</div>
                         <div style="margin-top: 0.25rem;"><i class="fas fa-user-tag"></i> Type: ${e.nomination_type === 'self' ? 'Self' : '3-Person'}</div>
                     </div>
                 `;
@@ -381,6 +425,16 @@
 
         document.getElementById('create-election-form').onsubmit = async (e) => {
             e.preventDefault();
+            
+            // Collect allowed years
+            const yearCheckboxes = document.querySelectorAll('input[name="allowed_years"]:checked');
+            const allowedYears = Array.from(yearCheckboxes).map(cb => cb.value).join(',');
+
+            if (!allowedYears) {
+                alert('Please select at least one target academic year.');
+                return;
+            }
+
             const payload = {
                 title: document.getElementById('title').value,
                 positions: document.getElementById('positions').value,
@@ -389,6 +443,7 @@
                 nomination_type: document.getElementById('nomination-type').value,
                 nomination_start: document.getElementById('nom-start').value,
                 nomination_end: document.getElementById('nom-end').value,
+                allowed_years: allowedYears,
                 cs_vote_limit: document.getElementById('cs-vote-limit').value,
                 is_vote_limit: document.getElementById('is-vote-limit').value
             };

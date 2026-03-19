@@ -5,10 +5,10 @@ const Student = {
     db.get('SELECT * FROM students WHERE UPPER(student_id) = ?', [studentId.toUpperCase()], callback);
   },
   create: (studentData, callback) => {
-    const { student_id, name, email, password_hash, id_photo } = studentData;
+    const { student_id, name, email, academic_year, password_hash, id_photo } = studentData;
     db.run(
-      'INSERT INTO students (student_id, name, email, password_hash, id_photo, status) VALUES (?, ?, ?, ?, ?, ?)',
-      [student_id, name, email, password_hash, id_photo, 'pending'],
+      'INSERT INTO students (student_id, name, email, academic_year, password_hash, id_photo, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [student_id, name, email, academic_year, password_hash, id_photo, 'pending'],
       callback
     );
   },

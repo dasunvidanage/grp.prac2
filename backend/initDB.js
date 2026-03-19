@@ -28,6 +28,7 @@ async function init() {
       student_id TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL,
       email TEXT,
+      academic_year INTEGER,
       password_hash TEXT NOT NULL,
       role TEXT DEFAULT 'student',
       status TEXT DEFAULT 'pending',
@@ -45,6 +46,7 @@ async function init() {
       nomination_start DATETIME,
       nomination_end DATETIME,
       positions TEXT,
+      allowed_years TEXT,
       cs_vote_limit INTEGER DEFAULT 1,
       is_vote_limit INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -114,8 +116,9 @@ async function init() {
     const electionStart = new Date().toISOString();
     const electionEnd = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
     const defaultPositions = JSON.stringify(['President', 'Vice-President', 'Secretary', 'Junior Treasurer', 'Editor', 'Committee Member']);
-    const election = await runAsync(`INSERT INTO elections (title, status, start_time, end_time, has_nominations, positions, cs_vote_limit, is_vote_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
-      ['Student Council Election 2026', 'active', electionStart, electionEnd, 1, defaultPositions, 2, 2]);
+    const allowedYears = JSON.stringify(['1', '2', '3', '4']); // All years allowed for this sample
+    const election = await runAsync(`INSERT INTO elections (title, status, start_time, end_time, has_nominations, positions, allowed_years, cs_vote_limit, is_vote_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+      ['Student Council Election 2026', 'active', electionStart, electionEnd, 1, defaultPositions, allowedYears, 2, 2]);
     const electionId = election.lastID;
 
     // Admins
@@ -125,11 +128,23 @@ async function init() {
     }
 
     // Students
+    const currentYear = 2026;
     for (let i = 1; i <= 300; i++) {
       const dept = i <= 150 ? 'CS' : 'IS';
-      const sId = `2026${dept}${String(i).padStart(3, '0')}`;
-      await runAsync(`INSERT INTO students (student_id, name, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?, 'approved')`,
-        [sId, `Student ${dept} ${i}`, `${sId.toLowerCase()}@stu.ucsc.cmb.ac.lk`, studentPass, 'student']);
+      // Use different starting years to test academic year calculation
+      // i=1-75: 2025 (Year 1), 76-150: 2024 (Year 2), 151-225: 2023 (Year 3), 226-300: 2022 (Year 4)
+      let yearPrefix;
+      if (i <= 75) yearPrefix = 2025;
+      else if (i <= 150) yearPrefix = 2024;
+      else if (i <= 225) yearPrefix = 2023;
+      else yearPrefix = 2022;
+
+      const sId = `${yearPrefix}${dept}${String(i).padStart(3, '0')}`;
+      const email = `${sId.toLowerCase()}@stu.ucsc.cmb.ac.lk`;
+      const academicYear = currentYear - yearPrefix;
+
+      await runAsync(`INSERT INTO students (student_id, name, email, academic_year, password_hash, role, status) VALUES (?, ?, ?, ?, ?, ?, 'approved')`,
+        [sId, `Student ${dept} ${i}`, email, academicYear, studentPass, 'student']);
     }
 
     // Candidates

@@ -366,10 +366,16 @@
                 <h3 style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fas fa-id-card" style="color: #8b5cf6;"></i> Nomination Phase
                 </h3>
-                <div class="control-item" style="margin-bottom: 1.5rem;">
+                <div class="control-item" style="margin-bottom: 1rem;">
                     <label class="control-label">Nomination Type</label>
                     <div id="nomination-type-display" style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; font-size: 1rem;">
                         <i class="fas fa-info-circle" style="color: #8b5cf6;"></i> Loading...
+                    </div>
+                </div>
+                <div class="control-item" style="margin-bottom: 1.5rem;">
+                    <label class="control-label">Target Academic Years</label>
+                    <div id="allowed-years-display" style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; font-size: 1rem;">
+                        <i class="fas fa-graduation-cap" style="color: #64748b;"></i> Loading...
                     </div>
                 </div>
                 <div style="margin-top: auto;">
@@ -410,7 +416,8 @@
                 </div>
             </div>
 
-            <!-- Group 3: Status & System -->
+
+                        <!-- Group 3: Status & System -->
             <div class="admin-action-bar">
                 <h3 style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fas fa-tachometer-alt" style="color: #64748b;"></i> Status & System
@@ -428,6 +435,7 @@
         </div>
 
         <!-- Dashboard Stats -->
+
         <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
             <div class="stat-card-modern">
                 <div class="stat-icon-box" style="background: var(--primary-light); color: var(--primary);">
@@ -489,9 +497,6 @@
             <section class="dashboard-section">
                 <div class="section-header-modern">
                     <h2><i class="fas fa-users-cog" style="color: var(--primary);"></i> Candidate Roster</h2>
-                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">
-                        Total: <span id="candidate-count-badge" style="background: var(--primary-light); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 6px;">0</span>
-                    </div>
                 </div>
                 <div class="roster-card">
                     <div id="candidate-table-container" style="max-height: 800px; overflow-y: auto;">
@@ -614,6 +619,29 @@
                     ${currentElection.nomination_type === 'self' ? 'Self-Nomination' : '3-Person Consent'}
                 `;
                 
+                // Display Allowed Years
+                let yearsDisplay = 'All Years';
+                if (currentElection.allowed_years) {
+                    try {
+                        const years = typeof currentElection.allowed_years === 'string' && (currentElection.allowed_years.startsWith('[') || currentElection.allowed_years.startsWith('{'))
+                            ? JSON.parse(currentElection.allowed_years) 
+                            : currentElection.allowed_years;
+                        
+                        if (Array.isArray(years) && years.length > 0) {
+                            yearsDisplay = years.map(y => y + (y == 1 ? 'st' : y == 2 ? 'nd' : y == 3 ? 'rd' : 'th')).join(', ') + ' Year';
+                        } else if (typeof years === 'string' && years.trim() !== '') {
+                            const yearsArray = years.split(',').map(y => y.trim());
+                            yearsDisplay = yearsArray.map(y => y + (y == 1 ? 'st' : y == 2 ? 'nd' : y == 3 ? 'rd' : 'th')).join(', ') + ' Year';
+                        }
+                    } catch (e) {
+                        yearsDisplay = currentElection.allowed_years;
+                    }
+                }
+                document.getElementById('allowed-years-display').innerHTML = `
+                    <i class="fas fa-graduation-cap" style="color: #64748b;"></i>
+                    ${yearsDisplay}
+                `;
+
                 const votingOpen = currentElection.status === 'active';
                 const btn = document.getElementById('toggle-voting-btn');
                 const statusBadge = document.getElementById('countdown-status');
@@ -648,7 +676,6 @@
                     const turnout = stats.total > 0 ? ((stats.voted / stats.total) * 100).toFixed(1) : 0;
                     
                     document.getElementById('stat-total-candidates').textContent = stats.candidates;
-                    document.getElementById('candidate-count-badge').textContent = stats.candidates;
                     document.getElementById('stat-total-votes').textContent = stats.voted;
                     document.getElementById('stat-not-voted').textContent = stats.notVoted;
                     document.getElementById('stat-turnout').textContent = turnout + '%';

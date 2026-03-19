@@ -4,9 +4,19 @@ const Election = require('../models/Election');
 // --- Election Management ---
 
 exports.createElection = (req, res) => {
-  const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit, is_vote_limit } = req.body;
+  const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, allowed_years, cs_vote_limit, is_vote_limit } = req.body;
   if (!title || !start_time || !end_time) {
     return res.status(400).json({ error: 'Title, start time, and end time are required.' });
+  }
+
+  // Ensure allowed_years is stored as a JSON array string
+  let allowedYearsJson = '["1","2","3","4"]';
+  if (allowed_years) {
+    if (typeof allowed_years === 'string') {
+      allowedYearsJson = JSON.stringify(allowed_years.split(',').map(y => y.trim()));
+    } else if (Array.isArray(allowed_years)) {
+      allowedYearsJson = JSON.stringify(allowed_years.map(String));
+    }
   }
 
   const electionData = {
@@ -18,6 +28,7 @@ exports.createElection = (req, res) => {
     nomination_start,
     nomination_end,
     positions: positions ? JSON.stringify(positions.split(',').map(p => p.trim())) : '[]',
+    allowed_years: allowedYearsJson,
     cs_vote_limit: parseInt(cs_vote_limit) || 1,
     is_vote_limit: parseInt(is_vote_limit) || 1
   };
@@ -95,6 +106,18 @@ exports.updateStudentStatus = (req, res) => {
   });
 };
 
+exports.deleteStudent = (req, res) => {
+  const { studentId } = req.body;
+  if (!studentId) {
+    return res.status(400).json({ error: 'Student ID is required.' });
+  }
+
+  Admin.deleteStudent(studentId, (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete student record.' });
+    res.json({ message: `Student ${studentId} record deleted successfully.` });
+  });
+};
+
 
 exports.getOverview = (req, res) => {
   Admin.getOverview((err, stats) => {
@@ -126,6 +149,30 @@ exports.updateVotingRange = (req, res) => {
   Election.updateVotingRange(id, start_time, end_time, (err) => {
     if (err) return res.status(500).json({ error: 'Failed to update voting range.' });
     res.json({ message: 'Voting range updated successfully.' });
+  });
+};
+
+exports.updateAllowedYears = (req, res) => {
+  const { id } = req.params;
+  const { allowed_years } = req.body;
+  
+  if (!allowed_years) {
+    return res.status(400).json({ error: 'Allowed years are required.' });
+  }
+
+  // Ensure allowed_years is stored as a JSON array string
+  let allowedYearsJson = '["1","2","3","4"]';
+  if (allowed_years) {
+    if (typeof allowed_years === 'string') {
+      allowedYearsJson = JSON.stringify(allowed_years.split(',').map(y => y.trim()));
+    } else if (Array.isArray(allowed_years)) {
+      allowedYearsJson = JSON.stringify(allowed_years.map(String));
+    }
+  }
+
+  Election.updateAllowedYears(id, allowedYearsJson, (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to update allowed years.' });
+    res.json({ message: 'Allowed years updated successfully.' });
   });
 };
 

@@ -11,9 +11,19 @@ exports.register = (req, res) => {
     return res.status(400).json({ error: 'Please provide all required fields.' });
   }
 
+  // Calculate academic year from email (e.g., 2025cs010@stu.ucsc.cmb.ac.lk)
+  // Assuming current year is 2026 as per user requirement
+  let academic_year = null;
+  const yearMatch = email.match(/^(\d{4})/);
+  if (yearMatch) {
+    const enrollmentYear = parseInt(yearMatch[1]);
+    const currentYear = new Date().getFullYear(); // Will be 2026 in this context
+    academic_year = currentYear - enrollmentYear;
+  }
+
   const password_hash = bcrypt.hashSync(password, 10);
 
-  Student.create({ student_id, name, email, password_hash, id_photo }, (err) => {
+  Student.create({ student_id, name, email, academic_year, password_hash, id_photo }, (err) => {
     if (err) {
       console.error('Error creating student:', err);
       if (err.message.includes('UNIQUE constraint failed')) {
@@ -69,6 +79,7 @@ exports.login = (req, res) => {
           student_id: student.student_id, 
           name: student.name, 
           role: student.role,
+          academic_year: student.academic_year,
           has_voted: student.has_voted,
           status: student.status
         } 
@@ -95,9 +106,34 @@ exports.getStatus = (req, res) => {
 };
 
 exports.getPublicElections = (req, res) => {
+  const studentId = req.headers['x-student-id'] || (req.session ? req.session.studentId : null);
+
   Election.getAll((err, elections) => {
     if (err) return res.status(500).json({ error: 'Failed to fetch elections.' });
-    res.json(elections);
+
+    if (!studentId) {
+      return res.json(elections);
+    }
+
+    Student.findByStudentId(studentId, (err, student) => {
+      if (err || !student) {
+        // If student not found or error, return all elections but maybe log it
+        return res.json(elections);
+      }
+
+      const studentYear = String(student.academic_year);
+      const filteredElections = elections.filter(election => {
+        if (!election.allowed_years) return true; // If not specified, all can see
+        try {
+          const allowed = JSON.parse(election.allowed_years);
+          return Array.isArray(allowed) && (allowed.length === 0 || allowed.includes(studentYear));
+        } catch (e) {
+          return true; // Fallback to showing if parse fails
+        }
+      });
+
+      res.json(filteredElections);
+    });
   });
 };
 

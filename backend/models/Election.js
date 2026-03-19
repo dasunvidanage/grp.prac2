@@ -2,11 +2,11 @@ const db = require('../database');
 
 const Election = {
   create: (data, callback) => {
-    const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit, is_vote_limit } = data;
+    const { title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, allowed_years, cs_vote_limit, is_vote_limit } = data;
     db.run(
-      `INSERT INTO elections (title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit, is_vote_limit) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, cs_vote_limit || 1, is_vote_limit || 1],
+      `INSERT INTO elections (title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, allowed_years, cs_vote_limit, is_vote_limit) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, start_time, end_time, has_nominations, nomination_type, nomination_start, nomination_end, positions, allowed_years, cs_vote_limit || 1, is_vote_limit || 1],
       function(err) {
         callback(err, this ? this.lastID : null);
       }
@@ -31,6 +31,10 @@ const Election = {
 
   updateVotingRange: (id, start, end, callback) => {
     db.run('UPDATE elections SET start_time = ?, end_time = ? WHERE id = ?', [start, end, id], callback);
+  },
+
+  updateAllowedYears: (id, allowed_years, callback) => {
+    db.run('UPDATE elections SET allowed_years = ? WHERE id = ?', [allowed_years, id], callback);
   },
 
   resetNominations: (id, callback) => {
