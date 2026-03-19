@@ -13,6 +13,13 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
+        :root {
+            --primary-light: #eef2ff;
+            --success-light: #ecfdf5;
+            --warning-light: #fffbeb;
+            --danger-light: #fef2f2;
+        }
+
         .modal {
             display: none; 
             position: fixed; 
@@ -21,28 +28,124 @@
             top: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease-out;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .modal-content {
             background: white; 
-            margin: 5% auto; 
-            padding: 2.5rem; 
+            margin: 4% auto; 
+            padding: 0; 
             border-radius: 1.5rem; 
             width: 90%; 
-            max-width: 600px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 650px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             position: relative;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
         }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 2rem 2.5rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #f8fafc;
+        }
+
+        .modal-body {
+            padding: 2.5rem;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
         .close-modal {
             position: absolute;
             right: 1.5rem;
-            top: 1rem;
-            font-size: 2rem;
+            top: 1.5rem;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: #9ca3af;
+            color: #94a3b8;
+            transition: color 0.2s;
+            z-index: 10;
         }
-        .close-modal:hover { color: #374151; }
+        .close-modal:hover { color: #ef4444; }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-modern {
+            background: #f8fafc;
+            border: 2px solid #f1f5f9;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: #1e293b;
+            transition: all 0.2s;
+            outline: none;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .input-modern:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-modern {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+
+        .form-section-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
         .election-grid {
             display: grid;
@@ -129,61 +232,81 @@
     <div id="createModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h2 style="margin-bottom: 1.5rem;">Create New Election</h2>
-            <form id="create-election-form">
-                <div class="input-wrapper">
-                    <label>Election Title</label>
-                    <input type="text" id="title" class="sleek-input" placeholder="e.g. Student Council 2026" required>
-                </div>
+            <div class="modal-header">
+                <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; letter-spacing: -0.025em;">Create New Election</h2>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">Define parameters for the upcoming voting event</p>
+            </div>
+            
+            <div class="modal-body">
+                <form id="create-election-form">
+                    <div class="input-group">
+                        <label class="input-label">Election Title</label>
+                        <input type="text" id="title" class="input-modern" placeholder="e.g. Student Council 2026" required>
+                    </div>
 
-                <div class="input-wrapper">
-                    <label>Available Positions (comma separated)</label>
-                    <input type="text" id="positions" class="sleek-input" placeholder="e.g. President, Vice-President, Secretary" required>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="input-wrapper">
-                        <label>Voting Start</label>
-                        <input type="text" id="start-time" class="sleek-input" placeholder="Select Start Time" required>
+                    <div class="input-group">
+                        <label class="input-label">Available Positions (comma separated)</label>
+                        <input type="text" id="positions" class="input-modern" placeholder="e.g. President, Vice-President, Secretary" required>
                     </div>
-                    <div class="input-wrapper">
-                        <label>Voting End</label>
-                        <input type="text" id="end-time" class="sleek-input" placeholder="Select End Time" required>
+                    
+                    <div class="form-section-title">
+                        <i class="fas fa-clock"></i> Voting Timeline
                     </div>
-                </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label class="input-label">Start Time</label>
+                            <input type="text" id="start-time" class="input-modern" placeholder="Select Start Time" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">End Time</label>
+                            <input type="text" id="end-time" class="input-modern" placeholder="Select End Time" required>
+                        </div>
+                    </div>
 
-                <div class="input-wrapper">
-                    <label>Nomination Type</label>
-                    <select id="nomination-type" class="sleek-input" required>
-                        <option value="3-person">3-Person Consent (Candidate, Proposer, Seconder)</option>
-                        <option value="self">Self-Nomination (Candidate Only)</option>
-                    </select>
-                </div>
+                    <div class="form-section-title">
+                        <i class="fas fa-user-check"></i> Candidate Rules
+                    </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                    <div class="input-wrapper">
-                        <label>CS Vote Limit</label>
-                        <input type="number" id="cs-vote-limit" class="sleek-input" value="1" min="1" required>
+                    <div class="input-group">
+                        <label class="input-label">Nomination Type</label>
+                        <select id="nomination-type" class="input-modern" required>
+                            <option value="3-person">3-Person Consent (Candidate, Proposer, Seconder)</option>
+                            <option value="self">Self-Nomination (Candidate Only)</option>
+                        </select>
                     </div>
-                    <div class="input-wrapper">
-                        <label>IS Vote Limit</label>
-                        <input type="number" id="is-vote-limit" class="sleek-input" value="1" min="1" required>
-                    </div>
-                </div>
 
-                <div id="nomination-dates" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem;">
-                    <div class="input-wrapper">
-                        <label>Nomination Start</label>
-                        <input type="text" id="nom-start" class="sleek-input" placeholder="Select Start">
+                    <div id="nomination-dates" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1.25rem; background: #f8fafc; border-radius: 1rem; border: 1px solid #f1f5f9;">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label class="input-label">Nomination Start</label>
+                            <input type="text" id="nom-start" class="input-modern" placeholder="Select Start">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label class="input-label">Nomination End</label>
+                            <input type="text" id="nom-end" class="input-modern" placeholder="Select End">
+                        </div>
                     </div>
-                    <div class="input-wrapper">
-                        <label>Nomination End</label>
-                        <input type="text" id="nom-end" class="sleek-input" placeholder="Select End">
-                    </div>
-                </div>
 
-                <button type="submit" class="btn-sleek" style="margin-top: 2rem; width: 100%;">Create Election</button>
-            </form>
+                    <div class="form-section-title">
+                        <i class="fas fa-users-cog"></i> Faculty Quotas
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label class="input-label">CS Vote Limit</label>
+                            <input type="number" id="cs-vote-limit" class="input-modern" value="1" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">IS Vote Limit</label>
+                            <input type="number" id="is-vote-limit" class="input-modern" value="1" min="1" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-modern btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-paper-plane"></i> Initialize Election
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
