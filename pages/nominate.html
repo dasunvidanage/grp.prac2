@@ -315,10 +315,12 @@
                             </div>
                             <div class="input-group">
                                 <label>Degree Category</label>
-                                <select id="category" class="sleek-input" style="padding-left: 1rem;" required>
+                                <select id="category" class="sleek-input" style="padding-left: 1rem; background-color: #f1f5f9; cursor: not-allowed;" required disabled>
+                                    <option value="" selected disabled>Auto-detected from ID</option>
                                     <option value="CS">Computer Science</option>
                                     <option value="IS">Information Systems</option>
                                 </select>
+                                <p style="font-size: 0.7rem; color: #64748b; margin-top: 0.25rem;">Detected from Candidate ID</p>
                             </div>
                             
                             <div class="input-group" id="proposer-field" style="display: none;">
@@ -889,6 +891,21 @@
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             document.getElementById('user-name').textContent = user.name || 'Student';
             document.getElementById('user-id').textContent = 'ID: ' + (user.student_id || 'N/A');
+
+            // Add auto-detection for category based on Candidate ID
+            const candInput = document.getElementById('candidate-id');
+            const categorySelect = document.getElementById('category');
+            
+            candInput.addEventListener('input', () => {
+                const id = candInput.value.toUpperCase();
+                if (id.includes('CS')) {
+                    categorySelect.value = 'CS';
+                } else if (id.includes('IS')) {
+                    categorySelect.value = 'IS';
+                } else {
+                    categorySelect.value = ''; // Reset if neither
+                }
+            });
         });
     </script>
 </body>

@@ -7,6 +7,7 @@ const { isAdmin } = require('../middleware/authMiddleware');
 router.post('/elections', isAdmin, adminController.createElection);
 router.get('/elections', isAdmin, adminController.getElections);
 router.get('/elections/:id', isAdmin, adminController.getElectionById);
+router.delete('/elections/:id', isAdmin, adminController.deleteElection);
 router.put('/elections/:id/status', isAdmin, adminController.updateElectionStatus);
 router.put('/elections/:id/nomination-range', isAdmin, adminController.updateNominationRange);
 router.put('/elections/:id/voting-range', isAdmin, adminController.updateVotingRange);

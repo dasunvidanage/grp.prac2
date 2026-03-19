@@ -184,6 +184,14 @@ exports.resetElectionVotes = (req, res) => {
   });
 };
 
+exports.deleteElection = (req, res) => {
+  const { id } = req.params;
+  Election.delete(id, (err) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete election.' });
+    res.json({ message: 'Election and all associated data deleted successfully.' });
+  });
+};
+
 // --- Legacy / Deprecated (Keep for backward compat or refactor later) ---
 exports.toggleVoting = (req, res) => { res.json({ message: 'Use Election Management instead.' }); };
 exports.toggleNominations = (req, res) => { res.json({ message: 'Use Election Management instead.' }); };

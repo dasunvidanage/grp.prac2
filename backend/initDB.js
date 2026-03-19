@@ -113,14 +113,6 @@ async function init() {
 
     await runAsync("BEGIN TRANSACTION");
 
-    const electionStart = new Date().toISOString();
-    const electionEnd = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-    const defaultPositions = JSON.stringify(['President', 'Vice-President', 'Secretary', 'Junior Treasurer', 'Editor', 'Committee Member']);
-    const allowedYears = JSON.stringify(['1', '2', '3', '4']); // All years allowed for this sample
-    const election = await runAsync(`INSERT INTO elections (title, status, start_time, end_time, has_nominations, positions, allowed_years, cs_vote_limit, is_vote_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-      ['Student Council Election 2026', 'active', electionStart, electionEnd, 1, defaultPositions, allowedYears, 2, 2]);
-    const electionId = election.lastID;
-
     // Admins
     for (let i = 1; i <= 5; i++) {
       await runAsync(`INSERT INTO students (student_id, name, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?, 'approved')`,
@@ -129,49 +121,112 @@ async function init() {
 
     // Students
     const currentYear = 2026;
-    for (let i = 1; i <= 300; i++) {
-      const dept = i <= 150 ? 'CS' : 'IS';
-      // Use different starting years to test academic year calculation
-      // i=1-75: 2025 (Year 1), 76-150: 2024 (Year 2), 151-225: 2023 (Year 3), 226-300: 2022 (Year 4)
-      let yearPrefix;
-      if (i <= 75) yearPrefix = 2025;
-      else if (i <= 150) yearPrefix = 2024;
-      else if (i <= 225) yearPrefix = 2023;
-      else yearPrefix = 2022;
-
-      const sId = `${yearPrefix}${dept}${String(i).padStart(3, '0')}`;
-      const email = `${sId.toLowerCase()}@stu.ucsc.cmb.ac.lk`;
+    const years = [2025, 2024, 2023, 2022];
+    
+    for (const yearPrefix of years) {
       const academicYear = currentYear - yearPrefix;
+      
+      // 180 CS Students
+      for (let i = 1; i <= 180; i++) {
+        const sId = `${yearPrefix}CS${String(i).padStart(3, '0')}`;
+        const email = `${sId.toLowerCase()}@stu.ucsc.cmb.ac.lk`;
+        await runAsync(`INSERT INTO students (student_id, name, email, academic_year, password_hash, role, status) VALUES (?, ?, ?, ?, ?, ?, 'approved')`,
+          [sId, `Student CS ${yearPrefix}-${i}`, email, academicYear, studentPass, 'student']);
+      }
 
-      await runAsync(`INSERT INTO students (student_id, name, email, academic_year, password_hash, role, status) VALUES (?, ?, ?, ?, ?, ?, 'approved')`,
-        [sId, `Student ${dept} ${i}`, email, academicYear, studentPass, 'student']);
+      // 120 IS Students
+      for (let i = 1; i <= 120; i++) {
+        const sId = `${yearPrefix}IS${String(i).padStart(3, '0')}`;
+        const email = `${sId.toLowerCase()}@stu.ucsc.cmb.ac.lk`;
+        await runAsync(`INSERT INTO students (student_id, name, email, academic_year, password_hash, role, status) VALUES (?, ?, ?, ?, ?, ?, 'approved')`,
+          [sId, `Student IS ${yearPrefix}-${i}`, email, academicYear, studentPass, 'student']);
+      }
     }
 
-    // Candidates
-    const positions = ['President', 'Vice-President', 'Secretary', 'Junior Treasurer', 'Editor', 'Committee Member'];
-    for (let i = 1; i <= 10; i++) {
-      const cat = i % 2 === 0 ? 'CS' : 'IS';
-      const pos = positions[i % positions.length];
-      const dept = cat;
-      const sId = `2026${dept}${String(i).padStart(3, '0')}`; // Pick an existing student
-      await runAsync(`INSERT INTO candidates (election_id, student_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [electionId, sId, `Candidate ${i}`, `Manifesto for ${pos}`, 'English', cat, pos, '../assets/images/candidate_pfp.png']);
+    // Special First Year Election
+    const fyElectionStart = new Date().toISOString();
+    const fyElectionEnd = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+    const fyPositions = JSON.stringify(['CS Representative', 'IS Representative']);
+    const fyAllowedYears = JSON.stringify(['1']);
+    const fyElectionResult = await runAsync(`INSERT INTO elections (title, status, start_time, end_time, has_nominations, nomination_type, positions, allowed_years, cs_vote_limit, is_vote_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+      ['First Year Student Union Representative Election', 'active', fyElectionStart, fyElectionEnd, 1, 'self', fyPositions, fyAllowedYears, 2, 2]);
+    const fyElectionId = fyElectionResult.lastID;
+
+    // Candidates for FY Election (Year 1 - 2025)
+    const csCandidatesFY = [];
+    const isCandidatesFY = [];
+    for (let i = 1; i <= 5; i++) {
+      const sIdCS = `2025CS${String(i).padStart(3, '0')}`;
+      const csCand = await runAsync(`INSERT INTO candidates (election_id, student_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [fyElectionId, sIdCS, `CS Candidate ${i} (Y1)`, `Manifesto for CS Rep ${i}`, 'English', 'CS', 'CS Representative', '../assets/images/candidate_pfp.png']);
+      csCandidatesFY.push(csCand.lastID);
+      
+      const sIdIS = `2025IS${String(i).padStart(3, '0')}`;
+      const isCand = await runAsync(`INSERT INTO candidates (election_id, student_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [fyElectionId, sIdIS, `IS Candidate ${i} (Y1)`, `Manifesto for IS Rep ${i}`, 'English', 'IS', 'IS Representative', '../assets/images/candidate_pfp.png']);
+      isCandidatesFY.push(isCand.lastID);
     }
 
-    // Votes & Participation
-    for (let i = 1; i <= 200; i++) {
-      const dept = i <= 100 ? 'CS' : 'IS';
-      const sId = `2026${dept}${String(i).padStart(3, '0')}`;
-      const randomCandId = Math.floor(Math.random() * 10) + 1;
-      await runAsync(`INSERT INTO voter_participation (election_id, student_id) VALUES (?, ?)`, [electionId, sId]);
-      await runAsync(`INSERT INTO votes (election_id, student_id, candidate_id) VALUES (?, ?, ?)`, [electionId, sId, randomCandId]);
+    // Special Second Year Election
+    const syPositions = JSON.stringify(['CS Representative', 'IS Representative']);
+    const syAllowedYears = JSON.stringify(['2']);
+    const syElectionResult = await runAsync(`INSERT INTO elections (title, status, start_time, end_time, has_nominations, nomination_type, positions, allowed_years, cs_vote_limit, is_vote_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+      ['Second Year Student Union Batch Representatives', 'active', fyElectionStart, fyElectionEnd, 1, 'self', syPositions, syAllowedYears, 4, 4]);
+    const syElectionId = syElectionResult.lastID;
+
+    // Candidates for SY Election (Year 2 - 2024)
+    const csCandidatesSY = [];
+    const isCandidatesSY = [];
+    for (let i = 1; i <= 5; i++) {
+      const sIdCS = `2024CS${String(i).padStart(3, '0')}`;
+      const csCand = await runAsync(`INSERT INTO candidates (election_id, student_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [syElectionId, sIdCS, `CS Candidate ${i} (Y2)`, `Manifesto for CS Rep ${i}`, 'English', 'CS', 'CS Representative', '../assets/images/candidate_pfp.png']);
+      csCandidatesSY.push(csCand.lastID);
+      
+      const sIdIS = `2024IS${String(i).padStart(3, '0')}`;
+      const isCand = await runAsync(`INSERT INTO candidates (election_id, student_id, name, manifesto, language_proficiency, category, position, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [syElectionId, sIdIS, `IS Candidate ${i} (Y2)`, `Manifesto for IS Rep ${i}`, 'English', 'IS', 'IS Representative', '../assets/images/candidate_pfp.png']);
+      isCandidatesSY.push(isCand.lastID);
+    }
+
+    // Simulate Votes for Both Elections
+    console.log('--- Simulating Votes ---');
+    
+    // FY Votes
+    const votingStudentsFY = [];
+    for (let i = 10; i <= 60; i++) votingStudentsFY.push(`2025CS${String(i).padStart(3, '0')}`);
+    for (let i = 10; i <= 50; i++) votingStudentsFY.push(`2025IS${String(i).padStart(3, '0')}`);
+
+    for (const studentId of votingStudentsFY) {
+      await runAsync(`INSERT INTO voter_participation (election_id, student_id) VALUES (?, ?)`, [fyElectionId, studentId]);
+      const shuffledCS = [...csCandidatesFY].sort(() => 0.5 - Math.random());
+      // Vote for 2 CS candidates (Limit is 2)
+      for (let i = 0; i < 2; i++) await runAsync(`INSERT INTO votes (election_id, student_id, candidate_id) VALUES (?, ?, ?)`, [fyElectionId, studentId, shuffledCS[i]]);
+      const shuffledIS = [...isCandidatesFY].sort(() => 0.5 - Math.random());
+      // Vote for 2 IS candidates (Limit is 2)
+      for (let i = 0; i < 2; i++) await runAsync(`INSERT INTO votes (election_id, student_id, candidate_id) VALUES (?, ?, ?)`, [fyElectionId, studentId, shuffledIS[i]]);
+    }
+
+    // SY Votes
+    const votingStudentsSY = [];
+    for (let i = 10; i <= 55; i++) votingStudentsSY.push(`2024CS${String(i).padStart(3, '0')}`);
+    for (let i = 10; i <= 45; i++) votingStudentsSY.push(`2024IS${String(i).padStart(3, '0')}`);
+
+    for (const studentId of votingStudentsSY) {
+      await runAsync(`INSERT INTO voter_participation (election_id, student_id) VALUES (?, ?)`, [syElectionId, studentId]);
+      const shuffledCS = [...csCandidatesSY].sort(() => 0.5 - Math.random());
+      // Vote for 4 CS candidates (Limit is 4)
+      for (let i = 0; i < 4; i++) await runAsync(`INSERT INTO votes (election_id, student_id, candidate_id) VALUES (?, ?, ?)`, [syElectionId, studentId, shuffledCS[i]]);
+      const shuffledIS = [...isCandidatesSY].sort(() => 0.5 - Math.random());
+      // Vote for 4 IS candidates (Limit is 4)
+      for (let i = 0; i < 4; i++) await runAsync(`INSERT INTO votes (election_id, student_id, candidate_id) VALUES (?, ?, ?)`, [syElectionId, studentId, shuffledIS[i]]);
     }
 
     await runAsync("COMMIT");
     await runAsync(`INSERT INTO settings (key, value) VALUES ('voting_open', '1')`);
     await runAsync(`INSERT INTO settings (key, value) VALUES ('nominationsOpen', '1')`);
 
-    console.log('--- Database Initialized Successfully (300+ Users Created) ---');
+    console.log('--- Database Initialized Successfully (1200+ Students Created) ---');
     process.exit(0);
   } catch (err) {
     console.error('Initialization Error:', err);

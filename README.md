@@ -84,7 +84,7 @@ npm start
 ---
 
 ### Future Roadmap: Club Integration
-The system is built with **extensibility** at its core. While currently optimized for UCSC CS/IS departments, the "Eligibility Filter" logic can be expanded to verify **Club Membership lists**, allowing the platform to host elections for the Rotaract Club, Gavel Club, or Sports Union with minimal configuration changes.
+The system is built with **extensibility** at its core. While currently optimized for UCSC CS/IS departments, the "Eligibility Filter" logic can be expanded to verify **Club Membership lists**, allowing the platform to host elections for Special Clubs and other Union with minimal configuration changes.
 
 ---
 
@@ -97,9 +97,9 @@ Use the following identities to verify role-based access control (RBAC) within t
 | --- | --- | --- | --- |
 | **Admin** | `ADM001` | `admin123` | System Oversight |
 | **Admin** | `ADM002` | `admin123` | System Oversight |
-| **Student** | `2026CS001` | `student123` | Computer Science |
-| **Student** | `2026CS002` | `student123` | Computer Science |
-| **Student** | `2026IS151` | `student123` | Information Systems |
-| **Student** | `2026IS152` | `student123` | Information Systems |
+| **Student** | `2025CS001` | `student123` | Computer Science |
+| **Student** | `2025CS002` | `student123` | Computer Science |
+| **Student** | `2023IS151` | `student123` | Information Systems |
+| **Student** | `2023IS152` | `student123` | Information Systems |
 
 

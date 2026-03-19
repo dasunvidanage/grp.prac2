@@ -50,6 +50,16 @@ const Election = {
 
   getActive: (callback) => {
     db.all("SELECT * FROM elections WHERE status = 'active' OR status = 'upcoming'", [], callback);
+  },
+
+  delete: (id, callback) => {
+    db.serialize(() => {
+      db.run('DELETE FROM votes WHERE election_id = ?', [id]);
+      db.run('DELETE FROM voter_participation WHERE election_id = ?', [id]);
+      db.run('DELETE FROM candidates WHERE election_id = ?', [id]);
+      db.run('DELETE FROM nominations WHERE election_id = ?', [id]);
+      db.run('DELETE FROM elections WHERE id = ?', [id], callback);
+    });
   }
 };
 
